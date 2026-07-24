@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Builds
+dist/
+**/dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ambiente
+.env
+.env.*
+!.env.example
+
+# Editores / SO
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Ferramentas / sessões locais
+.claude/
+instrucao.md
+
+# Prints de referência (capturas de tela de terceiros, não redistribuir)
+referencia*.webp
+referencia/
+Captura de Tela*.png
+Screen Shot*.png
+Screenshot*.png
+**/Captura de Tela*.png
+**/Screen Shot*.png
+**/Screenshot*.png
+
+# Cache
+.cache/
+.vite/
+coverage/
