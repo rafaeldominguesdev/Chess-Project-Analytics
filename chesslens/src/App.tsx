@@ -10,6 +10,7 @@ import { ChessBoard, BOARD_ROW_CHROME_WIDTH } from './components/Board/ChessBoar
 import { ReviewPanel } from './components/Review/ReviewPanel'
 import { SettingsPanel } from './components/Settings/SettingsPanel'
 import { TrainingView } from './components/Training/TrainingView'
+import { AnalysisBoardView } from './components/Analysis/AnalysisBoardView'
 import { PlayerCard } from './components/Theater/PlayerCard'
 import { Sidebar } from './components/Layout/Sidebar'
 import { HomePage } from './components/Home/HomePage'
@@ -24,6 +25,9 @@ function AppInner() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   // Modo de treino de táticas — não é um modal, substitui o conteúdo principal (igual à análise).
   const [trainingMode, setTrainingMode] = useState(false)
+  // Tabuleiro de análise livre (posição inicial, joga dos dois lados) — mesmo esquema do treino:
+  // substitui o conteúdo principal, mutuamente exclusivo com ele e com a revisão de partida.
+  const [boardMode, setBoardMode] = useState(false)
   const [positionEvals, setPositionEvals] = useState<number[]>([])
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchPlatform, setSearchPlatform] = useState<Platform>('chesscom')
@@ -102,7 +106,9 @@ function AppInner() {
 
   useKeyboard({
     onPrev: goPrev, onNext: goNext, onFirst: goFirst, onLast: goLast,
-    enabled: !settingsOpen && !searchOpen && !trainingMode,
+    // Desligado no tabuleiro de análise livre também — lá as setas navegariam por engano o
+    // histórico da revisão escondida atrás, em vez do próprio jogo livre (que não usa teclado).
+    enabled: !settingsOpen && !searchOpen && !trainingMode && !boardMode,
   })
 
   const handleAnalyzeGame = useCallback((pgn: string) => {
@@ -135,15 +141,19 @@ function AppInner() {
     <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: 'var(--color-bg-main)', color: 'var(--color-text-on-dark)' }}>
       <Sidebar
         onSettings={() => setSettingsOpen(true)}
-        onToggleTraining={() => setTrainingMode((v) => !v)}
-        onGoHome={() => setTrainingMode(false)}
+        onToggleTraining={() => { setTrainingMode((v) => !v); setBoardMode(false) }}
+        onToggleBoard={() => { setBoardMode((v) => !v); setTrainingMode(false) }}
+        onGoHome={() => { setTrainingMode(false); setBoardMode(false) }}
         trainingActive={trainingMode}
+        boardActive={boardMode}
       />
 
       {/* Main */}
       <main style={{ flex: 1, minWidth: 0, display: 'flex', gap: 10, padding: 10, minHeight: '100vh' }}>
         {trainingMode ? (
           <TrainingView boardWidth={boardWidth} containerRef={containerRef} />
+        ) : boardMode ? (
+          <AnalysisBoardView boardWidth={boardWidth} containerRef={containerRef} />
         ) : !isLoaded ? (
           <HomePage onOpenSearch={openSearch} />
         ) : (

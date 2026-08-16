@@ -39,6 +39,32 @@ export function TargetIcon(props: IconProps) {
   )
 }
 
+/** Tabuleiro xadrezado simples — tabuleiro de análise livre (sem lupa, diferente do AnalyzeNavIcon). */
+export function BoardNavIcon(props: IconProps) {
+  return (
+    <svg {...base(props)} fill="currentColor" stroke="none">
+      <rect x="3" y="3" width="18" height="18" rx="1.5" fill="none" stroke="currentColor" strokeWidth={1.8} />
+      <rect x="3" y="3" width="4.5" height="4.5" />
+      <rect x="12" y="3" width="4.5" height="4.5" />
+      <rect x="7.5" y="7.5" width="4.5" height="4.5" />
+      <rect x="16.5" y="7.5" width="4.5" height="4.5" />
+      <rect x="3" y="12" width="4.5" height="4.5" />
+      <rect x="12" y="12" width="4.5" height="4.5" />
+      <rect x="7.5" y="16.5" width="4.5" height="4.5" />
+      <rect x="16.5" y="16.5" width="4.5" height="4.5" />
+    </svg>
+  )
+}
+
+/** Seta simples — usada no botão de encolher/expandir a sidebar, gira via CSS conforme o estado. */
+export function ChevronIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M15 6l-6 6 6 6" />
+    </svg>
+  )
+}
+
 export function BrandMarkIcon(props: IconProps) {
   return (
     <svg {...base(props)} fill="currentColor" stroke="none">

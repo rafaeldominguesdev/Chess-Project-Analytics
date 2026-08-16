@@ -11,16 +11,20 @@ interface TrainingViewProps {
 }
 
 interface Difficulty {
-  key: 'facil' | 'medio' | 'dificil'
+  key: 'iniciante' | 'facil' | 'medio' | 'dificil' | 'mestre'
   label: string
   min: number
   max: number
 }
 
+// Faixas de 600 a 3100+ agora (banco cresceu de 1500 pra ~3700 puzzles, ver utils/puzzles.ts) —
+// "Iniciante" e "Mestre" são novas, as três do meio continuam do jeito que já estavam.
 const DIFFICULTIES: Difficulty[] = [
+  { key: 'iniciante', label: 'Iniciante', min: 600, max: 800 },
   { key: 'facil', label: 'Fácil', min: 1500, max: 1700 },
   { key: 'medio', label: 'Médio', min: 1900, max: 2100 },
   { key: 'dificil', label: 'Difícil', min: 2300, max: 2500 },
+  { key: 'mestre', label: 'Mestre', min: 2900, max: 3100 },
 ]
 
 function difficultyFor(min: number, max: number): Difficulty {
@@ -44,6 +48,14 @@ function WrongIcon(props: SVGProps<SVGSVGElement>) {
     <svg {...iconBase(props)}>
       <circle cx="12" cy="12" r="9" />
       <path d="M9 9l6 6M15 9l-6 6" />
+    </svg>
+  )
+}
+
+function MoveArrowIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...iconBase(props)}>
+      <path d="M5 12h11M12 6l7 6-7 6" />
     </svg>
   )
 }
@@ -74,10 +86,10 @@ function GearIcon(props: SVGProps<SVGSVGElement>) {
  */
 export function TrainingView({ boardWidth, containerRef }: TrainingViewProps) {
   const {
-    puzzle, fen, lastMove, status, solverColor, hintSquare,
+    puzzle, fen, lastMove, status, solverColor, hintSquare, hintMove,
     ratingRange, setRatingRange,
     solvedCount, wrongAttempts,
-    attemptMove, nextPuzzle, retryPuzzle, showHint,
+    attemptMove, nextPuzzle, retryPuzzle, showHint, showMoveHint,
   } = usePuzzleTrainer({ min: 1500, max: 1700 })
 
   const [difficultyMenuOpen, setDifficultyMenuOpen] = useState(false)
@@ -118,6 +130,7 @@ export function TrainingView({ boardWidth, containerRef }: TrainingViewProps) {
               interactive={status === 'solving'}
               boardOrientation={solverColor}
               hintSquare={hintSquare}
+              extraArrows={hintMove ? [{ startSquare: hintMove.from, endSquare: hintMove.to, color: '#E8A93C' }] : undefined}
               onPieceDrop={({ sourceSquare, targetSquare }) => (targetSquare ? attemptMove(sourceSquare, targetSquare) : false)}
             />
           )}
@@ -230,10 +243,16 @@ export function TrainingView({ boardWidth, containerRef }: TrainingViewProps) {
           )}
 
           {(status === 'solving' || status === 'wrong') && (
-            <button onClick={showHint} disabled={status !== 'solving'} className="cl-btn cl-btn-sm" style={{ width: 'auto', height: 'auto', padding: '9px 0', fontSize: 11.5, gap: 6 }}>
-              <LightbulbIcon />
-              Dica — mostrar a peça
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={showHint} disabled={status !== 'solving'} className="cl-btn cl-btn-sm" style={{ flex: 1, width: 'auto', height: 'auto', padding: '9px 0', fontSize: 11.5, gap: 6 }}>
+                <LightbulbIcon />
+                Mostrar peça
+              </button>
+              <button onClick={showMoveHint} disabled={status !== 'solving'} className="cl-btn cl-btn-sm" style={{ flex: 1, width: 'auto', height: 'auto', padding: '9px 0', fontSize: 11.5, gap: 6 }} title="Mostra o lance inteiro (de onde pra onde) como seta no tabuleiro">
+                <MoveArrowIcon />
+                Mostrar lance
+              </button>
+            </div>
           )}
 
           <button

@@ -13,10 +13,12 @@ export interface Puzzle {
 
 type RawPuzzle = [string, string, string, number, string, string]
 
-// Banco de táticas (fonte: database.lichess.org/lichess_db_puzzle.csv.zst, licença CC0) — 1500
-// puzzles reais, filtrados por rating 1500–2500 (150 por faixa de 100 pontos, pra cobertura
-// uniforme) e por popularidade/nº de jogadas mínimos, pra evitar puzzle mal rotulado ou obscuro.
-// Não existe base pública equivalente de puzzles em massa do chess.com pra usar aqui.
+// Banco de táticas (fonte: database.lichess.org/lichess_db_puzzle.csv.zst, licença CC0) — ~3700
+// puzzles reais, cobrindo rating 600–3199 (150 por faixa de 100 pontos, pra cobertura uniforme;
+// a faixa 1500–2500 foi a original, 600–1500 e 2500–3200 foram adicionadas depois pra ter
+// dificuldade de iniciante e de mestre também — ver DIFFICULTIES em TrainingView.tsx) e por
+// popularidade/nº de jogadas mínimos, pra evitar puzzle mal rotulado ou obscuro. Não existe base
+// pública equivalente de puzzles em massa do chess.com pra usar aqui.
 export const PUZZLES: Puzzle[] = (puzzlesRaw as RawPuzzle[]).map(([id, fen, moves, rating, themes, gameUrl]) => ({
   id,
   fen,

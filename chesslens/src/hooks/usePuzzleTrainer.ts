@@ -36,6 +36,9 @@ export function usePuzzleTrainer(initialRange: RatingRange = { min: 1500, max: 1
   const [solvedCount, setSolvedCount] = useState(0)
   const [wrongAttempts, setWrongAttempts] = useState(0)
   const [hintSquare, setHintSquare] = useState<string | null>(null)
+  // "Mostrar lance" é mais forte que a dica normal (que só marca a peça): revela a jogada
+  // inteira como seta no tabuleiro, igual ao tabuleiro de análise livre.
+  const [hintMove, setHintMove] = useState<{ from: string; to: string } | null>(null)
 
   const { playForSan, play } = useMoveSound()
 
@@ -48,6 +51,7 @@ export function usePuzzleTrainer(initialRange: RatingRange = { min: 1500, max: 1
     clearTimeout(replyTimerRef.current)
     setWrongAttempts(0)
     setHintSquare(null)
+    setHintMove(null)
 
     const next = getRandomPuzzle(ratingRange.min, ratingRange.max, solvedIdsRef.current)
     if (!next) {
@@ -76,12 +80,20 @@ export function usePuzzleTrainer(initialRange: RatingRange = { min: 1500, max: 1
 
   const retryPuzzle = useCallback(() => {
     setHintSquare(null)
+    setHintMove(null)
     setStatus((s) => (s === 'wrong' ? 'solving' : s))
   }, [])
 
   const showHint = useCallback(() => {
     if (!puzzle || status !== 'solving') return
     setHintSquare(puzzle.moves[solutionIndexRef.current].slice(0, 2))
+  }, [puzzle, status])
+
+  const showMoveHint = useCallback(() => {
+    if (!puzzle || status !== 'solving') return
+    const uci = puzzle.moves[solutionIndexRef.current]
+    setHintSquare(null)
+    setHintMove({ from: uci.slice(0, 2), to: uci.slice(2, 4) })
   }, [puzzle, status])
 
   const attemptMove = useCallback((sourceSquare: string, targetSquare: string): boolean => {
@@ -107,6 +119,7 @@ export function usePuzzleTrainer(initialRange: RatingRange = { min: 1500, max: 1
     }
 
     setHintSquare(null)
+    setHintMove(null)
     solutionIndexRef.current++
     setFen(chess.fen())
     setLastMove({ from: result.from, to: result.to })
@@ -145,9 +158,9 @@ export function usePuzzleTrainer(initialRange: RatingRange = { min: 1500, max: 1
   }, [puzzle, status, playForSan, play])
 
   return {
-    puzzle, fen, lastMove, status, solverColor, hintSquare,
+    puzzle, fen, lastMove, status, solverColor, hintSquare, hintMove,
     ratingRange, setRatingRange,
     solvedCount, wrongAttempts,
-    attemptMove, nextPuzzle: loadPuzzle, retryPuzzle, showHint,
+    attemptMove, nextPuzzle: loadPuzzle, retryPuzzle, showHint, showMoveHint,
   }
 }

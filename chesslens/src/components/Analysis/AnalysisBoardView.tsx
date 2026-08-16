@@ -1,0 +1,288 @@
+import { useEffect, useMemo, useRef } from 'react'
+import type { RefObject } from 'react'
+import { useAnalysisBoard } from '../../hooks/useAnalysisBoard'
+import type { PlayedMove } from '../../hooks/useAnalysisBoard'
+import { useStockfish } from '../../hooks/useStockfish'
+import type { StockfishEval } from '../../hooks/useStockfish'
+import { ChessBoard, BOARD_ROW_CHROME_WIDTH } from '../Board/ChessBoard'
+import { BoardControls } from '../Board/BoardControls'
+import { MoveQualityBadge } from '../Board/MoveQualityBadge'
+import { BoardNavIcon } from '../Layout/icons'
+import { identifyOpening, isBookMove } from '../../utils/openingsDatabase'
+import { classifyMove, materialForSide, toWhiteCp } from '../../utils/moveClassifier'
+import type { MoveQuality } from '../../utils/moveClassifier'
+
+interface AnalysisBoardViewProps {
+  boardWidth: number
+  containerRef: RefObject<HTMLDivElement | null>
+}
+
+// As 3 melhores sugestões do Stockfish pra posição atual — todas no mesmo verde escuro (não
+// muda de cor entre elas), só a ESPESSURA e a OPACIDADE marcam a força: a 1ª (melhor lance) bem
+// grossa e sólida, a 2ª mais fina e um pouco mais transparente, a 3ª ainda mais fina e apagada.
+const SUGGESTION_GREEN = '#1B7A3D'
+const SUGGESTION_STYLE = [
+  { color: SUGGESTION_GREEN, strokeWidth: 20, opacity: 0.85, label: 'Melhor lance' },
+  { color: SUGGESTION_GREEN, strokeWidth: 13, opacity: 0.6, label: '2ª melhor opção' },
+  { color: SUGGESTION_GREEN, strokeWidth: 8, opacity: 0.35, label: '3ª melhor opção' },
+] as const
+
+/**
+ * Tabuleiro de análise livre — posição inicial, todas as peças no lugar, joga dos dois lados
+ * (sem PGN carregado, diferente da tela de "Analisar" que revê uma partida já pronta). O
+ * Stockfish avalia a posição atual em tempo real a cada lance, com a mesma barra de avaliação
+ * e tabuleiro interativo já usados no resto do app. Mesmo layout de coluna central + painel
+ * lateral das outras telas (Review/Treino), pra manter a sensação de "mesmo app".
+ */
+export function AnalysisBoardView({ boardWidth, containerRef }: AnalysisBoardViewProps) {
+  const {
+    currentFen, currentMoveIndex, moves, lastMove,
+    boardOrientation, flipBoard,
+    makeMove, updateMoveClassification, goToMove, goFirst, goPrev, goNext, goLast, reset,
+  } = useAnalysisBoard()
+
+  // multiPv=3 pede as 3 melhores linhas ao engine (não só a melhor) — é isso que alimenta as
+  // 3 setas de sugestão. `evaluation` continua sendo só a linha 1 (pra barra de avaliação).
+  const { evaluation, lines, isReady, analyze } = useStockfish(15, 3)
+
+  // Qual FEN o pedido de análise em andamento é sobre — junto com `lastEvalRef` (a última
+  // avaliação que de fato chegou), dá pra saber com segurança se um resultado novo é "antes" ou
+  // "depois" de um lance, sem precisar de um segundo motor rodando em paralelo.
+  const requestedFenRef = useRef('')
+  const lastEvalRef = useRef<{ fen: string; cp: number | null; mate: number | null; bestMove: string | null } | null>(null)
+  // Lance que acabou de ser jogado, esperando a avaliação do Stockfish pra depois dele chegar —
+  // só então dá pra saber quanto a posição caiu (ou não) e classificar (bom/erro/imprecisão/etc).
+  const pendingClassifyRef = useRef<{
+    moveIndex: number; color: 'w' | 'b'; from: string; to: string
+    fenBefore: string; fenAfter: string; beforeCp: number | null; beforeMate: number | null; bestMoveBefore: string | null
+  } | null>(null)
+
+  useEffect(() => {
+    if (isReady) {
+      analyze(currentFen)
+      requestedFenRef.current = currentFen
+    }
+  }, [currentFen, isReady, analyze])
+
+  // Resolve a classificação pendente assim que a avaliação da posição "depois" do lance chega —
+  // e também guarda toda avaliação que chega como referência (o "antes" do PRÓXIMO lance).
+  useEffect(() => {
+    const line: StockfishEval | null = lines[0]
+    if (!line) return
+    const forFen = requestedFenRef.current
+    lastEvalRef.current = { fen: forFen, cp: line.cp, mate: line.mate, bestMove: line.bestMove }
+
+    const pending = pendingClassifyRef.current
+    if (!pending || forFen !== pending.fenAfter) return
+    // A partida pode ter sido reiniciada nesse meio-tempo — o índice não existe mais.
+    if (!moves[pending.moveIndex]) { pendingClassifyRef.current = null; return }
+
+    const sideToMoveAfter = pending.fenAfter.split(' ')[1] === 'b' ? 'b' : 'w'
+    const evalBefore = toWhiteCp(pending.beforeCp, pending.beforeMate, pending.color)
+    const evalAfter = toWhiteCp(line.cp, line.mate, sideToMoveAfter)
+    const isBest = !!pending.bestMoveBefore && pending.from + pending.to === pending.bestMoveBefore.slice(0, 4)
+    const isBook = isBookMove(moves.slice(0, pending.moveIndex + 1).map((m) => m.san))
+    const materialDelta = materialForSide(pending.fenBefore, pending.color) - materialForSide(pending.fenAfter, pending.color)
+    const classification: MoveQuality = classifyMove(evalBefore, evalAfter, pending.color, isBest, isBook, materialDelta)
+
+    updateMoveClassification(pending.moveIndex, classification)
+    pendingClassifyRef.current = null
+  }, [lines, moves, updateMoveClassification])
+
+  const topMoveArrows = useMemo(() => {
+    const arrows: { from: string; to: string; color: string; strokeWidth: number; opacity: number }[] = []
+    const seen = new Set<string>() // duas linhas raramente sugerem o mesmo lance, mas evita seta duplicada
+    lines.forEach((line, i) => {
+      const style = SUGGESTION_STYLE[i]
+      if (!style || !line?.bestMove || line.bestMove.length < 4) return
+      const from = line.bestMove.slice(0, 2)
+      const to = line.bestMove.slice(2, 4)
+      const key = from + to
+      if (seen.has(key)) return
+      seen.add(key)
+      arrows.push({ from, to, color: style.color, strokeWidth: style.strokeWidth, opacity: style.opacity })
+    })
+    return arrows
+  }, [lines])
+
+  const opening = useMemo(() => {
+    if (moves.length === 0) return null
+    const match = identifyOpening(moves.map((m) => m.san))
+    return match ? `${match.eco} · ${match.name}` : null
+  }, [moves])
+
+  const turn = currentFen.split(' ')[1] === 'b' ? 'Pretas' : 'Brancas'
+  const cardWidth = boardWidth + BOARD_ROW_CHROME_WIDTH
+  const rows = Math.ceil(moves.length / 2)
+  const currentQuality = currentMoveIndex >= 0 ? moves[currentMoveIndex]?.classification ?? null : null
+
+  function handleDrop(sourceSquare: string, targetSquare: string): boolean {
+    const fenBefore = currentFen
+    const color = fenBefore.split(' ')[1] === 'b' ? 'b' : 'w'
+    // Só dá pra classificar se já tínhamos uma avaliação de referência PARA ESSA posição exata
+    // (senão não tem "antes" pra comparar) — jogar rápido demais, antes do motor terminar a
+    // posição anterior, só faz esse lance específico ficar sem selo, sem quebrar nada.
+    const before = lastEvalRef.current?.fen === fenBefore ? lastEvalRef.current : null
+    const moveIndex = currentMoveIndex + 1
+
+    const fenAfter = makeMove(sourceSquare, targetSquare)
+    if (!fenAfter) return false
+
+    if (before) {
+      pendingClassifyRef.current = {
+        moveIndex, color, from: sourceSquare, to: targetSquare,
+        fenBefore, fenAfter,
+        beforeCp: before.cp, beforeMate: before.mate, bestMoveBefore: before.bestMove,
+      }
+    }
+    return true
+  }
+
+  return (
+    <>
+      {/* Center — mesma coluna do tabuleiro de análise/treino */}
+      <div ref={containerRef} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, paddingTop: 8 }}>
+        <div style={{ width: cardWidth }}>
+          <TurnCard turn={turn} isCheck={/\+|#$/.test(moves[currentMoveIndex]?.san ?? '')} />
+        </div>
+
+        <ChessBoard
+          fen={currentFen}
+          lastMove={lastMove}
+          evaluation={evaluation}
+          boardWidth={boardWidth}
+          interactive
+          boardOrientation={boardOrientation}
+          topMoveArrows={topMoveArrows}
+          currentQuality={currentQuality}
+          onPieceDrop={({ sourceSquare, targetSquare }) => (targetSquare ? handleDrop(sourceSquare, targetSquare) : false)}
+        />
+
+        <div style={{ width: cardWidth }}>
+          <BoardControls
+            isLoaded={moves.length > 0}
+            currentMoveIndex={currentMoveIndex}
+            totalMoves={moves.length}
+            onFirst={goFirst}
+            onPrev={goPrev}
+            onNext={goNext}
+            onLast={goLast}
+            onFlip={flipBoard}
+          />
+        </div>
+      </div>
+
+      {/* Right — mesma posição/largura do painel de análise/treino */}
+      <aside style={{ width: 360, flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto', maxHeight: 'calc(100vh - 20px)', paddingRight: 2 }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', borderRadius: 'var(--radius-sm)',
+            background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)',
+            boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.04), 0 1px 0 0 rgba(0,0,0,0.5), 0 16px 36px -12px rgba(0,0,0,0.6)',
+          }}>
+            <BoardNavIcon width={18} height={18} style={{ color: 'var(--color-blue-bright)', flexShrink: 0 }} />
+            <h2 className="cl-display" style={{ fontSize: 14, fontWeight: 800, color: 'var(--color-text-on-dark)', flex: 1 }}>Tabuleiro de Análise</h2>
+            <button onClick={reset} className="cl-btn cl-btn-sm" style={{ width: 'auto', height: 'auto', padding: '6px 10px', fontSize: 10.5 }} title="Recomeçar do zero">
+              Nova partida
+            </button>
+          </div>
+
+          <SuggestionLegend />
+
+          {opening && (
+            <div style={{
+              padding: '8px 10px', borderRadius: 'var(--radius-sm)',
+              background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)',
+            }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-gray-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Abertura</span>
+              <p style={{ fontSize: 12.5, color: 'var(--color-text-on-dark)', lineHeight: 1.4 }}>{opening}</p>
+            </div>
+          )}
+
+          <div className="cl-card" style={{ padding: 14 }}>
+            {moves.length === 0 ? (
+              <p style={{ fontSize: 12.5, color: 'var(--color-gray-muted)' }}>
+                Arraste (ou clique) numa peça pra começar a jogar — a avaliação do Stockfish atualiza a cada lance.
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                {Array.from({ length: rows }, (_, i) => {
+                  const wIdx = i * 2
+                  const bIdx = i * 2 + 1
+                  return (
+                    <div key={i} style={{
+                      display: 'grid', gridTemplateColumns: '28px 1fr 1fr', alignItems: 'center', gap: 6,
+                      padding: '4px 4px', borderRadius: 'var(--radius-sm)',
+                      background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.025)',
+                    }}>
+                      <span className="cl-mono" style={{ fontSize: 12.5, textAlign: 'center', color: 'var(--color-gray-muted)', fontWeight: 700 }}>{i + 1}</span>
+                      <MoveCell move={moves[wIdx]} active={currentMoveIndex === wIdx} onClick={() => goToMove(wIdx)} />
+                      {moves[bIdx] ? (
+                        <MoveCell move={moves[bIdx]} active={currentMoveIndex === bIdx} onClick={() => goToMove(bIdx)} />
+                      ) : <span />}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </aside>
+    </>
+  )
+}
+
+/** Legenda das 3 setas de sugestão — cor + espessura de cada uma, pra não precisar adivinhar. */
+function SuggestionLegend() {
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', gap: 7,
+      padding: '9px 10px', borderRadius: 'var(--radius-sm)',
+      background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)',
+    }}>
+      <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-gray-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        Setas de sugestão
+      </span>
+      {SUGGESTION_STYLE.map((s) => (
+        <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <svg width={40} height={26} style={{ flexShrink: 0, overflow: 'visible' }}>
+            <line x1={3} y1={13} x2={33} y2={13} stroke={s.color} strokeWidth={s.strokeWidth} strokeLinecap="round" opacity={s.opacity} />
+          </svg>
+          <span style={{ fontSize: 12, color: 'var(--color-text-on-dark)' }}>{s.label}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function TurnCard({ turn, isCheck }: { turn: string; isCheck: boolean }) {
+  return (
+    <div className="cl-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '8px 14px' }}>
+      <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--color-text-on-dark)' }}>
+        Vez das <span style={{ color: 'var(--color-blue-bright)' }}>{turn}</span>
+      </span>
+      {isCheck && (
+        <span style={{
+          fontSize: 10.5, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase',
+          padding: '3px 8px', borderRadius: 'var(--radius-sm)', background: 'var(--color-error)', color: '#fff',
+        }}>
+          Xeque
+        </span>
+      )}
+    </div>
+  )
+}
+
+function MoveCell({ move, active, onClick }: { move?: PlayedMove; active: boolean; onClick: () => void }) {
+  if (!move) return <span />
+  return (
+    <button
+      onClick={onClick}
+      className={`cl-move-btn flex items-center gap-2 px-2.5 py-1.5 text-sm text-left w-full ${active ? 'cl-move-active' : ''}`}
+      style={{ borderRadius: 'var(--radius-sm)', fontWeight: active ? 700 : 400, transition: 'background-color var(--dur-tap) var(--ease-tap), color var(--dur-tap) var(--ease-tap)' }}
+    >
+      {move.san}
+      {move.classification && <MoveQualityBadge quality={move.classification} size="sm" />}
+    </button>
+  )
+}
