@@ -70,26 +70,25 @@ const FEATURES = [
  */
 export function HomePage({ onOpenSearch }: HomePageProps) {
   return (
-    <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', maxHeight: 'calc(100vh - 20px)' }}>
+    <div style={{ flex: 1, minWidth: 0, overflowX: 'hidden', overflowY: 'auto', maxHeight: 'calc(100vh - 20px)' }}>
       {/* Wrapper com altura = altura do conteúdo (hero + recursos + rodapé). Os cards de Recurso
           não têm mais fundo opaco: ficam "flutuando" com vidro fosco (fundo translúcido + blur
           só onde o card ocupa), então a imagem de fundo continua visível por baixo deles em vez
           de sumir atrás de um retângulo sólido. Reenquadramento da imagem: ver as constantes
           HERO_BG_* logo acima do componente e as regras de `.cl-hero-bg` em index.css. */}
-      <div style={{ position: 'relative', minHeight: '100%' }}>
+      <div style={{ position: 'relative' }}>
         <div
           aria-hidden
           className="cl-hero-bg"
           style={{
-            // "Colada no chão": presa no FUNDO (bottom:0), não no topo — nunca sobra vão embaixo.
-            // Altura menor que a página inteira de propósito: com a caixa muito alta (quase um
-            // retrato), `cover` passa a escalar pela ALTURA e a posição vertical
-            // (HERO_BG_POSITION_Y) deixa de ter qualquer efeito — com essa altura mais baixa o
-            // `cover` volta a escalar pela LARGURA, que é o que dá folga pra esse controle
-            // realmente mover a imagem pra cima/baixo. O wrapper acima tem `minHeight:'100%'`
-            // pra esticar até o fundo de verdade da tela (senão sobra um vão preto embaixo, já
-            // que o container da página estica pra preencher a viewport mesmo com conteúdo curto).
-            position: 'absolute', bottom: 0, left: 0, right: 0, height: 540,
+            // "Colada no rodapé": presa no FUNDO do CONTEÚDO (bottom:0 dentro do wrapper acima,
+            // que tem altura natural = altura do conteúdo, sem esticar) — a imagem sempre termina
+            // exatamente onde o rodapé termina, em qualquer altura de tela (não gruda no fim da
+            // janela do navegador, que pode sobrar bem mais vazio que o conteúdo). `background-size:
+            // contain` (em index.css) desenha a arte inteira sem cortar nada — com a caixa bem mais
+            // larga que alta, quem limita o tamanho é a ALTURA, então essa altura de 360 é o que
+            // deixa a imagem "pequena" (~640px de largura) em vez de ocupar a caixa toda.
+            position: 'absolute', bottom: 0, left: 0, right: 0, height: 260,
             ...({ '--hero-bg-pos-y': `${HERO_BG_POSITION_Y}%` } as React.CSSProperties),
           }}
         />
