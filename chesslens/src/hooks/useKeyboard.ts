@@ -14,8 +14,8 @@ export function useKeyboard({ onPrev, onNext, onFirst, onLast, enabled = true }:
     const handler = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName
       if (tag === 'TEXTAREA' || tag === 'INPUT') return
-      if (e.key === 'ArrowLeft')  { e.preventDefault(); e.shiftKey ? onFirst() : onPrev() }
-      if (e.key === 'ArrowRight') { e.preventDefault(); e.shiftKey ? onLast() : onNext() }
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); if (e.shiftKey) onFirst(); else onPrev() }
+      if (e.key === 'ArrowRight') { e.preventDefault(); if (e.shiftKey) onLast(); else onNext() }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
