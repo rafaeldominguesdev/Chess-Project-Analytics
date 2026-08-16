@@ -1,47 +1,68 @@
+import type { ReactElement, SVGProps } from 'react'
+import { TrophyIcon } from './icons'
+
 interface RatingCardProps {
   label: string
-  emoji: string
+  Icon: (props: SVGProps<SVGSVGElement>) => ReactElement
+  accent: string
   rating?: number
   bestRating?: number
   wins?: number
   losses?: number
   draws?: number
+  delay?: number
 }
 
 /** Card com o rating de uma modalidade (blitz, bullet, rápida, daily, chess960...). */
-export function RatingCard({ label, emoji, rating, bestRating, wins, losses, draws }: RatingCardProps) {
+export function RatingCard({ label, Icon, accent, rating, bestRating, wins, losses, draws, delay = 0 }: RatingCardProps) {
+  const total = (wins ?? 0) + (losses ?? 0) + (draws ?? 0)
+  const winRate = total > 0 ? Math.round(((wins ?? 0) / total) * 100) : null
+
   return (
     <div
+      className="cl-stat-pop"
       style={{
+        position: 'relative',
+        overflow: 'hidden',
         background: 'var(--surface2)',
         border: '1px solid var(--border)',
-        borderRadius: 10,
-        padding: 12,
+        borderRadius: 8,
+        padding: '14px 16px',
         display: 'flex',
         flexDirection: 'column',
-        gap: 6,
+        gap: 8,
+        animationDelay: `${delay * 40}ms`,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-        <span>{emoji}</span>
-        <span>{label}</span>
+      <div style={{ position: 'absolute', top: -20, right: -20, width: 72, height: 72, borderRadius: '50%', background: accent, opacity: 0.14 }} />
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <Icon width={38} height={38} style={{ color: accent, flexShrink: 0 }} />
+        <span style={{ fontSize: 12, color: accent, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
       </div>
 
-      <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--text)', lineHeight: 1.1 }}>
+      <div className="cl-display" style={{ fontSize: 28, fontWeight: 700, color: 'var(--text)', lineHeight: 1.1 }}>
         {rating ?? '—'}
       </div>
 
       {bestRating !== undefined && (
-        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-          Melhor: <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{bestRating}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--text-muted)' }}>
+          <TrophyIcon width={12} height={12} style={{ color: 'var(--accent)' }} />
+          Máx. <span style={{ color: 'var(--text)', fontWeight: 600 }}>{bestRating}</span>
         </div>
       )}
 
-      {(wins !== undefined || losses !== undefined || draws !== undefined) && (
-        <div style={{ display: 'flex', gap: 8, fontSize: 11, marginTop: 2 }}>
-          <span style={{ color: '#27ae60' }}>{wins ?? 0}V</span>
-          <span style={{ color: 'var(--text-muted)' }}>{draws ?? 0}E</span>
-          <span style={{ color: '#e74c3c' }}>{losses ?? 0}D</span>
+      {total > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 2 }}>
+          <div style={{ display: 'flex', height: 4, borderRadius: 2, overflow: 'hidden', background: 'var(--border)' }}>
+            <div style={{ width: `${((wins ?? 0) / total) * 100}%`, background: '#4FB86A' }} />
+            <div style={{ width: `${((draws ?? 0) / total) * 100}%`, background: '#8892a4' }} />
+            <div style={{ width: `${((losses ?? 0) / total) * 100}%`, background: '#E0554A' }} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10.5, color: 'var(--text-muted)' }}>
+            <span>{wins ?? 0}V · {draws ?? 0}E · {losses ?? 0}D</span>
+            {winRate !== null && <span style={{ fontWeight: 700, color: 'var(--text)' }}>{winRate}%</span>}
+          </div>
         </div>
       )}
     </div>

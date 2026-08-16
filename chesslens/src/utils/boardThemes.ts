@@ -31,10 +31,12 @@ export const BOARD_THEMES = {
   // ══════════════════════════════════════════════
   // TEMAS EXCLUSIVOS
   // ══════════════════════════════════════════════
-  'midnight': { label: 'Midnight', category: 'Exclusivo', light: '#1E2A3A', dark: '#0D1B2A', highlight: '#3D5A80', highlightDark: '#2C4057', moveFrom: 'rgba(50,100,180,0.5)', moveTo: 'rgba(50,100,180,0.5)' },
-  'emerald':  { label: 'Emerald',  category: 'Exclusivo', light: '#E8F5E9', dark: '#2E7D32', highlight: '#FFF176', highlightDark: '#F9A825', moveFrom: 'rgba(30,120,40,0.5)',  moveTo: 'rgba(30,120,40,0.5)' },
-  'obsidian': { label: 'Obsidian', category: 'Exclusivo', light: '#2C2C2C', dark: '#1A1A1A', highlight: '#8B5CF6', highlightDark: '#6D28D9', moveFrom: 'rgba(120,60,220,0.5)', moveTo: 'rgba(120,60,220,0.5)' },
-  'coral':    { label: 'Coral',    category: 'Exclusivo', light: '#FFF0EB', dark: '#D05A3A', highlight: '#FFD700', highlightDark: '#FFC200', moveFrom: 'rgba(200,60,20,0.5)',  moveTo: 'rgba(200,60,20,0.5)' },
+  'midnight':      { label: 'Midnight', category: 'Exclusivo', light: '#1E2A3A', dark: '#0D1B2A', highlight: '#3D5A80', highlightDark: '#2C4057', moveFrom: 'rgba(50,100,180,0.5)', moveTo: 'rgba(50,100,180,0.5)' },
+  'emerald':       { label: 'Emerald',  category: 'Exclusivo', light: '#E8F5E9', dark: '#2E7D32', highlight: '#FFF176', highlightDark: '#F9A825', moveFrom: 'rgba(30,120,40,0.5)',  moveTo: 'rgba(30,120,40,0.5)' },
+  'obsidian':      { label: 'Obsidian', category: 'Exclusivo', light: '#2C2C2C', dark: '#1A1A1A', highlight: '#8B5CF6', highlightDark: '#6D28D9', moveFrom: 'rgba(120,60,220,0.5)', moveTo: 'rgba(120,60,220,0.5)' },
+  'coral':         { label: 'Coral',    category: 'Exclusivo', light: '#FFF0EB', dark: '#D05A3A', highlight: '#FFD700', highlightDark: '#FFC200', moveFrom: 'rgba(200,60,20,0.5)',  moveTo: 'rgba(200,60,20,0.5)' },
+  // "Brasil" — verde e amarelo, tabuleiro clássico bem legível (casa creme + verde de alto contraste).
+  'brasil': { label: 'Brasil', category: 'Exclusivo', light: '#F5F0D8', dark: '#2E7D32', highlight: '#FFCC00', highlightDark: '#E6B800', moveFrom: 'rgba(255,204,0,0.4)', moveTo: 'rgba(255,204,0,0.4)' },
 
 } as const
 
@@ -78,6 +80,12 @@ export const PIECE_SETS: Record<PieceSetName, PieceSet> = {
 }
 
 export const UI_THEMES: Record<UIThemeName, UITheme> = {
+  // "Arcade Mostarda" — visual padrão do app: base escura neutra (estilo chess.com/chessigma) com o
+  // mostarda concentrado só no accent (botões, destaques, seleção) em vez de lavar toda superfície
+  // de amarelo. Texto creme quente, sombra dura bem escura nos botões pra dar a cara de botão de
+  // arcade físico, "empurrado" pra dentro quando clicado.
+  'arcade-mostarda': { label: 'Arcade Mostarda', bg: '#17140D', surface: '#211B10', surface2: '#2E2510', accent: '#E3A61D', text: '#F3E9D2', textMuted: '#9C8F72', border: '#3A311C', shadowHard: '#000000', onAccent: '#1B1204' },
+  'brasil':        { label: 'Brasil',          bg: '#F6F9F2', surface: '#FFFFFF', surface2: '#EAF2E2', accent: '#2E7D32', text: '#16231A', textMuted: '#5C6E5F', border: '#DCE6D4' },
   'dark-classic':  { label: 'Dark Classic',    bg: '#1a1a2e', surface: '#16213e', surface2: '#0f3460', accent: '#e2b96a', text: '#e0e0e0', textMuted: '#8892a4', border: '#2a3654' },
   'dark-slate':    { label: 'Dark Slate',      bg: '#0d1117', surface: '#161b22', surface2: '#21262d', accent: '#58a6ff', text: '#c9d1d9', textMuted: '#8b949e', border: '#30363d' },
   'dark-coffee':   { label: 'Dark Coffee',     bg: '#1C1410', surface: '#2C2018', surface2: '#3D2E20', accent: '#C8A97E', text: '#E8D5B7', textMuted: '#9A8070', border: '#4A3828' },

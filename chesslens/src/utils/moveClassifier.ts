@@ -2,6 +2,8 @@ export type MoveQuality =
   | 'brilliant' | 'excellent' | 'book' | 'best' | 'great'
   | 'good' | 'inaccuracy' | 'mistake' | 'miss' | 'blunder'
 
+// Paleta de alto contraste, cada categoria numa cor bem distinta das vizinhas — prioridade é
+// dar pra reconhecer a classificação de relance na lista de lances, sem confundir uma com outra.
 export const QUALITY_CONFIG: Record<MoveQuality, { symbol: string; color: string; label: string; bg: string }> = {
   brilliant:  { symbol: '‼',  color: '#1BACA6', label: 'Brilhante',      bg: '#0D5E5B' },
   excellent:  { symbol: '!',  color: '#5C8BB0', label: 'Excelente',      bg: '#2A4A63' },
@@ -19,6 +21,15 @@ export const QUALITY_CONFIG: Record<MoveQuality, { symbol: string; color: string
 export const QUALITY_ORDER: MoveQuality[] = [
   'brilliant', 'excellent', 'book', 'best', 'great', 'good', 'inaccuracy', 'mistake', 'miss', 'blunder',
 ]
+
+/** Converte a cor (hex) de uma classificação para rgba com a transparência pedida. */
+export function qualityAlphaColor(quality: MoveQuality, alpha: number): string {
+  const hex = QUALITY_CONFIG[quality].color.replace('#', '')
+  const r = parseInt(hex.slice(0, 2), 16)
+  const g = parseInt(hex.slice(2, 4), 16)
+  const b = parseInt(hex.slice(4, 6), 16)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
 
 const PIECE_VALUES: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9 }
 

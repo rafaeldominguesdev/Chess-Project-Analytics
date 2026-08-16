@@ -5,9 +5,9 @@ import { UI_THEMES, BOARD_THEMES } from '../utils/boardThemes'
 const STORAGE_KEY = 'chesslens-theme'
 
 const DEFAULT_THEME: ThemeConfig = {
-  boardTheme: 'chesscom-walnut',
+  boardTheme: 'chesscom-green',
   pieceSet: 'cburnett',
-  uiTheme: 'chesscom-dark',
+  uiTheme: 'arcade-mostarda',
   showCoordinates: true,
   showLegalMoves: true,
   showLastMove: true,
@@ -16,6 +16,11 @@ const DEFAULT_THEME: ThemeConfig = {
   boardSize: 'auto',
   soundEnabled: true,
 }
+
+// Defaults antigos — quem tinha isso salvo nunca escolheu um tema de propósito,
+// então migra pro novo default (arcade mostarda) também.
+const OLD_DEFAULT_BOARD_THEMES = new Set(['chesscom-walnut', 'obsidian-gold', 'brasil'])
+const OLD_DEFAULT_UI_THEMES = new Set(['obsidian-gold', 'brasil', 'chesscom-dark'])
 
 interface ThemeContextValue {
   theme: ThemeConfig
@@ -43,6 +48,10 @@ function applyUITheme(uiTheme: UIThemeName) {
   root.style.setProperty('--text', t.text)
   root.style.setProperty('--text-muted', t.textMuted)
   root.style.setProperty('--border', t.border)
+  if (t.shadowHard) root.style.setProperty('--shadow-hard', t.shadowHard)
+  else root.style.removeProperty('--shadow-hard')
+  if (t.onAccent) root.style.setProperty('--on-accent', t.onAccent)
+  else root.style.removeProperty('--on-accent')
 }
 
 function applyBoardTheme(boardTheme: BoardThemeName) {
@@ -62,6 +71,9 @@ function loadSaved(): ThemeConfig {
       // Guarda contra nomes de tema antigos que já não existem
       if (!BOARD_THEMES[merged.boardTheme]) merged.boardTheme = DEFAULT_THEME.boardTheme
       if (!UI_THEMES[merged.uiTheme]) merged.uiTheme = DEFAULT_THEME.uiTheme
+      // Quem ainda está num default antigo (nunca customizou de propósito) ganha o novo visual.
+      if (OLD_DEFAULT_BOARD_THEMES.has(merged.boardTheme)) merged.boardTheme = DEFAULT_THEME.boardTheme
+      if (OLD_DEFAULT_UI_THEMES.has(merged.uiTheme)) merged.uiTheme = DEFAULT_THEME.uiTheme
       return merged
     }
   } catch {}

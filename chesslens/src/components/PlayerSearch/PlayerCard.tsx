@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import type { ChessComProfile } from '../../hooks/usePlayerSearch'
 import { countryCodeToFlagEmoji, countryUrlToCode } from '../../utils/flags'
+import { PremiumIcon, isPremiumStatus } from '../PremiumIcon'
+import { ExternalLinkIcon } from './icons'
 
 function hashColor(str: string): string {
   let h = 5381
@@ -38,62 +40,107 @@ function formatLastSeen(lastOnline: number | null): { label: string; recent: boo
   return { label: `Visto há ${ago}`, recent: false }
 }
 
-/** Cabeçalho do perfil: avatar, username, título, bandeira, data de cadastro e atividade. */
+function formatFollowers(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}mil`
+  return String(n)
+}
+
+/** Cabeçalho do perfil: avatar, username, título, bandeira, atividade, seguidores e local. */
 export function PlayerCard({ profile }: { profile: ChessComProfile }) {
   const bg = useMemo(() => hashColor(profile.username), [profile.username])
   const flag = countryCodeToFlagEmoji(countryUrlToCode(profile.country))
   const joinedLabel = formatJoined(profile.joined)
   const lastSeen = formatLastSeen(profile.last_online)
   const initial = profile.username.slice(0, 1).toUpperCase()
+  const isPremium = isPremiumStatus(profile.status)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '8px 0 4px' }}>
-      {profile.avatar ? (
-        <img
-          src={profile.avatar}
-          alt={profile.username}
-          style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--border)' }}
-        />
-      ) : (
-        <div
-          style={{
-            width: 96, height: 96, borderRadius: '50%',
-            background: bg,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#fff', fontWeight: 800, fontSize: 36,
-            border: '3px solid var(--border)',
-          }}
-        >
-          {initial}
-        </div>
-      )}
+    <div className="cl-stat-pop" style={{
+      position: 'relative', overflow: 'hidden',
+      background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 14,
+      boxShadow: '0 10px 28px -10px rgba(0,0,0,0.4)',
+      padding: '22px 22px 20px',
+    }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: 'linear-gradient(90deg, #3a6b1f, #81b64c)' }} />
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
-        {profile.title && (
-          <span style={{
-            fontSize: 12, fontWeight: 800, color: '#fff',
-            background: '#b5382e', padding: '2px 6px', borderRadius: 4,
-          }}>
-            {profile.title}
-          </span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+        {profile.avatar ? (
+          <img
+            src={profile.avatar}
+            alt={profile.username}
+            style={{ width: 100, height: 100, borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--border)', flexShrink: 0 }}
+          />
+        ) : (
+          <div
+            style={{
+              width: 100, height: 100, borderRadius: '50%', flexShrink: 0,
+              background: bg,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#fff', fontWeight: 800, fontSize: 38,
+              border: '3px solid var(--border)',
+            }}
+          >
+            {initial}
+          </div>
         )}
-        <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)' }}>{profile.username}</span>
-        {flag && <span style={{ fontSize: 20 }}>{flag}</span>}
-      </div>
 
-      {profile.name && (
-        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: -8 }}>{profile.name}</div>
-      )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0, flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
+            {profile.title && (
+              <span style={{
+                fontSize: 12, fontWeight: 800, color: '#fff',
+                background: '#b5382e', padding: '2px 7px', borderRadius: 5,
+              }}>
+                {profile.title}
+              </span>
+            )}
+            {isPremium && <PremiumIcon size={19} />}
+            <span className="cl-display" style={{ fontSize: 24, fontWeight: 700, color: 'var(--text)', overflowWrap: 'anywhere' }}>{profile.username}</span>
+            {flag && <span style={{ fontSize: 20 }}>{flag}</span>}
+            {profile.is_streamer && (
+              <span style={{
+                fontSize: 10.5, fontWeight: 800, color: '#fff',
+                background: '#9146FF', padding: '2px 7px', borderRadius: 5,
+              }}>
+                STREAMER
+              </span>
+            )}
+          </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-        {joinedLabel && (
-          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{joinedLabel}</div>
-        )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: lastSeen.recent ? '#27ae60' : 'var(--text-muted)', fontWeight: lastSeen.recent ? 600 : 400 }}>
-          {lastSeen.recent && (
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#27ae60', display: 'inline-block' }} />
+          {profile.name && (
+            <div style={{ fontSize: 13.5, color: 'var(--text-muted)' }}>{profile.name}</div>
           )}
-          {lastSeen.label}
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, marginTop: 2 }}>
+            {joinedLabel && (
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{joinedLabel}</span>
+            )}
+            {profile.location && (
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>· {profile.location}</span>
+            )}
+            {profile.followers !== null && profile.followers > 0 && (
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                · <strong style={{ color: 'var(--text)' }}>{formatFollowers(profile.followers)}</strong> seguidores
+              </span>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 2 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: lastSeen.recent ? '#3ecf6c' : 'var(--text-muted)', fontWeight: lastSeen.recent ? 700 : 400 }}>
+              {lastSeen.recent && (
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#3ecf6c', display: 'inline-block', boxShadow: '0 0 0 3px rgba(62,207,108,0.2)' }} />
+              )}
+              {lastSeen.label}
+            </span>
+            <a
+              href={`https://www.chess.com/member/${profile.username}`}
+              target="_blank"
+              rel="noreferrer"
+              style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}
+            >
+              Ver perfil <ExternalLinkIcon width={11} height={11} />
+            </a>
+          </div>
         </div>
       </div>
     </div>

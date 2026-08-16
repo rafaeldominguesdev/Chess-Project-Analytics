@@ -9,17 +9,20 @@ const PRESET_SIZES: Record<BoardSize, number | null> = {
 }
 
 const MIN_AUTO = 320
-const DEFAULT_MAX_AUTO = 760
-const DEFAULT_WIDTH_FACTOR = 0.75
-const DEFAULT_VIEWPORT_H_RESERVE = 270 // navbar + cards de jogador + controles
+const DEFAULT_MAX_AUTO = 1060
+const DEFAULT_WIDTH_FACTOR = 0.94
+// Cards de jogador (compactos) + paddings — controles agora ficam ao lado do tabuleiro, não somam altura.
+const DEFAULT_VIEWPORT_H_RESERVE = 136
 
 interface BoardSizeOptions {
   /** Fração da largura do container que o tabuleiro deve ocupar (0-1). */
   widthFactor?: number
   /** Teto absoluto em px, mesmo que o container seja bem largo. */
   maxSize?: number
-  /** Altura reservada (navbar, barras de jogador, controles) subtraída do viewport. */
+  /** Altura reservada (cards de jogador, paddings) subtraída do viewport. */
   heightReserve?: number
+  /** Largura extra fixa (fora do quadrado do tabuleiro) ocupada por irmãos na mesma linha — ex: EvalBar + coluna de controles. */
+  chromeWidth?: number
 }
 
 /**
@@ -28,16 +31,16 @@ interface BoardSizeOptions {
  * sempre limitado pela altura de viewport restante (pra não estourar verticalmente).
  */
 export function useBoardSize(preset: BoardSize = 'auto', options: BoardSizeOptions = {}) {
-  const { widthFactor = DEFAULT_WIDTH_FACTOR, maxSize = DEFAULT_MAX_AUTO, heightReserve = DEFAULT_VIEWPORT_H_RESERVE } = options
+  const { widthFactor = DEFAULT_WIDTH_FACTOR, maxSize = DEFAULT_MAX_AUTO, heightReserve = DEFAULT_VIEWPORT_H_RESERVE, chromeWidth = 0 } = options
   const containerRef = useRef<HTMLDivElement>(null)
   const [boardWidth, setBoardWidth] = useState(480)
 
   const calcFromWidth = useCallback((containerWidth: number) => {
     const availableH = window.innerHeight - heightReserve
-    const target = containerWidth > 0 ? containerWidth * widthFactor : 480
+    const target = containerWidth > 0 ? (containerWidth - chromeWidth) * widthFactor : 480
     const size = Math.min(target, availableH, maxSize)
     setBoardWidth(Math.max(MIN_AUTO, Math.round(size)))
-  }, [widthFactor, maxSize, heightReserve])
+  }, [widthFactor, maxSize, heightReserve, chromeWidth])
 
   useEffect(() => {
     if (preset !== 'auto') {

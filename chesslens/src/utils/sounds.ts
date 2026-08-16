@@ -1,8 +1,8 @@
-// Sons de lance no estilo chess.com/lichess. Usamos os efeitos sonoros
-// abertos (CC0) hospedados pela lichess.org — não é permitido redistribuir
-// os arquivos proprietários do chess.com, mas o "feel" (som curto de toque,
-// captura mais seca, alerta agudo de xeque) é o mesmo em qualquer site de xadrez.
-const SOUND_BASE = 'https://lichess1.org/assets/sound/standard'
+// Sons de lance. Não dá pra usar os sons do chess.com de verdade — são proprietários, não é
+// permitido redistribuir. Usamos o tema "sfx" da lichess.org (aberto, hospedado publicamente):
+// é mais seco/percussivo que o tema "standard" deles, mais perto do "clack" satisfatório do
+// chess.com do que o som mais suave de tabuleiro de madeira do padrão da lichess.
+const SOUND_BASE = 'https://lichess1.org/assets/sound/sfx'
 
 const SOUND_FILES = {
   move: 'Move.mp3',

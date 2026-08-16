@@ -33,8 +33,6 @@ function extractGameInfo(game: Chess): GameInfo {
     result: h['Result'] ?? '*',
     date: h['Date'] ?? '?',
     event: h['Event'] ?? '?',
-    opening: h['Opening'] ?? '',
-    eco: h['ECO'] ?? '',
     termination: h['Termination'] ?? '',
   }
 }

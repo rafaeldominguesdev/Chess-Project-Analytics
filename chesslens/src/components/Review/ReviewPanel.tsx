@@ -1,20 +1,57 @@
+import { useMemo } from 'react'
 import type { ClassifiedMove, GameInfo } from '../../types/chess.types'
-import type { StockfishEval } from '../../hooks/useStockfish'
-import { calcAccuracy } from '../../utils/moveClassifier'
-import { AiCommentary } from './AiCommentary'
 import { EvalGraph } from '../Analysis/EvalGraph'
 import { PlayerComparison } from '../Analysis/PlayerComparison'
-import { OpeningInfo } from '../Analysis/OpeningInfo'
-import { EnginePanel } from '../Analysis/EnginePanel'
 import { MoveList } from '../Analysis/MoveList'
 import { Panel } from '../Panel'
+import { GameDetailsPanel } from './GameDetailsPanel'
+import { ReviewShieldIcon } from './icons'
+import { identifyOpening } from '../../utils/openingsDatabase'
+import { BoardControls } from '../Board/BoardControls'
+
+/** Barra de progresso animada da análise do Stockfish rodando em segundo plano. */
+function AnalysisProgress({ progress }: { progress: { done: number; total: number } }) {
+  const pct = progress.total > 0 ? Math.min(100, Math.round((progress.done / progress.total) * 100)) : 0
+  const finished = pct >= 100
+
+  return (
+    <div className="cl-fade-in" style={{ marginBottom: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5, gap: 8 }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, minWidth: 0 }}>
+          <span
+            style={{
+              width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
+              background: finished ? '#27ae60' : 'var(--accent)',
+              animation: finished ? 'none' : 'cl-pulse-dot 1.1s ease-in-out infinite',
+            }}
+          />
+          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {finished ? 'Análise do Stockfish concluída' : 'Stockfish analisando a partida…'}
+          </span>
+        </span>
+        <span className="cl-display" style={{ fontSize: 11.5, color: 'var(--text)', fontWeight: 800, flexShrink: 0 }}>
+          {pct}%
+        </span>
+      </div>
+      <div style={{ height: 5, borderRadius: 3, background: 'var(--surface2)', overflow: 'hidden' }}>
+        <div
+          style={{
+            height: '100%', width: `${pct}%`, borderRadius: 3,
+            background: finished ? '#27ae60' : 'var(--accent)',
+            transition: 'width 0.35s ease, background 0.3s ease',
+          }}
+        />
+      </div>
+      {/* keyframe local do dot pulsante — não mexe em index.css, que é de outro agente */}
+      <style>{`@keyframes cl-pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }`}</style>
+    </div>
+  )
+}
 
 interface ReviewPanelProps {
   gameInfo: GameInfo | null
-  evaluation: StockfishEval | null
-  isReady: boolean
-  isAnalyzing: boolean
-  isLoaded: boolean
+  /** false = tela de resumo (fotos + precisão + White vs Black); true = lances com avaliação. */
+  reviewStarted: boolean
   moves: ClassifiedMove[]
   currentMoveIndex: number
   onGoTo: (index: number) => void
@@ -23,28 +60,35 @@ interface ReviewPanelProps {
   whiteAvatar?: string | null
   blackAvatar?: string | null
   onStartReview?: () => void
+  isLoaded: boolean
+  onFirst?: () => void
+  onPrev?: () => void
+  onNext?: () => void
+  onLast?: () => void
+  onFlipBoard?: () => void
 }
 
 export function ReviewPanel({
-  gameInfo, evaluation, isReady, isAnalyzing, isLoaded,
+  gameInfo, reviewStarted,
   moves, currentMoveIndex, onGoTo, progress, evals,
   whiteAvatar, blackAvatar, onStartReview,
+  isLoaded, onFirst, onPrev, onNext, onLast, onFlipBoard,
 }: ReviewPanelProps) {
   const whiteName = gameInfo?.white ?? 'Brancas'
   const blackName = gameInfo?.black ?? 'Pretas'
-  const hasClassifications = isLoaded && moves.some((m) => m.classification)
 
-  const whiteAccuracy = calcAccuracy(moves, 'w')
-  const blackAccuracy = calcAccuracy(moves, 'b')
-  const blunderCount = moves.filter((m) => m.classification === 'blunder').length
-  const brilliantCount = moves.filter((m) => m.classification === 'brilliant').length
+  const opening = useMemo(() => {
+    if (moves.length === 0) return null
+    const match = identifyOpening(moves.map((m) => m.san))
+    return match ? `${match.eco} · ${match.name}` : null
+  }, [moves])
 
   return (
-    <aside style={{ width: 340, flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+    <aside style={{ width: 360, flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
       <div
         style={{
-          display: 'flex', flexDirection: 'column', gap: 12,
-          overflowY: 'auto', maxHeight: 'calc(100vh - 88px)',
+          display: 'flex', flexDirection: 'column', gap: 10,
+          overflowY: 'auto', maxHeight: 'calc(100vh - 20px)',
           paddingRight: 2,
         }}
       >
@@ -52,74 +96,72 @@ export function ReviewPanel({
         <div
           style={{
             display: 'flex', alignItems: 'center', gap: 8,
-            padding: '10px 14px', borderRadius: 12,
+            padding: '9px 12px', borderRadius: 8,
             background: 'var(--surface)', border: '1px solid var(--border)',
           }}
         >
-          <span style={{ fontSize: 16 }}>⭐</span>
+          <ReviewShieldIcon width={18} height={18} style={{ color: '#27ae60', flexShrink: 0 }} />
           <h2 style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)', flex: 1 }}>Revisão da Partida</h2>
         </div>
 
-        {/* Comentário de IA (baseado em regras, não é um LLM real) */}
-        {isLoaded && (
-          <div style={{ padding: 12, borderRadius: 12, background: 'var(--surface)', border: '1px solid var(--border)' }}>
-            <AiCommentary
-              result={gameInfo?.result ?? '*'}
-              whiteAccuracy={whiteAccuracy}
-              blackAccuracy={blackAccuracy}
-              blunderCount={blunderCount}
-              brilliantCount={brilliantCount}
-              moveCount={moves.length}
-            />
+        {/* Ficha da partida (evento, resultado, término) — sempre visível */}
+        {gameInfo && <GameDetailsPanel gameInfo={gameInfo} opening={opening} />}
+
+        {!reviewStarted ? (
+          <div key="summary" className="cl-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {/* Tela de resumo: fotos lado a lado + precisão + comparação por categoria.
+                O Stockfish já está analisando em segundo plano, então esses números
+                vão se populando sozinhos antes mesmo de clicar em "Começar a Revisão". */}
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, boxShadow: '0 4px 16px rgba(0,0,0,0.22)', padding: 13 }}>
+              {progress && <AnalysisProgress progress={progress} />}
+              <PlayerComparison
+                moves={moves}
+                whiteName={whiteName}
+                blackName={blackName}
+                whiteAvatar={whiteAvatar}
+                blackAvatar={blackAvatar}
+                result={gameInfo?.result}
+                termination={gameInfo?.termination}
+              />
+            </div>
+
+            <button
+              onClick={onStartReview}
+              className="cl-btn cl-btn-accent"
+              style={{ marginTop: 4, padding: '13px 0', fontSize: 14.5 }}
+            >
+              Começar a Revisão
+            </button>
+          </div>
+        ) : (
+          <div key="review" className="cl-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {/* Tela de revisão: gráfico + lances com avaliação por lance */}
+            <div className="cl-row-in" style={{ animationDelay: '30ms' }}>
+              <Panel icon="📈" title="Avaliação" right={progress ? <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{Math.round((progress.done / progress.total) * 100)}%</span> : undefined}>
+                <EvalGraph evals={evals} currentPosition={currentMoveIndex + 1} onSeek={(i) => onGoTo(i - 1)} />
+              </Panel>
+            </div>
+
+            <div className="cl-row-in" style={{ animationDelay: '70ms' }}>
+              <Panel icon="📜" title="Lances" right={progress ? <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>analisando…</span> : undefined}>
+                <MoveList moves={moves} currentMoveIndex={currentMoveIndex} onGoTo={onGoTo} />
+              </Panel>
+            </div>
+
+            <div className="cl-row-in" style={{ animationDelay: '100ms' }}>
+              <BoardControls
+                isLoaded={isLoaded}
+                currentMoveIndex={currentMoveIndex}
+                totalMoves={moves.length}
+                onFirst={onFirst}
+                onPrev={onPrev}
+                onNext={onNext}
+                onLast={onLast}
+                onFlip={onFlipBoard}
+              />
+            </div>
           </div>
         )}
-
-        {/* Gráfico de avaliação */}
-        {isLoaded && (
-          <Panel icon="📈" title="Avaliação" right={progress ? <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{Math.round((progress.done / progress.total) * 100)}%</span> : undefined}>
-            <EvalGraph evals={evals} currentPosition={currentMoveIndex + 1} onSeek={(i) => onGoTo(i - 1)} />
-          </Panel>
-        )}
-
-        {/* Precisão + contagem por categoria (10 classificações) */}
-        {hasClassifications && (
-          <Panel icon="⚔️" title="White vs Black">
-            <PlayerComparison
-              moves={moves}
-              whiteName={whiteName}
-              blackName={blackName}
-              whiteAvatar={whiteAvatar}
-              blackAvatar={blackAvatar}
-            />
-          </Panel>
-        )}
-
-        {/* Painéis já existentes — mantidos abaixo do novo conteúdo */}
-        {gameInfo && <OpeningInfo gameInfo={gameInfo} />}
-
-        <EnginePanel evaluation={evaluation} isReady={isReady} isAnalyzing={isAnalyzing} isLoaded={isLoaded} />
-
-        <Panel icon="📜" title="Lances" right={progress ? <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>analisando…</span> : undefined}>
-          <MoveList moves={moves} currentMoveIndex={currentMoveIndex} onGoTo={onGoTo} />
-        </Panel>
-
-        {/* Botão fixo no rodapé do painel */}
-        <button
-          onClick={onStartReview}
-          disabled={!isLoaded}
-          style={{
-            position: 'sticky', bottom: 0,
-            marginTop: 4, padding: '13px 0',
-            borderRadius: 10, border: 'none',
-            background: isLoaded ? 'var(--accent)' : 'var(--surface2)',
-            color: isLoaded ? '#fff' : 'var(--text-muted)',
-            fontSize: 14, fontWeight: 800,
-            cursor: isLoaded ? 'pointer' : 'not-allowed',
-            boxShadow: '0 -8px 16px -4px rgba(0,0,0,0.35)',
-          }}
-        >
-          Começar a Revisão
-        </button>
       </div>
     </aside>
   )
