@@ -76,7 +76,7 @@ export const UI_THEMES: Record<UIThemeName, UITheme> = {
   // "Âmbar Noturno" — visual padrão do app: fundo quase preto, painéis cinza-carvão,
   // destaque âmbar/dourado. Botões e cards têm visual "físico"/skeumórfico (ver .cl-btn/
   // .cl-card em index.css) — sombra dupla simulando profundidade, cantos bem arredondados.
-  'amber-noir':    { label: 'Âmbar Noturno',   bg: '#0A0A0B', surface: '#1A1A1D', accent: '#E8A93C', text: '#ECEAE6', textMuted: '#8C8A85', border: '#2C2C30', shadowBtn: '#000000' },
+  'amber-noir':    { label: 'Âmbar Noturno',   bg: '#000000', surface: '#1A1A1D', accent: '#E8A93C', text: '#ECEAE6', textMuted: '#8C8A85', border: '#2C2C30', shadowBtn: '#000000' },
   'brasil':        { label: 'Brasil',          bg: '#F6F9F2', surface: '#FFFFFF', accent: '#2E7D32', text: '#16231A', textMuted: '#5C6E5F', border: '#DCE6D4' },
   'dark-classic':  { label: 'Dark Classic',    bg: '#1a1a2e', surface: '#16213e', accent: '#e2b96a', text: '#e0e0e0', textMuted: '#8892a4', border: '#2a3654' },
   'dark-slate':    { label: 'Dark Slate',      bg: '#0d1117', surface: '#161b22', accent: '#58a6ff', text: '#c9d1d9', textMuted: '#8b949e', border: '#30363d' },

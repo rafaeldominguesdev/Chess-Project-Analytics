@@ -4,9 +4,9 @@ import { coachComment } from '../../utils/coachComments'
 import { MoveQualityBadge } from '../Board/MoveQualityBadge'
 
 // Recorte do rosto da capivara a partir da hero image (2560×1440), sem precisar de um asset
-// novo — mesmo mascote da Home (`/hero-capybara.png`), só que enquadrado como avatar redondo.
+// novo — mesmo mascote da Home (`/hero-bg.png`), só que enquadrado como avatar redondo.
 const CAPY_IMG = { width: 2560, height: 1440 }
-const CAPY_FACE_CROP = { x: 294, y: 115, size: 768 }
+const CAPY_FACE_CROP = { x: 260, y: 80, size: 900 }
 
 function capybaraAvatarStyle(size: number): CSSProperties {
   const scale = size / CAPY_FACE_CROP.size
@@ -15,7 +15,7 @@ function capybaraAvatarStyle(size: number): CSSProperties {
     height: size,
     borderRadius: '50%',
     flexShrink: 0,
-    backgroundImage: 'url(/hero-capybara.png)',
+    backgroundImage: 'url(/hero-bg.png?v=2)',
     backgroundSize: `${CAPY_IMG.width * scale}px ${CAPY_IMG.height * scale}px`,
     backgroundPosition: `${-CAPY_FACE_CROP.x * scale}px ${-CAPY_FACE_CROP.y * scale}px`,
     border: '2px solid var(--color-blue-bright)',
