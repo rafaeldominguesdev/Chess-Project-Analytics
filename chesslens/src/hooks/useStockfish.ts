@@ -24,11 +24,17 @@ const ENGINE_URL = '/stockfish/stockfish-18-single.js'
 // de iniciar a próxima.
 type EngineState = 'idle' | 'searching' | 'stopping'
 
-export function useStockfish(targetDepth = 15) {
+/**
+ * @param targetDepth profundidade de busca alvo — só publica quando o engine chega nela.
+ * @param multiPv quantas linhas melhores pedir ao engine (1 = só a melhor, comportamento
+ *   original). Com multiPv > 1, `lines[0]` é a melhor, `lines[1]` a segunda melhor, etc. —
+ *   usado pelo tabuleiro de análise livre pra desenhar mais de uma seta de sugestão.
+ */
+export function useStockfish(targetDepth = 15, multiPv = 1) {
   const worker = useRef<Worker | null>(null)
   const [isReady, setIsReady] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [result, setResult] = useState<StockfishEval | null>(null)
+  const [lines, setLines] = useState<(StockfishEval | null)[]>(() => Array(multiPv).fill(null))
 
   const engineState = useRef<EngineState>('idle')
   const activeFen = useRef<string>('')   // posição da busca em andamento no engine agora
@@ -36,6 +42,8 @@ export function useStockfish(targetDepth = 15) {
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const targetDepthRef = useRef(targetDepth)
   targetDepthRef.current = targetDepth
+  const multiPvRef = useRef(multiPv)
+  multiPvRef.current = multiPv
 
   const sendSearch = useCallback((fen: string) => {
     if (!worker.current) return
@@ -43,6 +51,9 @@ export function useStockfish(targetDepth = 15) {
     queuedFen.current = null
     engineState.current = 'searching'
     setIsAnalyzing(true)
+    // Linhas da posição anterior não valem mais pra essa busca nova — limpa antes de começar
+    // a preencher de novo, senão a 2ª/3ª sugestão fica "grudada" da posição anterior por um instante.
+    setLines(Array(multiPvRef.current).fill(null))
     worker.current.postMessage(`position fen ${fen}`)
     worker.current.postMessage(`go depth ${targetDepthRef.current}`)
   }, [])
@@ -63,6 +74,7 @@ export function useStockfish(targetDepth = 15) {
         // Configura o engine assim que o UCI responde
         w.postMessage('setoption name Hash value 64')
         w.postMessage('setoption name Threads value 1')
+        w.postMessage(`setoption name MultiPV value ${multiPvRef.current}`)
         w.postMessage('isready')
         return
       }
@@ -77,21 +89,29 @@ export function useStockfish(targetDepth = 15) {
         // linha "info" que ainda chegar é resíduo da posição antiga — descarta sem aplicar.
         if (engineState.current !== 'searching') return
 
-        const depthMatch = line.match(/\bdepth (\d+)/)
-        const cpMatch    = line.match(/\bscore cp (-?\d+)/)
-        const mateMatch  = line.match(/\bscore mate (-?\d+)/)
-        const pvMatch    = line.match(/\bpv (.+)/)
+        const depthMatch  = line.match(/\bdepth (\d+)/)
+        const multipvMatch = line.match(/\bmultipv (\d+)/)
+        const cpMatch     = line.match(/\bscore cp (-?\d+)/)
+        const mateMatch   = line.match(/\bscore mate (-?\d+)/)
+        const pvMatch     = line.match(/\bpv (.+)/)
 
         const depth = depthMatch ? parseInt(depthMatch[1]) : 0
         // Só aceita a profundidade final: publicar cada passo intermediário (8, 9, 10...)
         // fazia a barra de avaliação reanimar várias vezes por lance (efeito de "tremida").
         if (depth < targetDepthRef.current) return
 
+        const rank = multipvMatch ? parseInt(multipvMatch[1]) : 1
+        if (rank > multiPvRef.current) return // engine pode mandar mais linhas do que pedimos, no instante da troca
+
         const cp   = cpMatch   ? parseInt(cpMatch[1])   : null
         const mate = mateMatch ? parseInt(mateMatch[1]) : null
         const pv   = pvMatch   ? pvMatch[1].trim().split(' ') : []
 
-        setResult({ cp, mate, depth, bestMove: pv[0] ?? null, pv })
+        setLines((prev) => {
+          const next = [...prev]
+          next[rank - 1] = { cp, mate, depth, bestMove: pv[0] ?? null, pv }
+          return next
+        })
         return
       }
 
@@ -110,7 +130,12 @@ export function useStockfish(targetDepth = 15) {
         if (wasSearching) {
           const parts = line.split(' ')
           const bestMove = parts[1] && parts[1] !== '(none)' ? parts[1] : null
-          setResult((prev) => (prev ? { ...prev, bestMove } : prev))
+          setLines((prev) => {
+            if (!prev[0]) return prev
+            const next = [...prev]
+            next[0] = { ...next[0]!, bestMove }
+            return next
+          })
         }
         setIsAnalyzing(false)
       }
@@ -160,6 +185,9 @@ export function useStockfish(targetDepth = 15) {
     setIsAnalyzing(false)
   }, [])
 
-  // `evaluation` é um alias de `result` para não quebrar consumidores existentes
-  return { result, evaluation: result, isReady, isAnalyzing, analyze, stop }
+  const result = lines[0] ?? null
+
+  // `evaluation` é um alias de `result` (linha 1 / melhor linha) para não quebrar consumidores
+  // existentes que só conheciam multiPv=1. `lines` só importa pra quem pediu multiPv > 1.
+  return { result, evaluation: result, lines, isReady, isAnalyzing, analyze, stop }
 }

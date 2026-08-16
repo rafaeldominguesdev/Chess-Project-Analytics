@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Chessboard } from 'react-chessboard'
 import { Chess } from 'chess.js'
 import type { Square } from 'chess.js'
@@ -13,6 +13,10 @@ import type { MoveQuality } from '../../utils/moveClassifier'
 
 const EVAL_BAR_WIDTH = 24
 const ROW_GAP = 8
+// Cor/espessura das setas desenhadas à mão (botão direito arrastando) — âmbar, pra não confundir
+// com o verde das sugestões do engine (`topMoveArrows`), que ocupam o mesmo overlay.
+const USER_ARROW_COLOR = '#E8A93C'
+const USER_ARROW_WIDTH_RATIO = 0.16 // fração do tamanho da casa
 
 /** Largura extra (fora do quadrado do tabuleiro) ocupada pela barra de avaliação.
  *  Usado por quem calcula `boardWidth` pra não estourar a largura do container. */
@@ -45,6 +49,10 @@ interface ChessBoardProps {
   interactive?: boolean
   boardOrientation?: 'white' | 'black'
   extraArrows?: { startSquare: string; endSquare: string; color: string }[]
+  /** Setas com ESPESSURA por seta (a lib só dá pra pintar de cor, não engrossar) — usado pro
+   *  tabuleiro de análise livre mostrar as N melhores opções ranqueadas (1ª mais grossa). Quando
+   *  presente, substitui a seta única de ameaça/melhor-lance (evaluation.bestMove) — não some as duas. */
+  topMoveArrows?: { from: string; to: string; color: string; strokeWidth: number; opacity?: number }[]
   onPieceDrop?: (args: PieceDropArgs) => boolean
   /** Casa destacada com um anel pulsante (ex: dica de "essa é a peça que precisa mover"). */
   hintSquare?: string | null
@@ -64,6 +72,7 @@ export function ChessBoard({
   interactive = false,
   boardOrientation = 'white',
   extraArrows,
+  topMoveArrows,
   onPieceDrop,
   hintSquare,
 }: ChessBoardProps) {
@@ -75,6 +84,13 @@ export function ChessBoard({
   // se for captura. Some sozinho quando a posição muda (o lance foi feito) ou perde o foco.
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null)
   useEffect(() => setSelectedSquare(null), [fen])
+
+  // Setas desenhadas à mão (botão direito segurando e arrastando até outra casa, igual
+  // lichess/chess.com) — clique direito sem arrastar (solta na mesma casa) limpa todas de uma
+  // vez. Somem sozinhas quando a posição muda, junto com a seleção acima.
+  const [drawnArrows, setDrawnArrows] = useState<{ from: string; to: string }[]>([])
+  const dragStartSquareRef = useRef<string | null>(null)
+  useEffect(() => setDrawnArrows([]), [fen])
 
   // Detecta xeque/xeque-mate a partir da posição atual pra avisar visualmente — brilho vermelho
   // na casa do rei ameaçado, e um "#" ao lado se for mate mesmo (quem está em cheque é sempre
@@ -208,6 +224,65 @@ export function ChessBoard({
     return squareOrigin(checkInfo.square, boardOrientation, squareSize)
   }, [checkInfo, boardOrientation, squareSize])
 
+  // Junta as duas fontes de seta num só array antes de calcular a geometria: as sugestões do
+  // engine (`topMoveArrows`, prop) e as desenhadas à mão pelo usuário (botão direito, estado
+  // interno acima) — mesmo desenho pras duas, só muda cor/espessura.
+  const arrowSpecs = useMemo(() => {
+    const specs: { from: string; to: string; color: string; strokeWidth: number; opacity: number }[] = []
+    if (topMoveArrows) {
+      for (const a of topMoveArrows) specs.push({ ...a, opacity: a.opacity ?? 0.85 })
+    }
+    const userWidth = Math.max(4, squareSize * USER_ARROW_WIDTH_RATIO)
+    for (const a of drawnArrows) specs.push({ from: a.from, to: a.to, color: USER_ARROW_COLOR, strokeWidth: userWidth, opacity: 0.85 })
+    return specs
+  }, [topMoveArrows, drawnArrows, squareSize])
+
+  // Geometria das setas de espessura variável — a lib só desenha com uma espessura fixa pro
+  // tabuleiro inteiro, então essas são desenhadas à mão num SVG por cima do tabuleiro, com o
+  // mesmo `squareOrigin` usado pelos outros marcadores. Lance de cavalo vira uma única seta "em
+  // L" (o salto de verdade — 2 casas numa direção, 1 na outra) em vez de uma linha reta cruzando
+  // na diagonal por cima de casas que a peça nem passa; sempre UMA seta só, nunca dois segmentos soltos.
+  const customArrows = useMemo(() => {
+    if (arrowSpecs.length === 0) return []
+
+    const center = (square: string) => {
+      const o = squareOrigin(square, boardOrientation, squareSize)
+      return { x: o.left + squareSize / 2, y: o.top + squareSize / 2 }
+    }
+
+    return arrowSpecs.map((a, i) => {
+      const fileOf = (sq: string) => FILES.indexOf(sq[0])
+      const rankOf = (sq: string) => Number(sq[1])
+      const dFile = fileOf(a.to) - fileOf(a.from)
+      const dRank = rankOf(a.to) - rankOf(a.from)
+      const isKnightMove = (Math.abs(dFile) === 2 && Math.abs(dRank) === 1) || (Math.abs(dFile) === 1 && Math.abs(dRank) === 2)
+
+      const start = center(a.from)
+      // Cotovelo do "L": anda a perna LONGA (2 casas) primeiro, na mesma fileira/coluna do
+      // início, depois vira 1 casa — a mesma casa real que o cavalo "sobrevoa" no meio do salto.
+      const elbowSquare = Math.abs(dFile) === 2 ? a.to[0] + a.from[1] : a.from[0] + a.to[1]
+      const points = isKnightMove ? [start, center(elbowSquare)] : [start]
+
+      const endFull = center(a.to)
+      const prev = points[points.length - 1]
+      // Encurta só o ÚLTIMO trecho, ~30% de uma casa antes do centro do destino, senão a ponta
+      // some debaixo da peça — mesmo efeito visual que lichess/chess.com usam nas setas.
+      const dx = endFull.x - prev.x
+      const dy = endFull.y - prev.y
+      const len = Math.hypot(dx, dy) || 1
+      const shorten = squareSize * 0.3
+      points.push({ x: endFull.x - (dx / len) * shorten, y: endFull.y - (dy / len) * shorten })
+
+      return {
+        id: `cl-arrow-${i}-${a.from}${a.to}`,
+        points: points.map((p) => `${p.x},${p.y}`).join(' '),
+        color: a.color,
+        strokeWidth: a.strokeWidth,
+        opacity: a.opacity ?? 0.85,
+      }
+    })
+  }, [arrowSpecs, boardOrientation, squareSize])
+
   // Clicar numa peça seleciona (mostra as bolinhas); clicar numa casa de destino legal já
   // destacada joga o lance ali; qualquer outro clique cancela a seleção. Começar a arrastar
   // uma peça seleciona do mesmo jeito, pra a bolinha já aparecer durante o arraste.
@@ -221,6 +296,31 @@ export function ChessBoard({
     setSelectedSquare(piece && square !== selectedSquare ? square : null)
   }
 
+  // Botão direito segura numa casa e solta em outra → desenha a seta (some sozinha na próxima
+  // jogada). Soltar na MESMA casa (clique direito sem arrastar) limpa todas de uma vez — mesmo
+  // comportamento do lichess/chess.com. Usa os callbacks `onSquareMouseDown/Up` da própria lib
+  // (dão a casa certinha, sem precisar calcular pixel↔casa na mão).
+  function handleSquareMouseDown({ square }: { square: string }, e: React.MouseEvent) {
+    if (e.button !== 2) return
+    dragStartSquareRef.current = square
+  }
+  function handleSquareMouseUp({ square: to }: { square: string }, e: React.MouseEvent) {
+    if (e.button !== 2) return
+    const from = dragStartSquareRef.current
+    dragStartSquareRef.current = null
+    if (!from) return
+    if (to === from) {
+      setDrawnArrows([])
+      return
+    }
+    setDrawnArrows((prev) => {
+      // Repetir a mesma seta remove ela (toggle) — senão só empilha, pra poder marcar quantas
+      // linhas quiser sem precisar limpar tudo e desenhar de novo.
+      const exists = prev.some((a) => a.from === from && a.to === to)
+      return exists ? prev.filter((a) => !(a.from === from && a.to === to)) : [...prev, { from, to }]
+    })
+  }
+
   return (
     <div style={{ display: 'flex', alignItems: 'stretch', gap: ROW_GAP, height: boardWidth }}>
       {showEvalBar && <EvalBar evaluation={evalCp} isMate={evalMate} orientation={boardOrientation} />}
@@ -230,7 +330,9 @@ export function ChessBoard({
           options={{
             position: fen,
             squareStyles,
-            arrows: arrowsOption,
+            // `topMoveArrows` (múltiplas sugestões, espessura por seta) substitui a seta única —
+            // desenhada à mão no SVG logo abaixo, não pela lib.
+            arrows: topMoveArrows ? [] : arrowsOption,
             boardOrientation,
             boardStyle: {
               borderRadius: '4px',
@@ -249,6 +351,10 @@ export function ChessBoard({
             showNotation: theme.showCoordinates,
             animationDurationInMs: ANIMATION_MS[theme.animationSpeed] ?? 150,
             pieces: customPieces,
+            // Setas manuais (botão direito arrastando) — independente de `interactive`, dá pra
+            // anotar mesmo num tabuleiro só de leitura (ex: revendo um lance no treino).
+            onSquareMouseDown: handleSquareMouseDown,
+            onSquareMouseUp: handleSquareMouseUp,
             ...(onPieceDrop ? { onPieceDrop } : {}),
             ...(interactive ? {
               onSquareClick: handleSquareClick,
@@ -256,6 +362,45 @@ export function ChessBoard({
             } : {}),
           }}
         />
+
+        {/* Setas de espessura variável (topMoveArrows) — ver comentário do prop e de `customArrows`. */}
+        {customArrows.length > 0 && (
+          <svg
+            width={boardWidth}
+            height={boardWidth}
+            style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', zIndex: 5 }}
+          >
+            <defs>
+              {customArrows.map((a) => (
+                <marker
+                  key={a.id}
+                  id={a.id}
+                  markerWidth={4}
+                  markerHeight={4}
+                  refX={1.4}
+                  refY={2}
+                  orient="auto"
+                  markerUnits="strokeWidth"
+                >
+                  <path d="M0,0 L0,4 L3,2 Z" fill={a.color} />
+                </marker>
+              ))}
+            </defs>
+            {customArrows.map((a) => (
+              <polyline
+                key={a.id}
+                points={a.points}
+                fill="none"
+                stroke={a.color}
+                strokeWidth={a.strokeWidth}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity={a.opacity}
+                markerEnd={`url(#${a.id})`}
+              />
+            ))}
+          </svg>
+        )}
 
         {/* Ícone de anotação do lance, ancorado na casa onde a peça foi jogada (estilo chess.com) */}
         {currentQuality && qualityMarkerOrigin && (

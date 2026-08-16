@@ -7,15 +7,13 @@ interface HomePageProps {
 }
 
 // ── PRA DESCER/SUBIR A IMAGEM DE FUNDO: mexe só nesse número aqui. ──────────────────────────
-//    A janela de fundo (`.cl-hero-bg` em index.css) sempre cobre a altura inteira da página
-//    (hero + recursos + rodapé) com `background-size: cover` — sem cortar as laterais, sem
-//    sobrar vão nem faltar embaixo. HERO_BG_POSITION_Y escolhe qual fatia VERTICAL da imagem
-//    aparece dentro dessa janela:
-//      0   → mostra o TOPO da imagem (a capivara "desce"/sai mais de baixo do enquadramento)
-//      100 → mostra o FUNDO da imagem (a capivara "sobe"/sai mais de cima do enquadramento)
-//    Valor atual = 20 (mostra bem perto do topo da arte). Pra descer a capivara na tela,
-//    AUMENTE esse número (experimente 40, 60...). Pra subir, diminua (0 já é o mínimo).
-const HERO_BG_POSITION_Y = 40
+//    A janela de fundo (`.cl-hero-bg` em index.css) cobre a altura inteira da página com
+//    `background-size: 100% auto` — a arte tem tamanho FIXO (escala só pela largura, sem zoom,
+//    sem cortar tabuleiro/capivara). HERO_BG_POSITION_Y decide o quanto ela desce:
+//      0   → imagem colada no TOPO da janela (capivara sobe na tela)
+//      100 → imagem colada no FUNDO da janela (capivara desce ao máximo)
+//    Valor atual = 80. Pra descer mais, aumente (até 100). Pra subir, diminua.
+const HERO_BG_POSITION_Y = 80
 
 function base(props: SVGProps<SVGSVGElement>): SVGProps<SVGSVGElement> {
   return { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', ...props }
@@ -76,22 +74,24 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
           só onde o card ocupa), então a imagem de fundo continua visível por baixo deles em vez
           de sumir atrás de um retângulo sólido. Reenquadramento da imagem: ver as constantes
           HERO_BG_* logo acima do componente e as regras de `.cl-hero-bg` em index.css. */}
-      <div style={{ position: 'relative' }}>
+      <div style={{ position: 'relative', minHeight: 'calc(100vh - 110px)', display: 'flex', flexDirection: 'column' }}>
         <div
           aria-hidden
           className="cl-hero-bg"
           style={{
-            // "Colada no rodapé": presa no FUNDO do CONTEÚDO (bottom:0 dentro do wrapper acima,
-            // que tem altura natural = altura do conteúdo, sem esticar) — a imagem sempre termina
-            // exatamente onde o rodapé termina, em qualquer altura de tela (não gruda no fim da
-            // janela do navegador, que pode sobrar bem mais vazio que o conteúdo). `background-size:
-            // contain` (em index.css) desenha a arte inteira sem cortar nada — com a caixa bem mais
-            // larga que alta, quem limita o tamanho é a ALTURA, então essa altura de 360 é o que
-            // deixa a imagem "pequena" (~640px de largura) em vez de ocupar a caixa toda.
-            position: 'absolute', bottom: 0, left: 0, right: 0, height: 260,
+            // Cobre a tela toda: o wrapper acima tem minHeight quase igual à altura visível, e
+            // essa camada preenche esse wrapper de ponta a ponta (inset:0, sem hack de `top` em
+            // pixel — empurrar com `top` encolhe a altura da caixa e muda a proporção dela, o
+            // que faz o `cover` (em index.css) trocar de eixo de corte e cortar a PRÓPRIA arte
+            // (tabuleiro/patas) em vez de só a lateral. Em vez disso, o tamanho da imagem agora é
+            // fixo (`background-size: 100% auto` no CSS), então empurrar pra baixo/cima é só
+            // HERO_BG_POSITION_Y, sem risco de cortar a cena).
+            position: 'absolute', inset: 0,
             ...({ '--hero-bg-pos-y': `${HERO_BG_POSITION_Y}%` } as React.CSSProperties),
           }}
         />
+        {/* Fumaça do rodapé — névoa âmbar subindo do fim da página, só decorativa (aria-hidden). */}
+        <div aria-hidden className="cl-footer-fog" />
 
         <div className="cl-fade-in" style={{ position: 'relative' }}>
         {/* ── Hero: título + busca flutuam direto sobre o plano de fundo acima, sem card. Essa
@@ -101,7 +101,7 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
             Recursos, pra imagem "respirar" no meio. ── */}
         <div style={{
           display: 'flex', justifyContent: 'flex-end', minHeight: 170, marginBottom: 130,
-          padding: 'clamp(8px, 1.5vw, 14px) clamp(10px, 1.5vw, 18px) 0',
+          padding: 'clamp(28px, 4vw, 44px) clamp(40px, 6vw, 72px) 0',
         }}>
             <div className="cl-home-hero-content" style={{ flex: '0 1 380px', display: 'flex', flexDirection: 'column', gap: 12, justifyContent: 'flex-start', minWidth: 0 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -157,10 +157,10 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
         </div>
         </div>
 
-        {/* ── Recursos + Rodapé — voltam a usar o maxWidth:1080 centralizado (igual ao resto do
-            app), diferente da linha do hero acima. Recursos fica quase colado no rodapé (pouco
-            espaço abaixo), deixando a imagem de fundo "respirar" livre no vão grande acima. ── */}
-        <div style={{ position: 'relative', maxWidth: 1080, margin: '0 auto', padding: '0 clamp(8px, 2vw, 16px) 40px' }}>
+        {/* ── Recursos + Rodapé — encostados na ESQUERDA (não mais centralizados) e empurrados
+            pro FUNDO da página (`marginTop:'auto'` no wrapper flex-column acima empurra esse
+            bloco até a base, com o vão grande acima deixando a imagem de fundo "respirar"). ── */}
+        <div style={{ position: 'relative', maxWidth: 1080, marginTop: 'auto', padding: '0 clamp(8px, 2vw, 16px) 40px' }}>
         <section style={{ marginBottom: 4 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
             <span aria-hidden style={{ width: 4, height: 14, borderRadius: 2, background: 'var(--color-blue-bright)' }} />
@@ -168,10 +168,11 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
               O que você tem aqui
             </h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 14 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-start', gap: 14 }}>
             {FEATURES.map(({ Icon, label, description }) => (
-              <div key={label} className="cl-card" style={{
+              <div key={label} className="cl-card cl-feature-card" style={{
                 display: 'flex', flexDirection: 'column', gap: 10,
+                flex: '0 0 250px',
                 padding: '16px 18px',
                 // Vidro fosco — fundo translúcido + blur só na área do card, em vez de opaco,
                 // pra imagem de fundo continuar visível por baixo (ver wrapper com o plano de
@@ -196,16 +197,6 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
           </div>
         </section>
 
-        {/* ── Rodapé — bem colado nos cards de Recursos acima (pouca distância entre os dois) ── */}
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-          padding: '10px 0 4px', borderTop: '1.5px solid var(--color-gray-border)',
-        }}>
-          <img src="/stockfish-logo.webp" alt="Stockfish" width={18} height={18} style={{ borderRadius: 5 }} />
-          <span style={{ fontSize: 11.5, color: 'var(--color-text-on-dark)', opacity: 0.85, textShadow: '0 1px 6px rgba(0,0,0,0.7)' }}>
-            Powered by <strong style={{ opacity: 1, fontWeight: 700 }}>Stockfish</strong>
-          </span>
-        </div>
         </div>
       </div>
     </div>

@@ -252,6 +252,21 @@ body {
     0 16px 36px -12px rgba(0, 0, 0, 0.6);
 }
 
+/* Cards de Recurso da Home — "saltada" de zoom ao passar o mouse (só esses, não o .cl-card
+   genérico usado em painéis/listas no resto do app, que não deve reagir a hover). */
+.cl-feature-card {
+  cursor: default;
+  transition: transform var(--dur-enter) var(--ease-snap), box-shadow var(--dur-enter) var(--ease-snap), border-color var(--dur-enter) var(--ease-snap);
+}
+.cl-feature-card:hover {
+  transform: translateY(-4px) scale(1.035);
+  border-color: color-mix(in srgb, var(--color-blue-bright) 45%, var(--color-gray-border));
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
+    0 1px 0 0 rgba(0, 0, 0, 0.5),
+    0 22px 44px -14px rgba(0, 0, 0, 0.7);
+}
+
 /* Superfície recessada (encaixe/entalhe) — inputs, trilhos de toggle, calha de slider */
 .cl-inset {
   background: var(--color-bg-main);
@@ -271,18 +286,21 @@ body {
   }
 }
 
-/* Plano de fundo do hero — agora em `contain` (a arte inteira sempre visível, sem cortar
-   nenhuma borda da imagem) em vez de `cover`. Antigamente usava `cover` pra evitar um vão
-   lateral, mas como a cor de fundo (--color-bg-main) já bate quase exatamente com o preto da
-   própria arte, o vão que sobra nas laterais fica invisível — e ainda ganha a "fumaça" abaixo
-   pra disfarçar de vez qualquer emenda. A fatia (--hero-bg-pos-y) e o recorte horizontal por
-   largura de tela continuam controlando só o ENQUADRAMENTO all-visible, não mais um corte.
+/* Plano de fundo do hero — tamanho FIXO por largura (100%, não mais `cover`, sem zoom). Com
+   `cover`, o tamanho da imagem dependia do FORMATO da caixa (largura x altura) — e como a caixa
+   cobre a tela toda, empurrar a imagem pra cima/baixo mudava esse formato e podia fazer o corte
+   pular da lateral (inofensivo) pra cima/baixo da própria arte (corta tabuleiro/patas sem
+   avisar). Com tamanho fixo em 100%, a imagem nunca é ampliada — escala só o suficiente pra
+   cobrir a LARGURA da caixa, sem cortar tabuleiro/capivara nem dar efeito de zoom. Empurrar pra
+   cima/baixo é só `--hero-bg-pos-y` (via HERO_BG_POSITION_Y no componente). Como a cor de fundo
+   (--color-bg-main) já bate quase exatamente com o preto da própria arte, qualquer corte fica
+   invisível. A "fumaça" (segunda camada) fica no rodapé — ver `.cl-footer-fog`.
    ══════════════════════════════════════════════ */
 .cl-hero-bg {
   background-image:
     url(/hero-bg.png?v=2),
-    radial-gradient(ellipse 55% 65% at 30% 55%, color-mix(in srgb, var(--color-blue-bright) 20%, transparent), transparent 70%);
-  background-size: contain, 100% 100%;
+    radial-gradient(ellipse 55% 65% at 30% 55%, color-mix(in srgb, var(--color-blue-bright) 14%, transparent), transparent 70%);
+  background-size: 100% auto, 100% 100%;
   background-repeat: no-repeat, no-repeat;
   background-position: 18% var(--hero-bg-pos-y, 20%), center;
 }
@@ -294,6 +312,18 @@ body {
 }
 @media (max-width: 760px) {
   .cl-hero-bg { background-position: 42% var(--hero-bg-pos-y, 20%), center; }
+}
+
+/* Fumaça do rodapé — névoa âmbar subindo do fim da página (atrás dos cards de Recurso), reforça
+   o clima "spotlight" perto do rodapé sem competir com a fumaça de fundo do hero (mais acima). */
+.cl-footer-fog {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 320px;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 75% 100% at 50% 100%,
+    color-mix(in srgb, var(--color-blue-bright) 38%, transparent),
+    transparent 68%
+  );
 }
 
 /* ══════════════════════════════════════════════
