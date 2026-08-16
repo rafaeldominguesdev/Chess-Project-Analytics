@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { RefObject, SVGProps } from 'react'
 import { usePuzzleTrainer } from '../../hooks/usePuzzleTrainer'
 import { ChessBoard, BOARD_ROW_CHROME_WIDTH } from '../Board/ChessBoard'
@@ -9,20 +10,29 @@ interface TrainingViewProps {
   containerRef: RefObject<HTMLDivElement | null>
 }
 
-const PRESETS: { label: string; min: number; max: number }[] = [
-  { label: '1500–1700', min: 1500, max: 1700 },
-  { label: '1700–1900', min: 1700, max: 1900 },
-  { label: '1900–2100', min: 1900, max: 2100 },
-  { label: '2100–2300', min: 2100, max: 2300 },
-  { label: '2300–2500', min: 2300, max: 2500 },
+interface Difficulty {
+  key: 'facil' | 'medio' | 'dificil'
+  label: string
+  min: number
+  max: number
+}
+
+const DIFFICULTIES: Difficulty[] = [
+  { key: 'facil', label: 'Fácil', min: 1500, max: 1700 },
+  { key: 'medio', label: 'Médio', min: 1900, max: 2100 },
+  { key: 'dificil', label: 'Difícil', min: 2300, max: 2500 },
 ]
 
+function difficultyFor(min: number, max: number): Difficulty {
+  return DIFFICULTIES.find((d) => d.min === min && d.max === max) ?? DIFFICULTIES[0]
+}
+
 const STATUS_META: Record<string, { text: string; color: string }> = {
-  solving: { text: 'Encontre o melhor lance', color: 'var(--text-muted)' },
+  solving: { text: 'Encontre o melhor lance', color: 'var(--color-gray-muted)' },
   correct: { text: 'Certo! Aguardando resposta…', color: '#4FB86A' },
   wrong: { text: 'Não é esse', color: '#E0554A' },
   solved: { text: 'Resolvido! 🎉', color: '#4FB86A' },
-  empty: { text: 'Nenhum puzzle nessa faixa de rating', color: 'var(--text-muted)' },
+  empty: { text: 'Nenhum puzzle nessa faixa de rating', color: 'var(--color-gray-muted)' },
 }
 
 function iconBase(props: SVGProps<SVGSVGElement>): SVGProps<SVGSVGElement> {
@@ -46,11 +56,21 @@ function LightbulbIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
+function GearIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...iconBase(props)}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 3v2.2M12 18.8V21M21 12h-2.2M5.2 12H3M18.4 5.6l-1.5 1.5M7.1 16.9l-1.5 1.5M18.4 18.4l-1.5-1.5M7.1 7.1 5.6 5.6" />
+    </svg>
+  )
+}
+
 /**
  * Modo de treino de táticas — integrado no mesmo layout da tela de análise (não um modal):
- * tabuleiro grandão no centro na mesma coluna, com o rating do puzzle no lugar onde ficaria
- * o card do adversário, e os controles (faixa de rating, dica, próximo) no lugar do painel
- * de lances, à direita.
+ * tabuleiro grandão no centro na mesma coluna, com o rating do puzzle e a dificuldade atual no
+ * lugar onde ficaria o card do adversário, e os controles (dica, próximo) no lugar do painel de
+ * lances, à direita. A dificuldade é escolhida por uma engrenagem no canto do tabuleiro — sem
+ * tela separada antes de começar.
  */
 export function TrainingView({ boardWidth, containerRef }: TrainingViewProps) {
   const {
@@ -60,6 +80,14 @@ export function TrainingView({ boardWidth, containerRef }: TrainingViewProps) {
     attemptMove, nextPuzzle, retryPuzzle, showHint,
   } = usePuzzleTrainer({ min: 1500, max: 1700 })
 
+  const [difficultyMenuOpen, setDifficultyMenuOpen] = useState(false)
+  const difficulty = difficultyFor(ratingRange.min, ratingRange.max)
+
+  function chooseDifficulty(d: Difficulty) {
+    setRatingRange({ min: d.min, max: d.max })
+    setDifficultyMenuOpen(false)
+  }
+
   const meta = STATUS_META[status]
   const cardWidth = boardWidth + BOARD_ROW_CHROME_WIDTH
 
@@ -68,34 +96,69 @@ export function TrainingView({ boardWidth, containerRef }: TrainingViewProps) {
       {/* Center — mesma coluna do tabuleiro de análise */}
       <div ref={containerRef} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, paddingTop: 8 }}>
         <div style={{ width: cardWidth }}>
-          <RatingCard rating={puzzle?.rating} />
+          <RatingCard rating={puzzle?.rating} difficultyLabel={difficulty.label} />
         </div>
 
-        {status === 'empty' || !puzzle ? (
-          <div style={{
-            width: boardWidth, height: boardWidth, borderRadius: 4, border: '2px dashed var(--border)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 24,
-          }}>
-            <span style={{ fontSize: 13.5, color: 'var(--text-muted)' }}>{meta.text}</span>
+        {/* Tabuleiro — engrenagem de dificuldade fica ancorada no canto superior direito dele */}
+        <div style={{ position: 'relative' }}>
+          {status === 'empty' || !puzzle ? (
+            <div style={{
+              width: boardWidth, height: boardWidth, borderRadius: 4, border: '2px dashed var(--color-gray-border)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 24,
+            }}>
+              <span style={{ fontSize: 13.5, color: 'var(--color-gray-muted)' }}>{meta.text}</span>
+            </div>
+          ) : (
+            <ChessBoard
+              fen={fen}
+              lastMove={lastMove}
+              evaluation={null}
+              boardWidth={boardWidth}
+              showEvalBar={false}
+              interactive={status === 'solving'}
+              boardOrientation={solverColor}
+              hintSquare={hintSquare}
+              onPieceDrop={({ sourceSquare, targetSquare }) => (targetSquare ? attemptMove(sourceSquare, targetSquare) : false)}
+            />
+          )}
+
+          <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button
+              onClick={() => setDifficultyMenuOpen((v) => !v)}
+              className={`cl-btn cl-btn-sm${difficultyMenuOpen ? ' cl-btn-selected' : ''}`}
+              title="Trocar dificuldade"
+            >
+              <GearIcon width={17} height={17} />
+            </button>
           </div>
-        ) : (
-          <ChessBoard
-            fen={fen}
-            lastMove={lastMove}
-            evaluation={null}
-            boardWidth={boardWidth}
-            showEvalBar={false}
-            interactive={status === 'solving'}
-            boardOrientation={solverColor}
-            hintSquare={hintSquare}
-            onPieceDrop={({ sourceSquare, targetSquare }) => (targetSquare ? attemptMove(sourceSquare, targetSquare) : false)}
-          />
-        )}
+
+          {difficultyMenuOpen && (
+            <div
+              style={{
+                position: 'absolute', top: 52, right: 8, zIndex: 9,
+                display: 'flex', flexDirection: 'column', gap: 6, padding: 8,
+                background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)', borderRadius: 10,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
+              }}
+            >
+              {DIFFICULTIES.map((d) => (
+                <button
+                  key={d.key}
+                  onClick={() => chooseDifficulty(d)}
+                  className={`cl-btn cl-btn-sm${d.key === difficulty.key ? ' cl-btn-selected' : ''}`}
+                  style={{ width: 128, height: 'auto', padding: '8px 14px', fontSize: 12 }}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div style={{
           width: cardWidth, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
           padding: '10px 14px', borderRadius: 8,
-          background: 'var(--surface)', border: `1.5px solid ${meta.color}`,
+          background: 'var(--color-bg-panel)', border: `1px solid ${meta.color}`,
           transition: 'border-color 0.15s',
         }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, fontWeight: 700, color: meta.color }}>
@@ -103,7 +166,7 @@ export function TrainingView({ boardWidth, containerRef }: TrainingViewProps) {
             {meta.text}
           </span>
           {status === 'wrong' && (
-            <button onClick={retryPuzzle} className="cl-btn cl-btn-sm cl-btn-accent" style={{ padding: '6px 12px', fontSize: 12 }}>
+            <button onClick={retryPuzzle} className="cl-btn cl-btn-sm cl-btn-accent" style={{ width: 'auto', height: 'auto', padding: '6px 12px', fontSize: 11 }}>
               Tentar de novo
             </button>
           )}
@@ -115,50 +178,29 @@ export function TrainingView({ boardWidth, containerRef }: TrainingViewProps) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto', maxHeight: 'calc(100vh - 20px)', paddingRight: 2 }}>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', borderRadius: 8,
-            background: 'var(--surface)', border: '1px solid var(--border)',
+            background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)',
           }}>
-            <TargetIcon width={18} height={18} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-            <h2 style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)', flex: 1 }}>Treino de Táticas</h2>
-          </div>
-
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: 14 }}>
-            <SectionLabel>Faixa de rating</SectionLabel>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-              {PRESETS.map((p) => {
-                const isActive = ratingRange.min === p.min && ratingRange.max === p.max
-                return (
-                  <button
-                    key={p.label}
-                    onClick={() => setRatingRange({ min: p.min, max: p.max })}
-                    className={`cl-btn cl-btn-sm${isActive ? ' cl-btn-selected' : ''}`}
-                    style={{ padding: '6px 10px', fontSize: 12 }}
-                  >
-                    {p.label}
-                  </button>
-                )
-              })}
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <RatingInput
-                value={ratingRange.min}
-                onChange={(v) => setRatingRange((r) => ({ min: Math.min(v, r.max), max: r.max }))}
-              />
-              <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>até</span>
-              <RatingInput
-                value={ratingRange.max}
-                onChange={(v) => setRatingRange((r) => ({ min: r.min, max: Math.max(v, r.min) }))}
-              />
-            </div>
+            <TargetIcon width={18} height={18} style={{ color: 'var(--color-blue-bright)', flexShrink: 0 }} />
+            <h2 style={{ fontSize: 14, fontWeight: 800, color: 'var(--color-text-on-dark)', flex: 1 }}>Treino de Táticas</h2>
+            <button
+              onClick={() => setDifficultyMenuOpen((v) => !v)}
+              className="cl-btn cl-btn-sm"
+              style={{ width: 'auto', height: 'auto', padding: '6px 10px', fontSize: 10.5, gap: 5 }}
+              title="Trocar dificuldade"
+            >
+              <GearIcon width={13} height={13} />
+              Trocar dificuldade
+            </button>
           </div>
 
           {puzzle && (
             <div style={{
               display: 'flex', flexDirection: 'column', gap: 10, padding: 14, borderRadius: 10,
-              background: 'var(--surface)', border: '1px solid var(--border)',
+              background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <SectionLabel>Esse puzzle</SectionLabel>
-                <span className="cl-display" style={{ fontSize: 15, fontWeight: 800, color: 'var(--accent)' }}>
+                <span className="cl-display" style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-blue-bright)' }}>
                   {puzzle.rating}
                 </span>
               </div>
@@ -167,7 +209,7 @@ export function TrainingView({ boardWidth, containerRef }: TrainingViewProps) {
                   {puzzle.themes.slice(0, 4).map((t) => (
                     <span key={t} style={{
                       fontSize: 10.5, fontWeight: 700, padding: '2px 7px', borderRadius: 5,
-                      background: 'var(--surface2)', color: 'var(--text-muted)',
+                      background: 'var(--color-bg-main)', color: 'var(--color-gray-muted)',
                     }}>
                       {t}
                     </span>
@@ -179,14 +221,14 @@ export function TrainingView({ boardWidth, containerRef }: TrainingViewProps) {
                   {wrongAttempts} tentativa{wrongAttempts > 1 ? 's' : ''} errada{wrongAttempts > 1 ? 's' : ''} nesse puzzle
                 </span>
               )}
-              <a href={puzzle.gameUrl} target="_blank" rel="noreferrer" style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>
+              <a href={puzzle.gameUrl} target="_blank" rel="noreferrer" style={{ fontSize: 11.5, color: 'var(--color-gray-muted)' }}>
                 Ver partida original ↗
               </a>
             </div>
           )}
 
           {(status === 'solving' || status === 'wrong') && (
-            <button onClick={showHint} disabled={status !== 'solving'} className="cl-btn cl-btn-sm" style={{ padding: '9px 0', fontSize: 12.5, gap: 6 }}>
+            <button onClick={showHint} disabled={status !== 'solving'} className="cl-btn cl-btn-sm" style={{ width: 'auto', height: 'auto', padding: '9px 0', fontSize: 11.5, gap: 6 }}>
               <LightbulbIcon />
               Dica — mostrar a peça
             </button>
@@ -195,12 +237,12 @@ export function TrainingView({ boardWidth, containerRef }: TrainingViewProps) {
           <button
             onClick={nextPuzzle}
             className={`cl-btn ${status === 'solved' ? 'cl-btn-accent' : ''}`}
-            style={{ padding: '12px 0', fontSize: 14 }}
+            style={{ padding: '12px 0', fontSize: 13 }}
           >
             {status === 'solved' ? 'Próximo puzzle →' : 'Pular puzzle'}
           </button>
 
-          <div style={{ fontSize: 11.5, color: 'var(--text-muted)', textAlign: 'center' }}>
+          <div style={{ fontSize: 11.5, color: 'var(--color-gray-muted)', textAlign: 'center' }}>
             {solvedCount} resolvidos nessa sessão · banco com puzzles de {PUZZLE_RATING_MIN} a {PUZZLE_RATING_MAX}
           </div>
         </div>
@@ -209,56 +251,41 @@ export function TrainingView({ boardWidth, containerRef }: TrainingViewProps) {
   )
 }
 
-function RatingCard({ rating }: { rating?: number }) {
+function RatingCard({ rating, difficultyLabel }: { rating?: number; difficultyLabel: string }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px', borderRadius: 8,
-      background: 'var(--surface)', border: '1.5px solid var(--border)',
+      background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)',
     }}>
       <span style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         width: 38, height: 38, borderRadius: 8, flexShrink: 0,
-        background: 'var(--surface2)', color: 'var(--accent)',
+        background: 'var(--color-bg-main)', color: 'var(--color-blue-bright)',
       }}>
         <TargetIcon width={20} height={20} />
       </span>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
-        <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-gray-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           Rating do puzzle
         </span>
-        <span className="cl-display" style={{ fontSize: 18, fontWeight: 800, color: 'var(--text)', lineHeight: 1.1 }}>
+        <span className="cl-display" style={{ fontSize: 18, fontWeight: 800, color: 'var(--color-text-on-dark)', lineHeight: 1.1 }}>
           {rating ?? '—'}
         </span>
       </div>
+      <span style={{
+        marginLeft: 'auto', fontSize: 10.5, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
+        padding: '4px 10px', borderRadius: 6, background: 'var(--color-blue-primary)', color: '#ffffff', flexShrink: 0,
+      }}>
+        {difficultyLabel}
+      </span>
     </div>
   )
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-gray-muted)', marginBottom: 8 }}>
       {children}
     </div>
-  )
-}
-
-function RatingInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-  return (
-    <input
-      type="number"
-      min={PUZZLE_RATING_MIN}
-      max={PUZZLE_RATING_MAX}
-      step={50}
-      value={value}
-      onChange={(e) => {
-        const v = parseInt(e.target.value, 10)
-        if (!Number.isNaN(v)) onChange(Math.max(PUZZLE_RATING_MIN, Math.min(PUZZLE_RATING_MAX, v)))
-      }}
-      style={{
-        width: 76, padding: '7px 8px', fontSize: 13, textAlign: 'center',
-        background: 'var(--surface2)', border: '2px solid var(--border)', borderRadius: 8,
-        color: 'var(--text)', outline: 'none',
-      }}
-    />
   )
 }

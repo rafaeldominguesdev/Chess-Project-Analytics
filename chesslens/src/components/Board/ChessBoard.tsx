@@ -147,7 +147,7 @@ export function ChessBoard({
     if (hintSquare) {
       styles[hintSquare] = {
         ...styles[hintSquare],
-        boxShadow: 'inset 0 0 0 3px var(--accent)',
+        boxShadow: 'inset 0 0 0 3px var(--color-blue-bright)',
         animation: 'cl-hint-pulse 1.1s ease-in-out infinite',
       }
     }

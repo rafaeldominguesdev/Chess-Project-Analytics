@@ -132,7 +132,7 @@ function AppInner() {
   const currentQuality = currentMoveIndex >= 0 ? moves[currentMoveIndex]?.classification ?? null : null
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: 'var(--bg)', color: 'var(--text)' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: 'var(--color-bg-main)', color: 'var(--color-text-on-dark)' }}>
       <Sidebar
         onSettings={() => setSettingsOpen(true)}
         onToggleTraining={() => setTrainingMode((v) => !v)}

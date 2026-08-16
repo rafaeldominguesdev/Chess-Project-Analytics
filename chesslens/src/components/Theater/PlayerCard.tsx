@@ -25,8 +25,8 @@ function hashColor(str: string): string {
 
 /** Cores do badge de precisão, em faixas parecidas com o "Game Review" do chess.com. */
 function accuracyStyle(value: number): { bg: string; color: string } {
-  if (value >= 90) return { bg: 'var(--accent)', color: 'var(--on-accent, #fff)' }
-  if (value >= 70) return { bg: 'var(--surface2)', color: 'var(--text)' }
+  if (value >= 90) return { bg: 'var(--color-blue-bright)', color: '#ffffff' }
+  if (value >= 70) return { bg: 'var(--color-bg-panel)', color: 'var(--color-text-on-dark)' }
   return { bg: '#5E1A1A', color: '#F5D6D6' }
 }
 
@@ -55,8 +55,8 @@ export function PlayerCard({
       {/* Animação do pulso de "vez de jogar" — escopada aqui pra não mexer no index.css global. */}
       <style>{`
         @keyframes clPlayerTurnPulse {
-          0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); }
-          50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 0%, transparent); }
+          0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-blue-bright) 55%, transparent); }
+          50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-blue-bright) 0%, transparent); }
         }
       `}</style>
 
@@ -68,7 +68,7 @@ export function PlayerCard({
             alt={username}
             style={{
               width: dim, height: dim, borderRadius: 7, objectFit: 'cover',
-              border: isActive ? '2px solid var(--accent)' : '2px solid rgba(255,255,255,0.15)',
+              border: isActive ? '2px solid var(--color-blue-bright)' : '2px solid rgba(255,255,255,0.15)',
               transition: 'border-color 0.2s ease',
             }}
           />
@@ -79,7 +79,7 @@ export function PlayerCard({
               background: bg,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#fff', fontWeight: 700, fontSize: dim * 0.36,
-              border: isActive ? '2px solid var(--accent)' : '2px solid rgba(255,255,255,0.15)',
+              border: isActive ? '2px solid var(--color-blue-bright)' : '2px solid rgba(255,255,255,0.15)',
               transition: 'border-color 0.2s ease',
             }}
           >
@@ -92,7 +92,7 @@ export function PlayerCard({
             position: 'absolute', bottom: -3, right: -3,
             width: 15, height: 15, borderRadius: '50%',
             background: color === 'white' ? '#f5f5f5' : '#1a1a1a',
-            border: '2px solid var(--bg)',
+            border: '2px solid var(--color-bg-main)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 8.5,
             color: color === 'white' ? '#1a1a1a' : '#f5f5f5',
@@ -114,15 +114,15 @@ export function PlayerCard({
         )}
         {isPremium && <PremiumIcon size={13} />}
         <span style={{
-          fontSize: nameSize, fontWeight: 700, color: 'var(--text)',
+          fontSize: nameSize, fontWeight: 700, color: 'var(--color-text-on-dark)',
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>
           {username}
         </span>
         {flag && <span style={{ fontSize: nameSize, flexShrink: 0 }} title={countryCode ?? ''}>{flag}</span>}
         <span style={{
-          fontSize: ratingSize, fontWeight: 700, color: 'var(--text)',
-          background: 'var(--surface2)', padding: '1px 7px', borderRadius: 5, flexShrink: 0,
+          fontSize: ratingSize, fontWeight: 700, color: 'var(--color-text-on-dark)',
+          background: 'var(--color-bg-panel)', padding: '1px 7px', borderRadius: 5, flexShrink: 0,
         }}>
           {rating && rating !== '?' ? rating : 'Unrated'}
         </span>
@@ -143,7 +143,7 @@ export function PlayerCard({
           <span
             style={{
               width: 7, height: 7, borderRadius: '50%',
-              background: 'var(--accent)', display: 'inline-block', flexShrink: 0,
+              background: 'var(--color-blue-bright)', display: 'inline-block', flexShrink: 0,
               animation: 'clPlayerTurnPulse 1.6s ease-out infinite',
             }}
             title="Jogando"

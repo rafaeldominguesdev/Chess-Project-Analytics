@@ -30,7 +30,7 @@ export function RecentGames({ games, loading, onAnalyze }: RecentGamesProps) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} style={{ height: 56, borderRadius: 8, background: 'var(--surface2)', opacity: 0.6 - i * 0.08 }} />
+          <div key={i} style={{ height: 56, borderRadius: 8, background: 'var(--color-bg-panel)', opacity: 0.6 - i * 0.08 }} />
         ))}
       </div>
     )
@@ -38,7 +38,7 @@ export function RecentGames({ games, loading, onAnalyze }: RecentGamesProps) {
 
   if (games.length === 0) {
     return (
-      <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12.5, color: 'var(--text-muted)' }}>
+      <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12.5, color: 'var(--color-gray-muted)' }}>
         Nenhuma partida recente encontrada.
       </div>
     )
@@ -59,8 +59,8 @@ export function RecentGames({ games, loading, onAnalyze }: RecentGamesProps) {
             style={{
               display: 'flex', alignItems: 'center', gap: 12,
               padding: '10px 12px', borderRadius: 8,
-              background: 'var(--surface2)',
-              border: '1px solid var(--border)',
+              background: 'var(--color-bg-panel)',
+              border: '1px solid var(--color-gray-border)',
               animationDelay: `${i * 35}ms`,
             }}
           >
@@ -75,20 +75,20 @@ export function RecentGames({ games, loading, onAnalyze }: RecentGamesProps) {
               style={{
                 width: 15, height: 15, borderRadius: 4, flexShrink: 0,
                 background: g.color === 'white' ? '#f5f5f5' : '#1a1a1a',
-                border: '1.5px solid var(--border)',
+                border: '1.5px solid var(--color-gray-border)',
               }}
             />
 
             <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-on-dark)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   vs {g.opponent}
                 </span>
                 {g.opponentRating !== null && (
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>({g.opponentRating})</span>
+                  <span style={{ fontSize: 11, color: 'var(--color-gray-muted)', flexShrink: 0 }}>({g.opponentRating})</span>
                 )}
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+              <div style={{ fontSize: 11, color: 'var(--color-gray-muted)' }}>
                 {formatWhen(g.endTime)}{g.rated ? '' : ' · casual'}
               </div>
             </div>
@@ -100,7 +100,7 @@ export function RecentGames({ games, loading, onAnalyze }: RecentGamesProps) {
               target="_blank"
               rel="noreferrer"
               title="Ver partida original"
-              style={{ color: 'var(--text-muted)', display: 'flex', flexShrink: 0 }}
+              style={{ color: 'var(--color-gray-muted)', display: 'flex', flexShrink: 0 }}
               onClick={(e) => e.stopPropagation()}
             >
               <ExternalLinkIcon width={14} height={14} />

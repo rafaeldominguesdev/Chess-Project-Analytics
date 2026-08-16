@@ -7,7 +7,7 @@ const STORAGE_KEY = 'chesslens-theme'
 const DEFAULT_THEME: ThemeConfig = {
   boardTheme: 'chesscom-green',
   pieceSet: 'cburnett',
-  uiTheme: 'arcade-mostarda',
+  uiTheme: 'arcade-blue',
   showCoordinates: true,
   showLegalMoves: true,
   showLastMove: true,
@@ -18,9 +18,9 @@ const DEFAULT_THEME: ThemeConfig = {
 }
 
 // Defaults antigos — quem tinha isso salvo nunca escolheu um tema de propósito,
-// então migra pro novo default (arcade mostarda) também.
+// então migra pro novo default (arcade azul) também.
 const OLD_DEFAULT_BOARD_THEMES = new Set(['chesscom-walnut', 'obsidian-gold', 'brasil'])
-const OLD_DEFAULT_UI_THEMES = new Set(['obsidian-gold', 'brasil', 'chesscom-dark'])
+const OLD_DEFAULT_UI_THEMES = new Set(['obsidian-gold', 'brasil', 'chesscom-dark', 'arcade-mostarda'])
 
 interface ThemeContextValue {
   theme: ThemeConfig
@@ -41,17 +41,14 @@ const ThemeContext = createContext<ThemeContextValue | null>(null)
 function applyUITheme(uiTheme: UIThemeName) {
   const t = UI_THEMES[uiTheme]
   const root = document.documentElement
-  root.style.setProperty('--bg', t.bg)
-  root.style.setProperty('--surface', t.surface)
-  root.style.setProperty('--surface2', t.surface2)
-  root.style.setProperty('--accent', t.accent)
-  root.style.setProperty('--text', t.text)
-  root.style.setProperty('--text-muted', t.textMuted)
-  root.style.setProperty('--border', t.border)
-  if (t.shadowHard) root.style.setProperty('--shadow-hard', t.shadowHard)
-  else root.style.removeProperty('--shadow-hard')
-  if (t.onAccent) root.style.setProperty('--on-accent', t.onAccent)
-  else root.style.removeProperty('--on-accent')
+  root.style.setProperty('--color-bg-main', t.bg)
+  root.style.setProperty('--color-bg-panel', t.surface)
+  root.style.setProperty('--color-blue-bright', t.accent)
+  root.style.setProperty('--color-text-on-dark', t.text)
+  root.style.setProperty('--color-gray-muted', t.textMuted)
+  root.style.setProperty('--color-gray-border', t.border)
+  if (t.shadowBtn) root.style.setProperty('--color-shadow-btn', t.shadowBtn)
+  else root.style.removeProperty('--color-shadow-btn')
 }
 
 function applyBoardTheme(boardTheme: BoardThemeName) {

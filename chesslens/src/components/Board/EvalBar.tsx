@@ -64,7 +64,7 @@ export function EvalBar({ evaluation, orientation = 'white', isMate }: EvalBarPr
         overflow: 'hidden',
         position: 'relative',
         flexShrink: 0,
-        border: '1px solid var(--border)',
+        border: '1px solid var(--color-gray-border)',
         boxShadow: 'inset 0 1px 4px rgba(0,0,0,0.4)',
       }}
     >
@@ -92,7 +92,7 @@ export function EvalBar({ evaluation, orientation = 'white', isMate }: EvalBarPr
           top: '50%',
           height: 2,
           marginTop: -1,
-          background: 'var(--accent)',
+          background: 'var(--color-blue-bright)',
           opacity: 0.9,
           pointerEvents: 'none',
         }}

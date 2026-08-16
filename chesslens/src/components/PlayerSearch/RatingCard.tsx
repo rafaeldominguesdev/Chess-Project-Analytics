@@ -24,8 +24,8 @@ export function RatingCard({ label, Icon, accent, rating, bestRating, wins, loss
       style={{
         position: 'relative',
         overflow: 'hidden',
-        background: 'var(--surface2)',
-        border: '1px solid var(--border)',
+        background: 'var(--color-bg-panel)',
+        border: '1px solid var(--color-gray-border)',
         borderRadius: 8,
         padding: '14px 16px',
         display: 'flex',
@@ -41,27 +41,27 @@ export function RatingCard({ label, Icon, accent, rating, bestRating, wins, loss
         <span style={{ fontSize: 12, color: accent, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
       </div>
 
-      <div className="cl-display" style={{ fontSize: 28, fontWeight: 700, color: 'var(--text)', lineHeight: 1.1 }}>
+      <div className="cl-display" style={{ fontSize: 28, fontWeight: 700, color: 'var(--color-text-on-dark)', lineHeight: 1.1 }}>
         {rating ?? '—'}
       </div>
 
       {bestRating !== undefined && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--text-muted)' }}>
-          <TrophyIcon width={12} height={12} style={{ color: 'var(--accent)' }} />
-          Máx. <span style={{ color: 'var(--text)', fontWeight: 600 }}>{bestRating}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--color-gray-muted)' }}>
+          <TrophyIcon width={12} height={12} style={{ color: 'var(--color-blue-bright)' }} />
+          Máx. <span style={{ color: 'var(--color-text-on-dark)', fontWeight: 600 }}>{bestRating}</span>
         </div>
       )}
 
       {total > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 2 }}>
-          <div style={{ display: 'flex', height: 4, borderRadius: 2, overflow: 'hidden', background: 'var(--border)' }}>
+          <div style={{ display: 'flex', height: 4, borderRadius: 2, overflow: 'hidden', background: 'var(--color-gray-border)' }}>
             <div style={{ width: `${((wins ?? 0) / total) * 100}%`, background: '#4FB86A' }} />
             <div style={{ width: `${((draws ?? 0) / total) * 100}%`, background: '#8892a4' }} />
             <div style={{ width: `${((losses ?? 0) / total) * 100}%`, background: '#E0554A' }} />
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10.5, color: 'var(--text-muted)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10.5, color: 'var(--color-gray-muted)' }}>
             <span>{wins ?? 0}V · {draws ?? 0}E · {losses ?? 0}D</span>
-            {winRate !== null && <span style={{ fontWeight: 700, color: 'var(--text)' }}>{winRate}%</span>}
+            {winRate !== null && <span style={{ fontWeight: 700, color: 'var(--color-text-on-dark)' }}>{winRate}%</span>}
           </div>
         </div>
       )}

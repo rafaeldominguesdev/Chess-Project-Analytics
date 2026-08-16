@@ -116,8 +116,8 @@ export default function PlayerSearch({ open, onClose, initialPlatform, onAnalyze
         style={{
           width: 'min(880px, 100%)',
           maxHeight: '88vh',
-          background: 'var(--surface)',
-          border: '1px solid var(--border)',
+          background: 'var(--color-bg-panel)',
+          border: '1px solid var(--color-gray-border)',
           borderRadius: 12,
           boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
           display: 'flex', flexDirection: 'column',
@@ -127,19 +127,19 @@ export default function PlayerSearch({ open, onClose, initialPlatform, onAnalyze
         {/* Header + abas + busca */}
         <div style={{
           padding: '22px 26px 18px',
-          borderBottom: '1px solid var(--border)',
+          borderBottom: '1px solid var(--color-gray-border)',
           flexShrink: 0,
           display: 'flex', flexDirection: 'column', gap: 14,
         }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
             <div>
-              <div className="cl-display" style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)' }}>Buscar Jogador</div>
-              <div style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 2 }}>Perfil, ratings e partidas recentes</div>
+              <div className="cl-display" style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-on-dark)' }}>Buscar Jogador</div>
+              <div style={{ fontSize: 12.5, color: 'var(--color-gray-muted)', marginTop: 2 }}>Perfil, ratings e partidas recentes</div>
             </div>
             <button
               onClick={onClose}
               className="cl-btn cl-btn-sm"
-              style={{ color: 'var(--text)', fontSize: 16, lineHeight: 1, padding: '8px 10px', flexShrink: 0 }}
+              style={{ color: 'var(--color-text-on-dark)', fontSize: 16, lineHeight: 1, padding: '8px 10px', flexShrink: 0 }}
             >
               ✕
             </button>
@@ -159,7 +159,7 @@ export default function PlayerSearch({ open, onClose, initialPlatform, onAnalyze
                     flex: 1, gap: 8,
                     padding: '8px 0',
                     fontSize: 13.5,
-                    color: isActive ? undefined : 'var(--text)',
+                    color: isActive ? undefined : 'var(--color-text-on-dark)',
                   }}
                 >
                   <m.Icon width={17} height={17} />
@@ -180,10 +180,10 @@ export default function PlayerSearch({ open, onClose, initialPlatform, onAnalyze
                 flex: 1,
                 padding: '11px 14px',
                 fontSize: 14,
-                background: 'var(--surface2)',
-                border: '2px solid var(--border)',
+                background: 'var(--color-bg-surface)',
+                border: '1px solid var(--color-gray-border)',
                 borderRadius: 10,
-                color: 'var(--text)',
+                color: 'var(--color-text-on-light)',
                 outline: 'none',
               }}
             />
@@ -207,8 +207,8 @@ export default function PlayerSearch({ open, onClose, initialPlatform, onAnalyze
               padding: '56px 16px', textAlign: 'center',
             }}>
               <span style={{ fontSize: 36 }}>😕</span>
-              <span style={{ fontSize: 15, color: 'var(--text)', fontWeight: 700 }}>{active.error}</span>
-              <span style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>Verifique o username e tente novamente.</span>
+              <span style={{ fontSize: 15, color: 'var(--color-text-on-dark)', fontWeight: 700 }}>{active.error}</span>
+              <span style={{ fontSize: 12.5, color: 'var(--color-gray-muted)' }}>Verifique o username e tente novamente.</span>
             </div>
           )}
 
@@ -249,8 +249,8 @@ export default function PlayerSearch({ open, onClose, initialPlatform, onAnalyze
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
               padding: '64px 16px', textAlign: 'center',
             }}>
-              <meta.Icon width={36} height={36} style={{ opacity: 0.5, color: 'var(--text-muted)' }} />
-              <span style={{ fontSize: 13.5, color: 'var(--text-muted)' }}>
+              <meta.Icon width={36} height={36} style={{ opacity: 0.5, color: 'var(--color-gray-muted)' }} />
+              <span style={{ fontSize: 13.5, color: 'var(--color-gray-muted)' }}>
                 Busque um username do {meta.label} para ver o perfil, os ratings e as últimas partidas.
               </span>
             </div>
@@ -263,7 +263,7 @@ export default function PlayerSearch({ open, onClose, initialPlatform, onAnalyze
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <div className="cl-display" style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
+    <div className="cl-display" style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-gray-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
       {children}
     </div>
   )
@@ -271,7 +271,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 function LoadingSkeleton() {
   const shimmer: React.CSSProperties = {
-    background: 'var(--surface2)',
+    background: 'var(--color-bg-panel)',
     borderRadius: 8,
   }
   return (
