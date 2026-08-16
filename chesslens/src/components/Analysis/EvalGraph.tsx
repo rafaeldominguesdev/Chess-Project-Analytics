@@ -63,7 +63,7 @@ export function EvalGraph({ evals, currentPosition, onSeek }: EvalGraphProps) {
 
   if (n < 2) {
     return (
-      <div style={{ height: H, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
+      <div style={{ height: H, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-gray-muted)', fontSize: 12 }}>
         Analisando a partida…
       </div>
     )
@@ -135,23 +135,23 @@ export function EvalGraph({ evals, currentPosition, onSeek }: EvalGraphProps) {
         <defs>
           {/* corte nítido exatamente na linha zero: creme translúcido acima (brancas), mostarda translúcida abaixo (pretas) */}
           <linearGradient id="evalFill" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2={H}>
-            <stop offset="0" stopColor="var(--text)" stopOpacity={0.22} />
-            <stop offset="0.5" stopColor="var(--text)" stopOpacity={0.22} />
-            <stop offset="0.5" stopColor="var(--accent)" stopOpacity={0.30} />
-            <stop offset="1" stopColor="var(--accent)" stopOpacity={0.30} />
+            <stop offset="0" stopColor="var(--color-text-on-dark)" stopOpacity={0.22} />
+            <stop offset="0.5" stopColor="var(--color-text-on-dark)" stopOpacity={0.22} />
+            <stop offset="0.5" stopColor="var(--color-blue-bright)" stopOpacity={0.30} />
+            <stop offset="1" stopColor="var(--color-blue-bright)" stopOpacity={0.30} />
           </linearGradient>
         </defs>
 
         {/* linha do equilíbrio */}
-        <line x1={0} y1={H / 2} x2={W} y2={H / 2} stroke="var(--border)" strokeWidth={1} />
+        <line x1={0} y1={H / 2} x2={W} y2={H / 2} stroke="var(--color-gray-border)" strokeWidth={1} />
 
         {/* área da avaliação, dividida em vantagem das brancas (acima) / pretas (abaixo) */}
         <path d={areaPath} fill="url(#evalFill)" />
-        <path d={curvePath} fill="none" stroke="var(--accent)" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+        <path d={curvePath} fill="none" stroke="var(--color-blue-bright)" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
 
         {/* linha guia + ponto do hover */}
         {hasHover && (
-          <line x1={hoverX} y1={0} x2={hoverX} y2={H} stroke="var(--text)" strokeWidth={1} strokeDasharray="2 2" opacity={0.35} />
+          <line x1={hoverX} y1={0} x2={hoverX} y2={H} stroke="var(--color-text-on-dark)" strokeWidth={1} strokeDasharray="2 2" opacity={0.35} />
         )}
 
         {/* momentos críticos (erros e erros graves) — clicáveis */}
@@ -162,7 +162,7 @@ export function EvalGraph({ evals, currentPosition, onSeek }: EvalGraphProps) {
             cy={yOf(evals[index])}
             r={severity === 'blunder' ? 4.5 : 3.5}
             fill={QUALITY_CONFIG[severity].color}
-            stroke="var(--bg)"
+            stroke="var(--color-bg-main)"
             strokeWidth={1.25}
             style={{ cursor: 'pointer' }}
             onPointerDown={(e) => e.stopPropagation()}
@@ -173,11 +173,11 @@ export function EvalGraph({ evals, currentPosition, onSeek }: EvalGraphProps) {
         ))}
 
         {/* marcador do lance atual */}
-        <line x1={curX} y1={0} x2={curX} y2={H} stroke="var(--accent)" strokeWidth={1} strokeDasharray="3 2" opacity={0.7} />
-        <circle cx={curX} cy={curY} r={6} fill="var(--accent)" opacity={0.22} />
-        <circle cx={curX} cy={curY} r={3} fill="var(--accent)" stroke="var(--bg)" strokeWidth={1.25} />
+        <line x1={curX} y1={0} x2={curX} y2={H} stroke="var(--color-blue-bright)" strokeWidth={1} strokeDasharray="3 2" opacity={0.7} />
+        <circle cx={curX} cy={curY} r={6} fill="var(--color-blue-bright)" opacity={0.22} />
+        <circle cx={curX} cy={curY} r={3} fill="var(--color-blue-bright)" stroke="var(--color-bg-main)" strokeWidth={1.25} />
 
-        {hasHover && <circle cx={hoverX} cy={hoverY} r={2.5} fill="var(--text)" />}
+        {hasHover && <circle cx={hoverX} cy={hoverY} r={2.5} fill="var(--color-text-on-dark)" />}
       </svg>
 
       {hasHover && (
@@ -187,12 +187,12 @@ export function EvalGraph({ evals, currentPosition, onSeek }: EvalGraphProps) {
             left: `${tooltipLeftPct}%`,
             top: 3,
             transform: 'translateX(-50%)',
-            background: 'var(--surface2)',
-            border: '1px solid var(--border)',
+            background: 'var(--color-bg-panel)',
+            border: '1px solid var(--color-gray-border)',
             borderRadius: 6,
             padding: '3px 7px',
             fontSize: 10.5,
-            color: 'var(--text)',
+            color: 'var(--color-text-on-dark)',
             whiteSpace: 'nowrap',
             pointerEvents: 'none',
             boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
@@ -201,7 +201,7 @@ export function EvalGraph({ evals, currentPosition, onSeek }: EvalGraphProps) {
             alignItems: 'baseline',
           }}
         >
-          <span style={{ color: 'var(--text-muted)' }}>{moveLabel(hoverIndex!)}</span>
+          <span style={{ color: 'var(--color-gray-muted)' }}>{moveLabel(hoverIndex!)}</span>
           <strong style={{ fontVariantNumeric: 'tabular-nums' }}>{formatEval(evals[hoverIndex!] ?? 0)}</strong>
         </div>
       )}

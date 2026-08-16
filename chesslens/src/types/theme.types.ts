@@ -10,7 +10,7 @@ export type PieceSetName =
   | 'staunty' | 'tatiana'
 
 export type UIThemeName =
-  | 'arcade-mostarda'
+  | 'arcade-blue'
   | 'brasil'
   | 'dark-classic' | 'dark-slate' | 'dark-coffee' | 'chesscom-dark'
   | 'light-classic' | 'light-cream'
@@ -48,13 +48,10 @@ export interface UITheme {
   label: string
   bg: string
   surface: string
-  surface2: string
   accent: string
   text: string
   textMuted: string
   border: string
-  /** Cor da sombra "dura" (offset, sem blur) dos botões estilo arcade. Opcional — cai pro preto padrão do :root se ausente. */
-  shadowHard?: string
-  /** Cor do texto sobre fundo accent (botões primários). Opcional — cai pro branco padrão do :root se ausente. */
-  onAccent?: string
+  /** Cor da sombra "dura" (offset, sem blur) — só usada nos botões estilo arcade. Opcional — cai pro preto padrão do :root se ausente. */
+  shadowBtn?: string
 }

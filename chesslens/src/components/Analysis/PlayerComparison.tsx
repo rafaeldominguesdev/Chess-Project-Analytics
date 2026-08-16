@@ -28,7 +28,7 @@ function accColor(a: number) {
 function PlayerPhoto({ src, fallback, crowned }: { src?: string | null; fallback: string; crowned?: boolean }) {
   const shared: React.CSSProperties = {
     width: 76, height: 76, borderRadius: 14,
-    border: `2px solid ${crowned ? 'var(--accent)' : 'var(--border)'}`,
+    border: `2px solid ${crowned ? 'var(--color-blue-bright)' : 'var(--color-gray-border)'}`,
     boxShadow: crowned ? '0 6px 18px -4px rgba(227,166,29,0.55)' : '0 6px 16px -4px rgba(0,0,0,0.5)',
   }
   return (
@@ -38,7 +38,7 @@ function PlayerPhoto({ src, fallback, crowned }: { src?: string | null; fallback
       ) : (
         <div style={{
           ...shared,
-          background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32,
+          background: 'var(--color-bg-panel)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32,
         }}>
           {fallback}
         </div>
@@ -48,9 +48,9 @@ function PlayerPhoto({ src, fallback, crowned }: { src?: string | null; fallback
           className="cl-stat-pop"
           style={{
             position: 'absolute', top: -10, right: -10, width: 26, height: 26, borderRadius: '50%',
-            background: 'var(--accent)', color: 'var(--on-accent, #1a1200)',
+            background: 'var(--color-blue-bright)', color: '#ffffff',
             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13,
-            border: '2px solid var(--surface)', boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+            border: '2px solid var(--color-bg-panel)', boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
           }}
           title="Vencedor"
         >
@@ -145,8 +145,8 @@ function ResultBanner({ result, termination, whiteName, blackName }: { result?: 
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
         padding: '9px 14px', borderRadius: 9,
-        background: isDecisive ? 'var(--accent)' : 'var(--surface2)',
-        border: isDecisive ? 'none' : '1px solid var(--border)',
+        background: isDecisive ? 'var(--color-blue-bright)' : 'var(--color-bg-panel)',
+        border: isDecisive ? 'none' : '1px solid var(--color-gray-border)',
         textAlign: 'center',
         animationDelay: '90ms',
       }}
@@ -154,7 +154,7 @@ function ResultBanner({ result, termination, whiteName, blackName }: { result?: 
       <span style={{ fontSize: 16, flexShrink: 0 }}>{icon}</span>
       <span style={{
         fontSize: 13.5, fontWeight: 800,
-        color: isDecisive ? 'var(--on-accent, #1a1200)' : 'var(--text)',
+        color: isDecisive ? '#ffffff' : 'var(--color-text-on-dark)',
       }}>
         {headline}
         {reason && (
@@ -176,27 +176,27 @@ export function PlayerComparison({ moves, whiteName, blackName, whiteAvatar, bla
       <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 12 }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
           <PlayerPhoto src={whiteAvatar} fallback="♔" crowned={winnerColor === 'w'} />
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
+          <div style={{ fontSize: 13, color: 'var(--color-gray-muted)', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
             {whiteName}
           </div>
           <AccuracyBox value={wAcc} delay={0} />
         </div>
 
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', fontWeight: 700 }}>VS</div>
+        <div style={{ fontSize: 11, color: 'var(--color-gray-muted)', textAlign: 'center', fontWeight: 700 }}>VS</div>
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
           <PlayerPhoto src={blackAvatar} fallback="♚" crowned={winnerColor === 'b'} />
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
+          <div style={{ fontSize: 13, color: 'var(--color-gray-muted)', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
             {blackName}
           </div>
           <AccuracyBox value={bAcc} delay={40} />
         </div>
       </div>
 
-      <div style={{ fontSize: 10.5, color: 'var(--text-muted)', textAlign: 'center', fontWeight: 700, letterSpacing: '0.08em', marginTop: -6 }}>PRECISÃO</div>
+      <div style={{ fontSize: 10.5, color: 'var(--color-gray-muted)', textAlign: 'center', fontWeight: 700, letterSpacing: '0.08em', marginTop: -6 }}>PRECISÃO</div>
 
       {/* Barra comparativa */}
-      <div style={{ display: 'flex', height: 7, borderRadius: 4, overflow: 'hidden', background: 'var(--border)' }}>
+      <div style={{ display: 'flex', height: 7, borderRadius: 4, overflow: 'hidden', background: 'var(--color-gray-border)' }}>
         <div style={{ width: `${(wAcc / (wAcc + bAcc || 1)) * 100}%`, background: '#f0d9b5' }} />
         <div style={{ flex: 1, background: '#4a4a4a' }} />
       </div>
@@ -222,14 +222,14 @@ export function PlayerComparison({ moves, whiteName, blackName, whiteAvatar, bla
                 animationDelay: `${130 + i * 30}ms`,
               }}
             >
-              <span className="cl-display" style={{ textAlign: 'right', fontWeight: 800, color: 'var(--text)' }}>{w}</span>
+              <span className="cl-display" style={{ textAlign: 'right', fontWeight: 800, color: 'var(--color-text-on-dark)' }}>{w}</span>
               <span style={{ textAlign: 'center', color: cfg.color, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
                 {Icon
                   ? <Icon width={19} height={19} style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }} />
                   : <span style={{ fontSize: 14 }}>{cfg.symbol}</span>}
                 <span style={{ fontSize: 13.5 }}>{cfg.label}</span>
               </span>
-              <span className="cl-display" style={{ textAlign: 'left', fontWeight: 800, color: 'var(--text)' }}>{b}</span>
+              <span className="cl-display" style={{ textAlign: 'left', fontWeight: 800, color: 'var(--color-text-on-dark)' }}>{b}</span>
             </div>
           )
         })}

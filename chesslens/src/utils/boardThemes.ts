@@ -80,16 +80,15 @@ export const PIECE_SETS: Record<PieceSetName, PieceSet> = {
 }
 
 export const UI_THEMES: Record<UIThemeName, UITheme> = {
-  // "Arcade Mostarda" — visual padrão do app: base escura neutra (estilo chess.com/chessigma) com o
-  // mostarda concentrado só no accent (botões, destaques, seleção) em vez de lavar toda superfície
-  // de amarelo. Texto creme quente, sombra dura bem escura nos botões pra dar a cara de botão de
-  // arcade físico, "empurrado" pra dentro quando clicado.
-  'arcade-mostarda': { label: 'Arcade Mostarda', bg: '#17140D', surface: '#211B10', surface2: '#2E2510', accent: '#E3A61D', text: '#F3E9D2', textMuted: '#9C8F72', border: '#3A311C', shadowHard: '#000000', onAccent: '#1B1204' },
-  'brasil':        { label: 'Brasil',          bg: '#F6F9F2', surface: '#FFFFFF', surface2: '#EAF2E2', accent: '#2E7D32', text: '#16231A', textMuted: '#5C6E5F', border: '#DCE6D4' },
-  'dark-classic':  { label: 'Dark Classic',    bg: '#1a1a2e', surface: '#16213e', surface2: '#0f3460', accent: '#e2b96a', text: '#e0e0e0', textMuted: '#8892a4', border: '#2a3654' },
-  'dark-slate':    { label: 'Dark Slate',      bg: '#0d1117', surface: '#161b22', surface2: '#21262d', accent: '#58a6ff', text: '#c9d1d9', textMuted: '#8b949e', border: '#30363d' },
-  'dark-coffee':   { label: 'Dark Coffee',     bg: '#1C1410', surface: '#2C2018', surface2: '#3D2E20', accent: '#C8A97E', text: '#E8D5B7', textMuted: '#9A8070', border: '#4A3828' },
-  'chesscom-dark': { label: 'Chess.com Dark',  bg: '#1a1a1a', surface: '#262421', surface2: '#312e2b', accent: '#7fa650', text: '#bababa', textMuted: '#7a7a7a', border: '#3d3a36' },
-  'light-classic': { label: 'Light Classic',   bg: '#f5f5f0', surface: '#ffffff', surface2: '#efefef', accent: '#4a7c59', text: '#1a1a1a', textMuted: '#666666', border: '#dddddd' },
-  'light-cream':   { label: 'Light Cream',     bg: '#F5F0E8', surface: '#FFFDF7', surface2: '#EDE8DC', accent: '#7C5C3B', text: '#2C1F14', textMuted: '#8C7B6A', border: '#D4C9B8' },
+  // "Arcade Azul" — visual padrão do app: base azul-marinho moderna e limpa. O estilo "arcade"
+  // (borda grossa + sombra dura deslocada) fica só nos botões — o resto do site (cards, painéis,
+  // inputs) é liso, com raio de borda normal e borda fina, sem pixel-art.
+  'arcade-blue':   { label: 'Arcade Azul',     bg: '#0D1B35', surface: '#1A2A4A', accent: '#3388FF', text: '#DDEEFF', textMuted: '#8899AA', border: '#3A4560', shadowBtn: '#0A1E55' },
+  'brasil':        { label: 'Brasil',          bg: '#F6F9F2', surface: '#FFFFFF', accent: '#2E7D32', text: '#16231A', textMuted: '#5C6E5F', border: '#DCE6D4' },
+  'dark-classic':  { label: 'Dark Classic',    bg: '#1a1a2e', surface: '#16213e', accent: '#e2b96a', text: '#e0e0e0', textMuted: '#8892a4', border: '#2a3654' },
+  'dark-slate':    { label: 'Dark Slate',      bg: '#0d1117', surface: '#161b22', accent: '#58a6ff', text: '#c9d1d9', textMuted: '#8b949e', border: '#30363d' },
+  'dark-coffee':   { label: 'Dark Coffee',     bg: '#1C1410', surface: '#2C2018', accent: '#C8A97E', text: '#E8D5B7', textMuted: '#9A8070', border: '#4A3828' },
+  'chesscom-dark': { label: 'Chess.com Dark',  bg: '#1a1a1a', surface: '#262421', accent: '#7fa650', text: '#bababa', textMuted: '#7a7a7a', border: '#3d3a36' },
+  'light-classic': { label: 'Light Classic',   bg: '#f5f5f0', surface: '#ffffff', accent: '#4a7c59', text: '#1a1a1a', textMuted: '#666666', border: '#dddddd' },
+  'light-cream':   { label: 'Light Cream',     bg: '#F5F0E8', surface: '#FFFDF7', accent: '#7C5C3B', text: '#2C1F14', textMuted: '#8C7B6A', border: '#D4C9B8' },
 }

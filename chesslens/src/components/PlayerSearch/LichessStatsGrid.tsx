@@ -31,8 +31,8 @@ export function LichessStatsGrid({ stats }: { stats: LichessStats }) {
       <div
         className="cl-stat-pop"
         style={{
-          background: 'var(--surface2)',
-          border: '1px solid var(--border)',
+          background: 'var(--color-bg-panel)',
+          border: '1px solid var(--color-gray-border)',
           borderRadius: 8,
           padding: '14px 16px',
           display: 'flex',
@@ -42,10 +42,10 @@ export function LichessStatsGrid({ stats }: { stats: LichessStats }) {
           animationDelay: `${entries.length * 40}ms`,
         }}
       >
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        <div style={{ fontSize: 11, color: 'var(--color-gray-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Total de partidas
         </div>
-        <div className="cl-display" style={{ fontSize: 28, fontWeight: 700, color: 'var(--text)', lineHeight: 1.1 }}>
+        <div className="cl-display" style={{ fontSize: 28, fontWeight: 700, color: 'var(--color-text-on-dark)', lineHeight: 1.1 }}>
           {stats.totalGames}
         </div>
       </div>

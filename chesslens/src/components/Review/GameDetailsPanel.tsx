@@ -20,8 +20,8 @@ export function GameDetailsPanel({ gameInfo, opening }: GameDetailsPanelProps) {
       className="cl-fade-in"
       style={{
         display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1,
-        background: 'var(--border)',
-        border: '1px solid var(--border)',
+        background: 'var(--color-gray-border)',
+        border: '1px solid var(--color-gray-border)',
         borderRadius: 9,
         overflow: 'hidden',
         boxShadow: '0 4px 14px -4px rgba(0,0,0,0.3)',
@@ -35,15 +35,15 @@ export function GameDetailsPanel({ gameInfo, opening }: GameDetailsPanelProps) {
           <div
             key={k}
             style={{
-              background: 'var(--surface)', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 2,
+              background: 'var(--color-bg-panel)', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 2,
               minWidth: 0, gridColumn: isWide ? '1 / -1' : undefined,
             }}
           >
-            <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{k}</span>
+            <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-gray-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{k}</span>
             <span
               style={{
                 fontSize: 12.5, fontWeight: k === 'Resultado' ? 700 : 500,
-                color: k === 'Resultado' ? 'var(--accent)' : 'var(--text)',
+                color: k === 'Resultado' ? 'var(--color-blue-bright)' : 'var(--color-text-on-dark)',
                 overflow: isWide ? 'visible' : 'hidden',
                 textOverflow: isWide ? 'clip' : 'ellipsis',
                 whiteSpace: isWide ? 'normal' : 'nowrap',

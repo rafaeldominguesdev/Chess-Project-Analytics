@@ -18,20 +18,20 @@ export function Sidebar({ onSettings, onToggleTraining, trainingActive }: Sideba
         height: '100vh',
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         gap: 16, padding: '16px 0',
-        background: 'var(--surface)',
-        borderRight: '1px solid var(--border)',
+        background: 'var(--color-bg-panel)',
+        borderRight: '1px solid var(--color-gray-border)',
         zIndex: 30,
       }}
     >
-      <div title="ChessLens" style={{ color: 'var(--accent)', display: 'flex' }}>
+      <div title="ChessLens" style={{ color: 'var(--color-blue-bright)', display: 'flex' }}>
         <BrandMarkIcon width={26} height={26} />
       </div>
 
-      <div style={{ width: 32, height: 1, background: 'var(--border)' }} />
+      <div style={{ width: 32, height: 1, background: 'var(--color-gray-border)' }} />
 
       <button
         className={`${ICON_BTN}${trainingActive ? ' cl-btn-selected' : ''}`}
-        style={{ color: trainingActive ? undefined : 'var(--text)' }}
+        style={{ color: trainingActive ? undefined : 'var(--color-text-on-dark)' }}
         onClick={onToggleTraining}
         title="Treino de táticas"
       >
@@ -42,7 +42,7 @@ export function Sidebar({ onSettings, onToggleTraining, trainingActive }: Sideba
 
       <button
         className={ICON_BTN}
-        style={{ color: 'var(--text)' }}
+        style={{ color: 'var(--color-text-on-dark)' }}
         onClick={onSettings}
         title="Configurações"
       >

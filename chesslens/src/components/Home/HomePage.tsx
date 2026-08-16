@@ -72,10 +72,9 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
         <div
           className="cl-home-hero"
           style={{
-            borderRadius: 20,
-            border: '2.5px solid var(--border)',
-            boxShadow: '7px 7px 0 0 var(--shadow-hard, rgba(0,0,0,0.55))',
-            background: 'var(--surface)',
+            borderRadius: 16,
+            border: '1px solid var(--color-gray-border)',
+            background: 'var(--color-bg-panel)',
             overflow: 'hidden',
           }}
         >
@@ -87,7 +86,7 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
               backgroundImage: 'url(/hero-capybara.png)',
               backgroundSize: 'cover',
               backgroundPosition: 'left center',
-              borderRight: '2.5px solid var(--border)',
+              borderRight: '1px solid var(--color-gray-border)',
               position: 'relative',
             }}
           >
@@ -104,29 +103,29 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
           }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span aria-hidden style={{ width: 4, height: 14, borderRadius: 2, background: 'var(--accent)' }} />
+                <span aria-hidden style={{ width: 4, height: 14, borderRadius: 2, background: 'var(--color-blue-bright)' }} />
                 <span style={{
                   fontSize: 11.5, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase',
-                  color: 'var(--accent)',
+                  color: 'var(--color-blue-bright)',
                 }}>
                   Analisador de xadrez
                 </span>
               </div>
               <h1 className="cl-display" style={{
                 fontSize: 'clamp(34px, 4.4vw, 48px)', fontWeight: 800, lineHeight: 1.05,
-                letterSpacing: '-0.02em', color: 'var(--text)',
+                letterSpacing: '-0.02em', color: 'var(--color-text-on-dark)',
               }}>
-                Chess<span style={{ color: 'var(--accent)' }}>Lens</span>
+                Chess<span style={{ color: 'var(--color-blue-bright)' }}>Lens</span>
               </h1>
-              <p style={{ fontSize: 15, color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: 480 }}>
-                Analise qualquer partida do <strong style={{ color: 'var(--text)', fontWeight: 700 }}>chess.com</strong> ou do{' '}
-                <strong style={{ color: 'var(--text)', fontWeight: 700 }}>Lichess</strong> com o Stockfish completo —
+              <p style={{ fontSize: 15, color: 'var(--color-gray-muted)', lineHeight: 1.6, maxWidth: 480 }}>
+                Analise qualquer partida do <strong style={{ color: 'var(--color-text-on-dark)', fontWeight: 700 }}>chess.com</strong> ou do{' '}
+                <strong style={{ color: 'var(--color-text-on-dark)', fontWeight: 700 }}>Lichess</strong> com o Stockfish completo —
                 precisão, classificação lance a lance e gráfico de avaliação, tudo no seu navegador.
               </p>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <span style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+              <span style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-gray-muted)' }}>
                 Buscar jogador
               </span>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 }}>
@@ -143,7 +142,7 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
                   onClick={() => onOpenSearch('lichess')}
                 />
               </div>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+              <p style={{ fontSize: 12, color: 'var(--color-gray-muted)', lineHeight: 1.5 }}>
                 Busque um jogador e escolha "Analisar" numa das partidas recentes.
               </p>
             </div>
@@ -153,8 +152,8 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
         {/* ── Recursos ── */}
         <section>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-            <span aria-hidden style={{ width: 4, height: 14, borderRadius: 2, background: 'var(--accent)' }} />
-            <h2 style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+            <span aria-hidden style={{ width: 4, height: 14, borderRadius: 2, background: 'var(--color-blue-bright)' }} />
+            <h2 style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-gray-muted)' }}>
               O que você tem aqui
             </h2>
           </div>
@@ -162,21 +161,20 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
             {FEATURES.map(({ Icon, label, description }) => (
               <div key={label} style={{
                 display: 'flex', flexDirection: 'column', gap: 10,
-                padding: '16px 18px', borderRadius: 14,
-                background: 'var(--surface)',
-                border: '2px solid var(--border)',
-                boxShadow: '3px 3px 0 0 var(--shadow-hard, rgba(0,0,0,0.55))',
+                padding: '16px 18px', borderRadius: 12,
+                background: 'var(--color-bg-panel)',
+                border: '1px solid var(--color-gray-border)',
               }}>
                 <span style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   width: 34, height: 34, borderRadius: 9, flexShrink: 0,
-                  background: 'var(--surface2)', color: 'var(--accent)',
+                  background: 'var(--color-bg-panel)', color: 'var(--color-blue-bright)',
                 }}>
                   <Icon />
                 </span>
                 <span style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text)', lineHeight: 1.3 }}>{label}</span>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.45 }}>{description}</span>
+                  <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--color-text-on-dark)', lineHeight: 1.3 }}>{label}</span>
+                  <span style={{ fontSize: 12, color: 'var(--color-gray-muted)', lineHeight: 1.45 }}>{description}</span>
                 </span>
               </div>
             ))}
@@ -186,11 +184,11 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
         {/* ── Rodapé ── */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-          padding: '18px 0 4px', borderTop: '1.5px solid var(--border)',
+          padding: '18px 0 4px', borderTop: '1.5px solid var(--color-gray-border)',
         }}>
           <img src="/stockfish-logo.webp" alt="Stockfish" width={18} height={18} style={{ borderRadius: 5 }} />
-          <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>
-            Powered by <strong style={{ color: 'var(--text)', fontWeight: 700 }}>Stockfish</strong>
+          <span style={{ fontSize: 11.5, color: 'var(--color-gray-muted)' }}>
+            Powered by <strong style={{ color: 'var(--color-text-on-dark)', fontWeight: 700 }}>Stockfish</strong>
           </span>
         </div>
       </div>
@@ -220,9 +218,9 @@ function PlatformCard({
       <Icon width={26} height={26} style={{ flexShrink: 0 }} />
       <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, minWidth: 0 }}>
         <span style={{ fontSize: 14.5, fontWeight: 800, lineHeight: 1.2 }}>{label}</span>
-        <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>{description}</span>
+        <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-gray-muted)' }}>{description}</span>
       </span>
-      <ArrowRightIcon style={{ marginLeft: 'auto', flexShrink: 0, color: 'var(--text-muted)' }} />
+      <ArrowRightIcon style={{ marginLeft: 'auto', flexShrink: 0, color: 'var(--color-gray-muted)' }} />
     </button>
   )
 }

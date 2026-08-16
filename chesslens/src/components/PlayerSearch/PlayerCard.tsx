@@ -57,7 +57,7 @@ export function PlayerCard({ profile }: { profile: ChessComProfile }) {
   return (
     <div className="cl-stat-pop" style={{
       position: 'relative', overflow: 'hidden',
-      background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 14,
+      background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)', borderRadius: 14,
       boxShadow: '0 10px 28px -10px rgba(0,0,0,0.4)',
       padding: '22px 22px 20px',
     }}>
@@ -68,7 +68,7 @@ export function PlayerCard({ profile }: { profile: ChessComProfile }) {
           <img
             src={profile.avatar}
             alt={profile.username}
-            style={{ width: 100, height: 100, borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--border)', flexShrink: 0 }}
+            style={{ width: 100, height: 100, borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--color-gray-border)', flexShrink: 0 }}
           />
         ) : (
           <div
@@ -77,7 +77,7 @@ export function PlayerCard({ profile }: { profile: ChessComProfile }) {
               background: bg,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#fff', fontWeight: 800, fontSize: 38,
-              border: '3px solid var(--border)',
+              border: '3px solid var(--color-gray-border)',
             }}
           >
             {initial}
@@ -95,7 +95,7 @@ export function PlayerCard({ profile }: { profile: ChessComProfile }) {
               </span>
             )}
             {isPremium && <PremiumIcon size={19} />}
-            <span className="cl-display" style={{ fontSize: 24, fontWeight: 700, color: 'var(--text)', overflowWrap: 'anywhere' }}>{profile.username}</span>
+            <span className="cl-display" style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-on-dark)', overflowWrap: 'anywhere' }}>{profile.username}</span>
             {flag && <span style={{ fontSize: 20 }}>{flag}</span>}
             {profile.is_streamer && (
               <span style={{
@@ -108,25 +108,25 @@ export function PlayerCard({ profile }: { profile: ChessComProfile }) {
           </div>
 
           {profile.name && (
-            <div style={{ fontSize: 13.5, color: 'var(--text-muted)' }}>{profile.name}</div>
+            <div style={{ fontSize: 13.5, color: 'var(--color-gray-muted)' }}>{profile.name}</div>
           )}
 
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, marginTop: 2 }}>
             {joinedLabel && (
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{joinedLabel}</span>
+              <span style={{ fontSize: 12, color: 'var(--color-gray-muted)' }}>{joinedLabel}</span>
             )}
             {profile.location && (
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>· {profile.location}</span>
+              <span style={{ fontSize: 12, color: 'var(--color-gray-muted)' }}>· {profile.location}</span>
             )}
             {profile.followers !== null && profile.followers > 0 && (
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                · <strong style={{ color: 'var(--text)' }}>{formatFollowers(profile.followers)}</strong> seguidores
+              <span style={{ fontSize: 12, color: 'var(--color-gray-muted)' }}>
+                · <strong style={{ color: 'var(--color-text-on-dark)' }}>{formatFollowers(profile.followers)}</strong> seguidores
               </span>
             )}
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 2 }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: lastSeen.recent ? '#3ecf6c' : 'var(--text-muted)', fontWeight: lastSeen.recent ? 700 : 400 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: lastSeen.recent ? '#3ecf6c' : 'var(--color-gray-muted)', fontWeight: lastSeen.recent ? 700 : 400 }}>
               {lastSeen.recent && (
                 <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#3ecf6c', display: 'inline-block', boxShadow: '0 0 0 3px rgba(62,207,108,0.2)' }} />
               )}
@@ -136,7 +136,7 @@ export function PlayerCard({ profile }: { profile: ChessComProfile }) {
               href={`https://www.chess.com/member/${profile.username}`}
               target="_blank"
               rel="noreferrer"
-              style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--color-blue-bright)', fontWeight: 600, textDecoration: 'none' }}
             >
               Ver perfil <ExternalLinkIcon width={11} height={11} />
             </a>

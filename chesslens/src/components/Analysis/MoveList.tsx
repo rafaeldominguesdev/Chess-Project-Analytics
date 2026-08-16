@@ -27,7 +27,7 @@ export function MoveList({ moves, currentMoveIndex, onGoTo }: MoveListProps) {
   const coachHint = useCoachHint(currentMove, priorFen)
 
   if (moves.length === 0) {
-    return <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Carregue uma partida.</p>
+    return <p className="text-xs" style={{ color: 'var(--color-gray-muted)' }}>Carregue uma partida.</p>
   }
 
   const rows = Math.ceil(moves.length / 2)
@@ -37,14 +37,14 @@ export function MoveList({ moves, currentMoveIndex, onGoTo }: MoveListProps) {
       <div
         style={{
           display: 'grid', gridTemplateColumns: '34px 1fr 1fr', alignItems: 'center', gap: 6,
-          padding: '0 4px 6px', borderBottom: '1px solid var(--border)',
+          padding: '0 4px 6px', borderBottom: '1px solid var(--color-gray-border)',
         }}
       >
         <span />
-        <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--text-muted)', fontWeight: 700 }}>
+        <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--color-gray-muted)', fontWeight: 700 }}>
           Brancas
         </span>
-        <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--text-muted)', fontWeight: 700 }}>
+        <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--color-gray-muted)', fontWeight: 700 }}>
           Pretas
         </span>
       </div>
@@ -66,7 +66,7 @@ export function MoveList({ moves, currentMoveIndex, onGoTo }: MoveListProps) {
                   background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.025)',
                 }}
               >
-                <span className="cl-display" style={{ fontSize: 13, textAlign: 'center', color: 'var(--text-muted)', fontWeight: 700 }}>
+                <span className="cl-display" style={{ fontSize: 13, textAlign: 'center', color: 'var(--color-gray-muted)', fontWeight: 700 }}>
                   {i + 1}
                 </span>
 
@@ -106,16 +106,16 @@ const MoveBtn = forwardRef<HTMLButtonElement, {
   // A notação do lance herda a cor da classificação (mesma cor do ícone na casa do tabuleiro),
   // para ficar fácil de identificar bons/maus lances direto na lista.
   const sanColor = active
-    ? 'var(--on-accent, #fff)'
+    ? '#ffffff'
     : move.classification
       ? QUALITY_CONFIG[move.classification].color
-      : 'var(--text)'
+      : 'var(--color-text-on-dark)'
 
   return (
     <button
       ref={ref}
       onClick={onClick}
-      className={`cl-move-btn flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-left w-full transition-all ${active ? 'cl-move-active' : ''}`}
+      className={`cl-move-btn flex items-center gap-2 px-2.5 py-2 text-sm text-left w-full transition-all ${active ? 'cl-move-active' : ''}`}
       style={{ fontWeight: active || move.classification ? 700 : 400 }}
     >
       <span style={{ color: sanColor }}>{move.san}</span>
@@ -176,17 +176,17 @@ function CoachHintCard({ hint }: { hint: CoachHint }) {
       style={{
         display: 'flex', alignItems: 'flex-start', gap: 9,
         padding: '10px 12px', borderRadius: 10,
-        background: 'var(--surface2)', border: `1px solid ${cfg.color}`,
+        background: 'var(--color-bg-panel)', border: `1px solid ${cfg.color}`,
       }}
     >
       <span style={{ fontSize: 17, flexShrink: 0, lineHeight: 1.3 }}>💡</span>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
-        <p style={{ fontSize: 12.5, color: 'var(--text)', lineHeight: 1.45 }}>
+        <p style={{ fontSize: 12.5, color: 'var(--color-text-on-dark)', lineHeight: 1.45 }}>
           Você jogou <strong style={{ color: cfg.color }}>{hint.playedSan}</strong> — o lance mais forte era{' '}
-          <strong style={{ color: 'var(--accent)' }}>{hint.bestSan}</strong>.
+          <strong style={{ color: 'var(--color-blue-bright)' }}>{hint.bestSan}</strong>.
         </p>
         {hint.drop !== null && hint.drop > 0 && (
-          <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+          <p style={{ fontSize: 11, color: 'var(--color-gray-muted)' }}>
             Perdeu cerca de {hint.drop.toFixed(1)} de vantagem com esse lance.
           </p>
         )}

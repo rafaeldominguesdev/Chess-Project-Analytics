@@ -4,17 +4,27 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  /* Valores substituídos em runtime pelo tema ativo (ver ThemeContext) — os daqui
-     são só o fallback antes do primeiro render/JS rodar (tema padrão: Arcade Mostarda). */
-  --bg: #17140D;
-  --surface: #211B10;
-  --surface2: #2E2510;
-  --accent: #E3A61D;
-  --text: #F3E9D2;
-  --text-muted: #9C8F72;
-  --border: #3A311C;
-  --shadow-hard: #000000;
-  --on-accent: #1B1204;
+  /* Identidade visual do site: moderno, limpo, tema azul. Só os BOTÕES usam o
+     estilo arcade/pixel-art (ver seção de botões mais abaixo) — o resto do
+     site (cards, painéis, inputs) é liso, com raio de borda normal.
+     --color-bg-main/--color-bg-panel/--color-blue-bright/--color-text-on-dark/
+     --color-gray-muted/--color-gray-border trocam de valor conforme o tema de
+     UI escolhido nas Configurações (ver ThemeContext) — os daqui são o fallback
+     antes do primeiro render. As outras (blue-primary, blue-light, blue-ice,
+     bg-surface, shadow-btn, text-on-light) são fixas, não trocam por tema.
+  */
+  --color-bg-main: #0D1B35;
+  --color-bg-panel: #1A2A4A;
+  --color-bg-surface: #EAF2FA;
+  --color-blue-primary: #2266CC;
+  --color-blue-bright: #3388FF;
+  --color-blue-light: #55AAFF;
+  --color-blue-ice: #AAD4FF;
+  --color-gray-border: #3A4560;
+  --color-gray-muted: #8899AA;
+  --color-shadow-btn: #0A1E55;
+  --color-text-on-dark: #DDEEFF;
+  --color-text-on-light: #1A2A4A;
   --board-light: #EEEED2;
   --board-dark: #769656;
   --board-highlight: #F6F669;
@@ -23,8 +33,8 @@
 }
 
 body {
-  background-color: var(--bg);
-  color: var(--text);
+  background-color: var(--color-bg-main);
+  color: var(--color-text-on-dark);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -38,14 +48,14 @@ body {
 #root { width: 100%; min-height: 100vh; }
 
 ::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: var(--surface); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+::-webkit-scrollbar-track { background: var(--color-bg-panel); }
+::-webkit-scrollbar-thumb { background: var(--color-gray-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-blue-bright); }
 
 /* Scroll customizado para o painel de configurações */
 .settings-scroll::-webkit-scrollbar { width: 4px; }
 .settings-scroll::-webkit-scrollbar-track { background: transparent; }
-.settings-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.settings-scroll::-webkit-scrollbar-thumb { background: var(--color-gray-border); border-radius: 2px; }
 
 @keyframes pop {
   0% { transform: scale(0.4); opacity: 0; }
@@ -79,23 +89,25 @@ body {
 .cl-row-in { animation: cl-row-in 0.28s ease-out both; }
 
 .cl-game-row { transition: border-color 0.15s, transform 0.15s; }
-.cl-game-row:hover { border-color: var(--accent); transform: translateX(2px); }
+.cl-game-row:hover { border-color: var(--color-blue-bright); transform: translateX(2px); }
 
 .cl-search-btn { transition: transform 0.12s, filter 0.12s; }
 .cl-search-btn:active { transform: scale(0.97); }
 
 .cl-move-btn { background: transparent; }
-.cl-move-btn:hover { background: var(--surface2); }
+.cl-move-btn:hover { background: var(--color-bg-panel); }
 .cl-move-active,
 .cl-move-active:hover {
-  background: var(--accent) !important;
-  box-shadow: 0 3px 10px -2px color-mix(in srgb, var(--accent) 60%, transparent);
+  background: var(--color-blue-bright) !important;
+  box-shadow: 0 3px 10px -2px color-mix(in srgb, var(--color-blue-bright) 60%, transparent);
 }
 
 /* ══════════════════════════════════════════════
-   Botões estilo arcade — borda grossa + sombra dura deslocada (sem blur),
-   que "afunda" (translada + perde a sombra) ao ser pressionado. Igual botão
-   de fliperama físico.
+   Botões estilo arcade/pixel-art — únicos elementos do site com esse estilo
+   (o resto é moderno e liso). Quadrados (border-radius: 0), borda grossa,
+   sombra dura deslocada sem blur, maiúsculas com letter-spacing. Ao passar o
+   mouse "levantam" (translada pro canto oposto da sombra, sombra cresce); ao
+   clicar "afundam" (translada pra cima da sombra, sombra encolhe).
    ══════════════════════════════════════════════ */
 .cl-btn {
   display: inline-flex;
@@ -103,54 +115,71 @@ body {
   justify-content: center;
   gap: 8px;
   font-family: inherit;
-  font-weight: 800;
-  border: 2.5px solid var(--border);
-  border-radius: 10px;
-  background: var(--surface2);
-  color: var(--text);
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 10px 22px;
+  border: 2px solid var(--color-blue-primary);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-blue-bright);
   cursor: pointer;
-  box-shadow: 4px 4px 0 0 var(--shadow-hard, rgba(0,0,0,0.55));
+  box-shadow: 4px 4px 0 var(--color-shadow-btn);
   transform: translate(0, 0);
-  transition: transform 0.08s ease-out, box-shadow 0.08s ease-out, filter 0.12s ease-out;
+  transition: all 80ms linear;
 }
-.cl-btn:hover:not(:disabled) { filter: brightness(1.06); }
+.cl-btn:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--color-shadow-btn);
+}
 .cl-btn:active:not(:disabled),
 .cl-btn.cl-btn-pressed {
-  transform: translate(4px, 4px);
-  box-shadow: 0 0 0 0 var(--shadow-hard, rgba(0,0,0,0.55));
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--color-shadow-btn);
 }
-.cl-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: none; }
+.cl-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* Variante de destaque — usa a cor de accent do tema, pro CTA principal */
+/* Variante de destaque (Primário) — cor sólida, pro CTA principal */
 .cl-btn-accent {
-  background: var(--accent);
-  color: var(--on-accent, #fff);
-  border-color: var(--shadow-hard, var(--border));
+  background: var(--color-blue-primary);
+  border-color: var(--color-blue-bright);
+  color: #ffffff;
 }
 
-/* Variante "fantasma" — sem preenchimento, sombra mais discreta (ícones secundários) */
+/* Variante "fantasma" — sem preenchimento nem sombra, pra ações bem discretas */
 .cl-btn-ghost {
-  background: var(--surface);
+  background: transparent;
+  box-shadow: none;
 }
+.cl-btn-ghost:hover:not(:disabled) { box-shadow: none; }
 
-/* Botões pequenos (ícones de navegação, fechar) — borda e sombra mais finas */
+/* Botão ícone — quadrado 40×40, painel escuro (engrenagem, fechar, navegação) */
 .cl-btn-sm {
+  width: 40px;
+  height: 40px;
+  padding: 0;
   border-width: 2px;
-  border-radius: 8px;
-  box-shadow: 3px 3px 0 0 var(--shadow-hard, rgba(0,0,0,0.55));
+  background: var(--color-bg-panel);
+  border-color: var(--color-gray-border);
+  box-shadow: 3px 3px 0 var(--color-shadow-btn);
+}
+.cl-btn-sm:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 var(--color-shadow-btn);
 }
 .cl-btn-sm:active:not(:disabled),
 .cl-btn-sm.cl-btn-pressed {
-  transform: translate(3px, 3px);
-  box-shadow: 0 0 0 0 var(--shadow-hard, rgba(0,0,0,0.55));
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--color-shadow-btn);
 }
 
 /* Estado selecionado permanente (abas, toggles de opção) — fica "afundado" igual pressionado */
 .cl-btn-selected {
-  background: var(--accent) !important;
-  color: var(--on-accent, #fff) !important;
+  background: var(--color-blue-primary) !important;
+  border-color: var(--color-blue-bright) !important;
+  color: #ffffff !important;
   transform: translate(4px, 4px);
-  box-shadow: 0 0 0 0 var(--shadow-hard, rgba(0,0,0,0.55)) !important;
+  box-shadow: 0 0 0 var(--color-shadow-btn) !important;
 }
 .cl-btn-sm.cl-btn-selected { transform: translate(3px, 3px); }
 
@@ -181,7 +210,7 @@ body {
    de .cl-btn e afins, que continuam valendo por especificidade).
    ══════════════════════════════════════════════ */
 :focus-visible {
-  outline: 2.5px solid var(--accent);
+  outline: 2.5px solid var(--color-blue-bright);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -196,7 +225,7 @@ textarea {
 
 /* Anel pulsante da dica no treino de táticas — "essa é a peça que precisa mover". */
 @keyframes cl-hint-pulse {
-  0%, 100% { box-shadow: inset 0 0 0 3px var(--accent); }
-  50% { box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent); }
+  0%, 100% { box-shadow: inset 0 0 0 3px var(--color-blue-bright); }
+  50% { box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--color-blue-bright) 40%, transparent); }
 }
 
