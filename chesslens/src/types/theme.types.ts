@@ -10,7 +10,7 @@ export type PieceSetName =
   | 'staunty' | 'tatiana'
 
 export type UIThemeName =
-  | 'arcade-blue'
+  | 'amber-noir'
   | 'brasil'
   | 'dark-classic' | 'dark-slate' | 'dark-coffee' | 'chesscom-dark'
   | 'light-classic' | 'light-cream'

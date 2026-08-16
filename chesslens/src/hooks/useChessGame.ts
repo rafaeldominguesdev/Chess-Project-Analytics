@@ -61,6 +61,7 @@ export function useChessGame(): UseChessGameReturn {
       const temp = new Chess()
 
       history.forEach((move, i) => {
+        const fenBefore = temp.fen()
         temp.move(move.san)
         fenList.push(temp.fen())
         classifiedMoves.push({
@@ -68,6 +69,7 @@ export function useChessGame(): UseChessGameReturn {
           from: move.from,
           to: move.to,
           fen: temp.fen(),
+          fenBefore,
           moveNumber: Math.floor(i / 2) + 1,
           color: move.color as 'w' | 'b',
           classification: null,

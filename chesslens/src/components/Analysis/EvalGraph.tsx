@@ -189,20 +189,20 @@ export function EvalGraph({ evals, currentPosition, onSeek }: EvalGraphProps) {
             transform: 'translateX(-50%)',
             background: 'var(--color-bg-panel)',
             border: '1px solid var(--color-gray-border)',
-            borderRadius: 6,
+            borderRadius: 'var(--radius-sm)',
             padding: '3px 7px',
             fontSize: 10.5,
             color: 'var(--color-text-on-dark)',
             whiteSpace: 'nowrap',
             pointerEvents: 'none',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+            boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.04), 0 1px 0 0 rgba(0,0,0,0.5), 0 16px 36px -12px rgba(0,0,0,0.6)',
             display: 'flex',
             gap: 6,
             alignItems: 'baseline',
           }}
         >
           <span style={{ color: 'var(--color-gray-muted)' }}>{moveLabel(hoverIndex!)}</span>
-          <strong style={{ fontVariantNumeric: 'tabular-nums' }}>{formatEval(evals[hoverIndex!] ?? 0)}</strong>
+          <strong className="cl-mono">{formatEval(evals[hoverIndex!] ?? 0)}</strong>
         </div>
       )}
     </div>

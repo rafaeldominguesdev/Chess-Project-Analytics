@@ -22,9 +22,9 @@ export function GameDetailsPanel({ gameInfo, opening }: GameDetailsPanelProps) {
         display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1,
         background: 'var(--color-gray-border)',
         border: '1px solid var(--color-gray-border)',
-        borderRadius: 9,
+        borderRadius: 'var(--radius-sm)',
         overflow: 'hidden',
-        boxShadow: '0 4px 14px -4px rgba(0,0,0,0.3)',
+        boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.04), 0 1px 0 0 rgba(0,0,0,0.5), 0 16px 36px -12px rgba(0,0,0,0.6)',
       }}
     >
       {fields.map(([k, v]) => {
@@ -41,6 +41,7 @@ export function GameDetailsPanel({ gameInfo, opening }: GameDetailsPanelProps) {
           >
             <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-gray-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{k}</span>
             <span
+              className={k === 'Resultado' ? 'cl-mono' : undefined}
               style={{
                 fontSize: 12.5, fontWeight: k === 'Resultado' ? 700 : 500,
                 color: k === 'Resultado' ? 'var(--color-blue-bright)' : 'var(--color-text-on-dark)',

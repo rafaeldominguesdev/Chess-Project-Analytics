@@ -25,9 +25,9 @@ function hashColor(str: string): string {
 
 /** Cores do badge de precisão, em faixas parecidas com o "Game Review" do chess.com. */
 function accuracyStyle(value: number): { bg: string; color: string } {
-  if (value >= 90) return { bg: 'var(--color-blue-bright)', color: '#ffffff' }
+  if (value >= 90) return { bg: 'var(--color-blue-bright)', color: 'var(--color-text-on-light)' }
   if (value >= 70) return { bg: 'var(--color-bg-panel)', color: 'var(--color-text-on-dark)' }
-  return { bg: '#5E1A1A', color: '#F5D6D6' }
+  return { bg: 'color-mix(in srgb, var(--color-error) 25%, var(--color-bg-panel))', color: 'color-mix(in srgb, var(--color-error) 55%, white)' }
 }
 
 export function PlayerCard({
@@ -67,20 +67,20 @@ export function PlayerCard({
             src={avatarUrl}
             alt={username}
             style={{
-              width: dim, height: dim, borderRadius: 7, objectFit: 'cover',
+              width: dim, height: dim, borderRadius: 'var(--radius-sm)', objectFit: 'cover',
               border: isActive ? '2px solid var(--color-blue-bright)' : '2px solid rgba(255,255,255,0.15)',
-              transition: 'border-color 0.2s ease',
+              transition: `border-color var(--dur-tap) var(--ease-tap)`,
             }}
           />
         ) : (
           <div
             style={{
-              width: dim, height: dim, borderRadius: 7,
+              width: dim, height: dim, borderRadius: 'var(--radius-sm)',
               background: bg,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#fff', fontWeight: 700, fontSize: dim * 0.36,
               border: isActive ? '2px solid var(--color-blue-bright)' : '2px solid rgba(255,255,255,0.15)',
-              transition: 'border-color 0.2s ease',
+              transition: `border-color var(--dur-tap) var(--ease-tap)`,
             }}
           >
             {initials}
@@ -107,7 +107,7 @@ export function PlayerCard({
         {title && (
           <span style={{
             fontSize: 10.5, fontWeight: 800, color: '#fff',
-            background: '#b5382e', padding: '1px 5px', borderRadius: 4, flexShrink: 0,
+            background: '#b5382e', padding: '1px 5px', borderRadius: 'var(--radius-sm)', flexShrink: 0,
           }}>
             {title}
           </span>
@@ -120,20 +120,21 @@ export function PlayerCard({
           {username}
         </span>
         {flag && <span style={{ fontSize: nameSize, flexShrink: 0 }} title={countryCode ?? ''}>{flag}</span>}
-        <span style={{
+        <span className="cl-mono" style={{
           fontSize: ratingSize, fontWeight: 700, color: 'var(--color-text-on-dark)',
-          background: 'var(--color-bg-panel)', padding: '1px 7px', borderRadius: 5, flexShrink: 0,
+          background: 'var(--color-bg-panel)', padding: '1px 7px', borderRadius: 'var(--radius-sm)', flexShrink: 0,
         }}>
           {rating && rating !== '?' ? rating : 'Unrated'}
         </span>
         {hasAccuracy && (
           <span
             title="Precisão"
+            className="cl-mono"
             style={{
               fontSize: ratingSize, fontWeight: 800, letterSpacing: -0.1,
               background: accuracyStyle(accuracy as number).bg,
               color: accuracyStyle(accuracy as number).color,
-              padding: '1px 7px', borderRadius: 5, flexShrink: 0,
+              padding: '1px 7px', borderRadius: 'var(--radius-sm)', flexShrink: 0,
             }}
           >
             {(accuracy as number).toFixed(1)}%

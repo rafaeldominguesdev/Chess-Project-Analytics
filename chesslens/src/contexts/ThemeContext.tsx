@@ -5,9 +5,9 @@ import { UI_THEMES, BOARD_THEMES } from '../utils/boardThemes'
 const STORAGE_KEY = 'chesslens-theme'
 
 const DEFAULT_THEME: ThemeConfig = {
-  boardTheme: 'chesscom-green',
-  pieceSet: 'cburnett',
-  uiTheme: 'arcade-blue',
+  boardTheme: 'graphite-amber',
+  pieceSet: 'governor',
+  uiTheme: 'amber-noir',
   showCoordinates: true,
   showLegalMoves: true,
   showLastMove: true,
@@ -18,9 +18,10 @@ const DEFAULT_THEME: ThemeConfig = {
 }
 
 // Defaults antigos — quem tinha isso salvo nunca escolheu um tema de propósito,
-// então migra pro novo default (arcade azul) também.
-const OLD_DEFAULT_BOARD_THEMES = new Set(['chesscom-walnut', 'obsidian-gold', 'brasil'])
+// então migra pro novo default (tabuleiro/peça/UI assinatura do ChessLens) também.
+const OLD_DEFAULT_BOARD_THEMES = new Set(['chesscom-walnut', 'obsidian-gold', 'brasil', 'chesscom-green'])
 const OLD_DEFAULT_UI_THEMES = new Set(['obsidian-gold', 'brasil', 'chesscom-dark', 'arcade-mostarda'])
+const OLD_DEFAULT_PIECE_SETS = new Set(['cburnett'])
 
 interface ThemeContextValue {
   theme: ThemeConfig
@@ -71,6 +72,7 @@ function loadSaved(): ThemeConfig {
       // Quem ainda está num default antigo (nunca customizou de propósito) ganha o novo visual.
       if (OLD_DEFAULT_BOARD_THEMES.has(merged.boardTheme)) merged.boardTheme = DEFAULT_THEME.boardTheme
       if (OLD_DEFAULT_UI_THEMES.has(merged.uiTheme)) merged.uiTheme = DEFAULT_THEME.uiTheme
+      if (OLD_DEFAULT_PIECE_SETS.has(merged.pieceSet)) merged.pieceSet = DEFAULT_THEME.pieceSet
       return merged
     }
   } catch {}

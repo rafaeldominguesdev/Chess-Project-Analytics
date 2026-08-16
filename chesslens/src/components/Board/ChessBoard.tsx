@@ -304,7 +304,7 @@ export function ChessBoard({
                 width: squareSize * 0.46,
                 height: squareSize * 0.46,
                 borderRadius: '50%',
-                background: '#C62E2E',
+                background: 'var(--color-error)',
                 border: '2px solid rgba(255,255,255,0.9)',
                 boxShadow: '0 2px 6px rgba(0,0,0,0.55)',
                 color: '#fff',
@@ -314,7 +314,7 @@ export function ChessBoard({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                animation: 'pop 0.25s ease-out',
+                animation: 'pop var(--dur-enter) var(--ease-snap)',
               }}
             >
               #

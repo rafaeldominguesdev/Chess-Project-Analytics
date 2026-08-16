@@ -55,10 +55,8 @@ export function PlayerCard({ profile }: { profile: ChessComProfile }) {
   const isPremium = isPremiumStatus(profile.status)
 
   return (
-    <div className="cl-stat-pop" style={{
+    <div className="cl-stat-pop cl-card" style={{
       position: 'relative', overflow: 'hidden',
-      background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)', borderRadius: 14,
-      boxShadow: '0 10px 28px -10px rgba(0,0,0,0.4)',
       padding: '22px 22px 20px',
     }}>
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: 'linear-gradient(90deg, #3a6b1f, #81b64c)' }} />
@@ -89,7 +87,7 @@ export function PlayerCard({ profile }: { profile: ChessComProfile }) {
             {profile.title && (
               <span style={{
                 fontSize: 12, fontWeight: 800, color: '#fff',
-                background: '#b5382e', padding: '2px 7px', borderRadius: 5,
+                background: '#b5382e', padding: '2px 7px', borderRadius: 'var(--radius-sm)',
               }}>
                 {profile.title}
               </span>
@@ -100,7 +98,7 @@ export function PlayerCard({ profile }: { profile: ChessComProfile }) {
             {profile.is_streamer && (
               <span style={{
                 fontSize: 10.5, fontWeight: 800, color: '#fff',
-                background: '#9146FF', padding: '2px 7px', borderRadius: 5,
+                background: '#9146FF', padding: '2px 7px', borderRadius: 'var(--radius-sm)',
               }}>
                 STREAMER
               </span>
@@ -120,15 +118,15 @@ export function PlayerCard({ profile }: { profile: ChessComProfile }) {
             )}
             {profile.followers !== null && profile.followers > 0 && (
               <span style={{ fontSize: 12, color: 'var(--color-gray-muted)' }}>
-                · <strong style={{ color: 'var(--color-text-on-dark)' }}>{formatFollowers(profile.followers)}</strong> seguidores
+                · <strong className="cl-mono" style={{ color: 'var(--color-text-on-dark)' }}>{formatFollowers(profile.followers)}</strong> seguidores
               </span>
             )}
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 2 }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: lastSeen.recent ? '#3ecf6c' : 'var(--color-gray-muted)', fontWeight: lastSeen.recent ? 700 : 400 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: lastSeen.recent ? 'var(--color-success)' : 'var(--color-gray-muted)', fontWeight: lastSeen.recent ? 700 : 400 }}>
               {lastSeen.recent && (
-                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#3ecf6c', display: 'inline-block', boxShadow: '0 0 0 3px rgba(62,207,108,0.2)' }} />
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--color-success)', display: 'inline-block', boxShadow: '0 0 0 3px color-mix(in srgb, var(--color-success) 20%, transparent)' }} />
               )}
               {lastSeen.label}
             </span>
