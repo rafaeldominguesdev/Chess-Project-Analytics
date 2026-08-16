@@ -51,39 +51,38 @@ export function BoardControls({
     <div
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-        padding: '8px 10px', borderRadius: 10,
+        padding: '8px 10px', borderRadius: 'var(--radius-sm)',
         background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)',
       }}
     >
-      <button className={NAV_BTN} style={{ color: 'var(--color-text-on-dark)', backgroundColor: 'var(--color-bg-panel)' }} onClick={onFlip} title="Inverter tabuleiro">
+      <button className={NAV_BTN} onClick={onFlip} title="Inverter tabuleiro">
         <FlipBoardIcon width={15} height={15} />
       </button>
 
       <div style={{ width: 1, height: 22, background: 'var(--color-gray-border)', margin: '0 2px', flexShrink: 0 }} />
 
-      <button className={NAV_BTN} style={{ color: 'var(--color-text-on-dark)', backgroundColor: 'var(--color-bg-panel)' }} onClick={withPauseAutoplay(onFirst)} disabled={atStart || !isLoaded} title="Início">
+      <button className={NAV_BTN} onClick={withPauseAutoplay(onFirst)} disabled={atStart || !isLoaded} title="Início">
         <FirstMoveIcon width={15} height={15} />
       </button>
-      <button className={NAV_BTN} style={{ color: 'var(--color-text-on-dark)', backgroundColor: 'var(--color-bg-panel)' }} onClick={withPauseAutoplay(onPrev)} disabled={atStart || !isLoaded} title="Anterior">
+      <button className={NAV_BTN} onClick={withPauseAutoplay(onPrev)} disabled={atStart || !isLoaded} title="Anterior">
         <PrevMoveIcon width={15} height={15} />
       </button>
       <button
-        className={NAV_BTN}
-        style={{ color: '#ffffff', backgroundColor: 'var(--color-blue-bright)' }}
+        className={`${NAV_BTN} cl-btn-accent`}
         onClick={() => setIsPlaying((p) => !p)}
         disabled={!isLoaded || (atEnd && !isPlaying)}
         title={isPlaying ? 'Pausar' : 'Reproduzir automaticamente'}
       >
         {isPlaying ? <PauseMoveIcon width={15} height={15} /> : <PlayMoveIcon width={15} height={15} />}
       </button>
-      <button className={NAV_BTN} style={{ color: 'var(--color-text-on-dark)', backgroundColor: 'var(--color-bg-panel)' }} onClick={withPauseAutoplay(onNext)} disabled={atEnd || !isLoaded} title="Próximo">
+      <button className={NAV_BTN} onClick={withPauseAutoplay(onNext)} disabled={atEnd || !isLoaded} title="Próximo">
         <NextMoveIcon width={15} height={15} />
       </button>
-      <button className={NAV_BTN} style={{ color: 'var(--color-text-on-dark)', backgroundColor: 'var(--color-bg-panel)' }} onClick={withPauseAutoplay(onLast)} disabled={atEnd || !isLoaded} title="Último">
+      <button className={NAV_BTN} onClick={withPauseAutoplay(onLast)} disabled={atEnd || !isLoaded} title="Último">
         <LastMoveIcon width={15} height={15} />
       </button>
 
-      <span className="cl-display" style={{ fontSize: 11.5, color: 'var(--color-gray-muted)', fontWeight: 700, minWidth: 50, textAlign: 'center', flexShrink: 0 }}>
+      <span className="cl-mono" style={{ fontSize: 11.5, color: 'var(--color-gray-muted)', fontWeight: 700, minWidth: 50, textAlign: 'center', flexShrink: 0 }}>
         {isLoaded ? (currentMoveIndex === -1 ? '—' : `${currentMoveIndex + 1} / ${totalMoves}`) : '—'}
       </span>
     </div>

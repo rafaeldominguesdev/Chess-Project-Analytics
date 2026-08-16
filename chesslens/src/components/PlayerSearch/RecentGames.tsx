@@ -3,9 +3,9 @@ import { TIME_CLASS_META } from './StatsGrid'
 import { AnalyzeIcon, ExternalLinkIcon, VariantTimeIcon } from './icons'
 
 const OUTCOME_META: Record<RecentGame['outcome'], { label: string; color: string }> = {
-  win: { label: 'Vitória', color: '#4FB86A' },
-  draw: { label: 'Empate', color: '#8892a4' },
-  loss: { label: 'Derrota', color: '#E0554A' },
+  win: { label: 'Vitória', color: 'var(--color-success)' },
+  draw: { label: 'Empate', color: 'var(--color-draw)' },
+  loss: { label: 'Derrota', color: 'var(--color-error)' },
 }
 
 function formatWhen(endTime: number): string {
@@ -30,7 +30,7 @@ export function RecentGames({ games, loading, onAnalyze }: RecentGamesProps) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} style={{ height: 56, borderRadius: 8, background: 'var(--color-bg-panel)', opacity: 0.6 - i * 0.08 }} />
+          <div key={i} style={{ height: 56, borderRadius: 'var(--radius-md)', background: 'var(--color-bg-panel)', opacity: 0.6 - i * 0.08 }} />
         ))}
       </div>
     )
@@ -49,7 +49,7 @@ export function RecentGames({ games, loading, onAnalyze }: RecentGamesProps) {
       {games.map((g, i) => {
         const meta = TIME_CLASS_META[g.timeClass]
         const Icon = meta?.icon ?? VariantTimeIcon
-        const accent = meta?.accent ?? '#8892a4'
+        const accent = meta?.accent ?? 'var(--color-gray-muted)'
         const outcome = OUTCOME_META[g.outcome]
 
         return (
@@ -58,7 +58,7 @@ export function RecentGames({ games, loading, onAnalyze }: RecentGamesProps) {
             className="cl-row-in cl-game-row"
             style={{
               display: 'flex', alignItems: 'center', gap: 12,
-              padding: '10px 12px', borderRadius: 8,
+              padding: '10px 12px', borderRadius: 'var(--radius-md)',
               background: 'var(--color-bg-panel)',
               border: '1px solid var(--color-gray-border)',
               animationDelay: `${i * 35}ms`,
@@ -73,7 +73,7 @@ export function RecentGames({ games, loading, onAnalyze }: RecentGamesProps) {
             <span
               title={g.color === 'white' ? 'Jogou de brancas' : 'Jogou de pretas'}
               style={{
-                width: 15, height: 15, borderRadius: 4, flexShrink: 0,
+                width: 15, height: 15, borderRadius: 'var(--radius-sm)', flexShrink: 0,
                 background: g.color === 'white' ? '#f5f5f5' : '#1a1a1a',
                 border: '1.5px solid var(--color-gray-border)',
               }}
@@ -85,7 +85,7 @@ export function RecentGames({ games, loading, onAnalyze }: RecentGamesProps) {
                   vs {g.opponent}
                 </span>
                 {g.opponentRating !== null && (
-                  <span style={{ fontSize: 11, color: 'var(--color-gray-muted)', flexShrink: 0 }}>({g.opponentRating})</span>
+                  <span className="cl-mono" style={{ fontSize: 11, color: 'var(--color-gray-muted)', flexShrink: 0 }}>({g.opponentRating})</span>
                 )}
               </div>
               <div style={{ fontSize: 11, color: 'var(--color-gray-muted)' }}>

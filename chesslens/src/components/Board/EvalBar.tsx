@@ -60,7 +60,7 @@ export function EvalBar({ evaluation, orientation = 'white', isMate }: EvalBarPr
         minHeight: 400,
         display: 'flex',
         flexDirection: 'column',
-        borderRadius: 5,
+        borderRadius: 'var(--radius-sm)',
         overflow: 'hidden',
         position: 'relative',
         flexShrink: 0,
@@ -72,14 +72,14 @@ export function EvalBar({ evaluation, orientation = 'white', isMate }: EvalBarPr
         style={{
           flex: topPercent,
           background: `linear-gradient(${orientation === 'white' ? '180deg' : '0deg'}, ${topColor}, ${topDeep})`,
-          transition: 'flex 0.4s cubic-bezier(0.4,0,0.2,1)',
+          transition: 'flex 0.4s var(--ease-tap)',
         }}
       />
       <div
         style={{
           flex: bottomPercent,
           background: `linear-gradient(${orientation === 'white' ? '0deg' : '180deg'}, ${bottomColor}, ${bottomDeep})`,
-          transition: 'flex 0.4s cubic-bezier(0.4,0,0.2,1)',
+          transition: 'flex 0.4s var(--ease-tap)',
         }}
       />
 
@@ -111,6 +111,7 @@ export function EvalBar({ evaluation, orientation = 'white', isMate }: EvalBarPr
         }}
       >
         <span
+          className="cl-mono"
           style={{
             fontSize: 10,
             fontWeight: 800,
@@ -119,7 +120,7 @@ export function EvalBar({ evaluation, orientation = 'white', isMate }: EvalBarPr
             background: labelBg,
             border: '1px solid rgba(0,0,0,0.3)',
             padding: '1px 4px',
-            borderRadius: 3,
+            borderRadius: 'var(--radius-sm)',
             lineHeight: 1.5,
             boxShadow: '0 1px 3px rgba(0,0,0,0.45)',
           }}

@@ -1,6 +1,15 @@
 import type { PieceSet, PieceSetName, UITheme, UIThemeName } from '../types/theme.types'
 
+// Lista curada — só os tabuleiros mais bonitos/clássicos (a lista completa tinha 23 opções,
+// muita coisa parecida ou nicho demais pra um seletor bom de usar).
 export const BOARD_THEMES = {
+
+  // ══════════════════════════════════════════════
+  // CHESSLENS — tabuleiro assinatura do site: cinza-pedra quente (nada de verde/marrom
+  // clássico), tom casado com o fundo carvão + destaque âmbar do resto da UI. Marcação
+  // de lance em âmbar translúcido em vez de amarelo/verde padrão.
+  // ══════════════════════════════════════════════
+  'graphite-amber': { label: 'ChessLens Signature', category: 'ChessLens', light: '#DAD3C6', dark: '#4A443C', highlight: '#E8A93C', highlightDark: '#C68A22', moveFrom: 'rgba(232,169,60,0.5)', moveTo: 'rgba(232,169,60,0.62)' },
 
   // ══════════════════════════════════════════════
   // CHESS.COM — TEMAS OFICIAIS
@@ -8,35 +17,19 @@ export const BOARD_THEMES = {
   'chesscom-green':      { label: 'Green',      category: 'Chess.com', light: '#EEEED2', dark: '#769656', highlight: '#F6F669', highlightDark: '#BACA2B', moveFrom: 'rgba(20,85,30,0.5)',   moveTo: 'rgba(20,85,30,0.5)' },
   'chesscom-walnut':     { label: 'Walnut',     category: 'Chess.com', light: '#F0D9B5', dark: '#B58863', highlight: '#CDD26A', highlightDark: '#AABE53', moveFrom: 'rgba(155,100,0,0.5)', moveTo: 'rgba(155,100,0,0.5)' },
   'chesscom-blue':       { label: 'Blue',       category: 'Chess.com', light: '#DEE3E6', dark: '#8CA2AD', highlight: '#F6F669', highlightDark: '#BACA2B', moveFrom: 'rgba(0,80,140,0.5)',  moveTo: 'rgba(0,80,140,0.5)' },
-  'chesscom-purple':     { label: 'Purple',     category: 'Chess.com', light: '#EAE1F4', dark: '#9B72D0', highlight: '#F6F669', highlightDark: '#BACA2B', moveFrom: 'rgba(100,0,160,0.5)', moveTo: 'rgba(100,0,160,0.5)' },
-  'chesscom-bubblegum':  { label: 'Bubblegum',  category: 'Chess.com', light: '#FFE4EE', dark: '#F272A0', highlight: '#FFD700', highlightDark: '#FFC200', moveFrom: 'rgba(200,0,100,0.4)', moveTo: 'rgba(200,0,100,0.4)' },
-  'chesscom-marble':     { label: 'Marble',     category: 'Chess.com', light: '#EDE0CC', dark: '#AE8A68', highlight: '#F6F669', highlightDark: '#BACA2B', moveFrom: 'rgba(140,100,40,0.5)', moveTo: 'rgba(140,100,40,0.5)' },
   'chesscom-tournament': { label: 'Tournament', category: 'Chess.com', light: '#F5F5DC', dark: '#4B7399', highlight: '#F6F669', highlightDark: '#BACA2B', moveFrom: 'rgba(0,60,120,0.5)',  moveTo: 'rgba(0,60,120,0.5)' },
-  'chesscom-christmas':  { label: 'Christmas',  category: 'Chess.com', light: '#E8F4E8', dark: '#CC2200', highlight: '#FFD700', highlightDark: '#FFC200', moveFrom: 'rgba(180,0,0,0.5)',   moveTo: 'rgba(180,0,0,0.5)' },
-  'chesscom-stone':      { label: 'Stone',      category: 'Chess.com', light: '#D9D4CC', dark: '#7A7570', highlight: '#F6F669', highlightDark: '#BACA2B', moveFrom: 'rgba(80,75,70,0.5)',  moveTo: 'rgba(80,75,70,0.5)' },
-  'chesscom-bases':      { label: 'Bases',      category: 'Chess.com', light: '#E8DCC8', dark: '#6B9560', highlight: '#F6F669', highlightDark: '#BACA2B', moveFrom: 'rgba(50,110,50,0.5)', moveTo: 'rgba(50,110,50,0.5)' },
-  'chesscom-neon':       { label: 'Neon',       category: 'Chess.com', light: '#1A1A2E', dark: '#16213E', highlight: '#E94560', highlightDark: '#C73652', moveFrom: 'rgba(230,50,100,0.5)', moveTo: 'rgba(230,50,100,0.5)' },
-  'chesscom-lolz':       { label: 'Lolz',       category: 'Chess.com', light: '#F0E4CC', dark: '#C8A050', highlight: '#FF6B6B', highlightDark: '#CC4444', moveFrom: 'rgba(200,140,0,0.5)', moveTo: 'rgba(200,140,0,0.5)' },
 
   // ══════════════════════════════════════════════
   // LICHESS
   // ══════════════════════════════════════════════
-  'lichess-brown':     { label: 'Brown',     category: 'Lichess', light: '#F0D9B5', dark: '#B58863', highlight: '#CDD26A', highlightDark: '#AABE53', moveFrom: 'rgba(155,100,0,0.5)', moveTo: 'rgba(155,100,0,0.5)' },
-  'lichess-blue':      { label: 'Blue',      category: 'Lichess', light: '#DEE3E6', dark: '#788FA5', highlight: '#A8D8EA', highlightDark: '#6BAED6', moveFrom: 'rgba(0,80,140,0.5)',  moveTo: 'rgba(0,80,140,0.5)' },
-  'lichess-green':     { label: 'Green',     category: 'Lichess', light: '#FFFFDD', dark: '#86A666', highlight: '#F6F669', highlightDark: '#BACA2B', moveFrom: 'rgba(80,140,0,0.5)',  moveTo: 'rgba(80,140,0,0.5)' },
-  'lichess-purple':    { label: 'Purple',    category: 'Lichess', light: '#9F90B0', dark: '#7D4A8D', highlight: '#E0D0F0', highlightDark: '#C8A8E8', moveFrom: 'rgba(100,0,160,0.5)', moveTo: 'rgba(100,0,160,0.5)' },
-  'lichess-newspaper': { label: 'Newspaper', category: 'Lichess', light: '#FFFFFF', dark: '#58AC8A', highlight: '#FFFF00', highlightDark: '#CCCC00', moveFrom: 'rgba(0,130,100,0.5)', moveTo: 'rgba(0,130,100,0.5)' },
-  'lichess-ic':        { label: 'IC',        category: 'Lichess', light: '#FFFFF0', dark: '#7389B1', highlight: '#CDC26A', highlightDark: '#ADB053', moveFrom: 'rgba(0,60,120,0.5)',  moveTo: 'rgba(0,60,120,0.5)' },
+  'lichess-brown': { label: 'Brown', category: 'Lichess', light: '#F0D9B5', dark: '#B58863', highlight: '#CDD26A', highlightDark: '#AABE53', moveFrom: 'rgba(155,100,0,0.5)', moveTo: 'rgba(155,100,0,0.5)' },
 
   // ══════════════════════════════════════════════
   // TEMAS EXCLUSIVOS
   // ══════════════════════════════════════════════
-  'midnight':      { label: 'Midnight', category: 'Exclusivo', light: '#1E2A3A', dark: '#0D1B2A', highlight: '#3D5A80', highlightDark: '#2C4057', moveFrom: 'rgba(50,100,180,0.5)', moveTo: 'rgba(50,100,180,0.5)' },
-  'emerald':       { label: 'Emerald',  category: 'Exclusivo', light: '#E8F5E9', dark: '#2E7D32', highlight: '#FFF176', highlightDark: '#F9A825', moveFrom: 'rgba(30,120,40,0.5)',  moveTo: 'rgba(30,120,40,0.5)' },
-  'obsidian':      { label: 'Obsidian', category: 'Exclusivo', light: '#2C2C2C', dark: '#1A1A1A', highlight: '#8B5CF6', highlightDark: '#6D28D9', moveFrom: 'rgba(120,60,220,0.5)', moveTo: 'rgba(120,60,220,0.5)' },
-  'coral':         { label: 'Coral',    category: 'Exclusivo', light: '#FFF0EB', dark: '#D05A3A', highlight: '#FFD700', highlightDark: '#FFC200', moveFrom: 'rgba(200,60,20,0.5)',  moveTo: 'rgba(200,60,20,0.5)' },
-  // "Brasil" — verde e amarelo, tabuleiro clássico bem legível (casa creme + verde de alto contraste).
-  'brasil': { label: 'Brasil', category: 'Exclusivo', light: '#F5F0D8', dark: '#2E7D32', highlight: '#FFCC00', highlightDark: '#E6B800', moveFrom: 'rgba(255,204,0,0.4)', moveTo: 'rgba(255,204,0,0.4)' },
+  'midnight': { label: 'Midnight', category: 'Exclusivo', light: '#1E2A3A', dark: '#0D1B2A', highlight: '#3D5A80', highlightDark: '#2C4057', moveFrom: 'rgba(50,100,180,0.5)', moveTo: 'rgba(50,100,180,0.5)' },
+  'emerald':  { label: 'Emerald',  category: 'Exclusivo', light: '#E8F5E9', dark: '#2E7D32', highlight: '#FFF176', highlightDark: '#F9A825', moveFrom: 'rgba(30,120,40,0.5)',  moveTo: 'rgba(30,120,40,0.5)' },
+  'coral':    { label: 'Coral',    category: 'Exclusivo', light: '#FFF0EB', dark: '#D05A3A', highlight: '#FFD700', highlightDark: '#FFC200', moveFrom: 'rgba(200,60,20,0.5)',  moveTo: 'rgba(200,60,20,0.5)' },
 
 } as const
 
@@ -80,10 +73,10 @@ export const PIECE_SETS: Record<PieceSetName, PieceSet> = {
 }
 
 export const UI_THEMES: Record<UIThemeName, UITheme> = {
-  // "Arcade Azul" — visual padrão do app: base azul-marinho moderna e limpa. O estilo "arcade"
-  // (borda grossa + sombra dura deslocada) fica só nos botões — o resto do site (cards, painéis,
-  // inputs) é liso, com raio de borda normal e borda fina, sem pixel-art.
-  'arcade-blue':   { label: 'Arcade Azul',     bg: '#0D1B35', surface: '#1A2A4A', accent: '#3388FF', text: '#DDEEFF', textMuted: '#8899AA', border: '#3A4560', shadowBtn: '#0A1E55' },
+  // "Âmbar Noturno" — visual padrão do app: fundo quase preto, painéis cinza-carvão,
+  // destaque âmbar/dourado. Botões e cards têm visual "físico"/skeumórfico (ver .cl-btn/
+  // .cl-card em index.css) — sombra dupla simulando profundidade, cantos bem arredondados.
+  'amber-noir':    { label: 'Âmbar Noturno',   bg: '#0A0A0B', surface: '#1A1A1D', accent: '#E8A93C', text: '#ECEAE6', textMuted: '#8C8A85', border: '#2C2C30', shadowBtn: '#000000' },
   'brasil':        { label: 'Brasil',          bg: '#F6F9F2', surface: '#FFFFFF', accent: '#2E7D32', text: '#16231A', textMuted: '#5C6E5F', border: '#DCE6D4' },
   'dark-classic':  { label: 'Dark Classic',    bg: '#1a1a2e', surface: '#16213e', accent: '#e2b96a', text: '#e0e0e0', textMuted: '#8892a4', border: '#2a3654' },
   'dark-slate':    { label: 'Dark Slate',      bg: '#0d1117', surface: '#161b22', accent: '#58a6ff', text: '#c9d1d9', textMuted: '#8b949e', border: '#30363d' },

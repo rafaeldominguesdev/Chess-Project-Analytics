@@ -62,11 +62,11 @@ export function MoveList({ moves, currentMoveIndex, onGoTo }: MoveListProps) {
                 key={i}
                 style={{
                   display: 'grid', gridTemplateColumns: '34px 1fr 1fr', alignItems: 'center', gap: 6,
-                  padding: '6px 4px', borderRadius: 8,
+                  padding: '6px 4px', borderRadius: 'var(--radius-sm)',
                   background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.025)',
                 }}
               >
-                <span className="cl-display" style={{ fontSize: 13, textAlign: 'center', color: 'var(--color-gray-muted)', fontWeight: 700 }}>
+                <span className="cl-mono" style={{ fontSize: 13, textAlign: 'center', color: 'var(--color-gray-muted)', fontWeight: 700 }}>
                   {i + 1}
                 </span>
 
@@ -106,7 +106,7 @@ const MoveBtn = forwardRef<HTMLButtonElement, {
   // A notação do lance herda a cor da classificação (mesma cor do ícone na casa do tabuleiro),
   // para ficar fácil de identificar bons/maus lances direto na lista.
   const sanColor = active
-    ? '#ffffff'
+    ? 'var(--color-text-on-light)'
     : move.classification
       ? QUALITY_CONFIG[move.classification].color
       : 'var(--color-text-on-dark)'
@@ -115,8 +115,12 @@ const MoveBtn = forwardRef<HTMLButtonElement, {
     <button
       ref={ref}
       onClick={onClick}
-      className={`cl-move-btn flex items-center gap-2 px-2.5 py-2 text-sm text-left w-full transition-all ${active ? 'cl-move-active' : ''}`}
-      style={{ fontWeight: active || move.classification ? 700 : 400 }}
+      className={`cl-move-btn flex items-center gap-2 px-2.5 py-2 text-sm text-left w-full ${active ? 'cl-move-active' : ''}`}
+      style={{
+        fontWeight: active || move.classification ? 700 : 400,
+        borderRadius: 'var(--radius-sm)',
+        transition: `background-color var(--dur-tap) var(--ease-tap), color var(--dur-tap) var(--ease-tap)`,
+      }}
     >
       <span style={{ color: sanColor }}>{move.san}</span>
       {move.classification && (
@@ -175,7 +179,7 @@ function CoachHintCard({ hint }: { hint: CoachHint }) {
     <div
       style={{
         display: 'flex', alignItems: 'flex-start', gap: 9,
-        padding: '10px 12px', borderRadius: 10,
+        padding: '10px 12px', borderRadius: 'var(--radius-sm)',
         background: 'var(--color-bg-panel)', border: `1px solid ${cfg.color}`,
       }}
     >

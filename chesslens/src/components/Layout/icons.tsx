@@ -16,6 +16,18 @@ export function GearIcon(props: IconProps) {
   )
 }
 
+/** Tabuleiro com lupa — analisar partida. */
+export function AnalyzeNavIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <rect x="3" y="3" width="12" height="12" rx="1.5" />
+      <path d="M3 9h12M9 3v12" opacity={0.55} />
+      <circle cx="16.5" cy="16.5" r="4" />
+      <path d="M19.5 19.5 22 22" />
+    </svg>
+  )
+}
+
 /** Alvo — treino de táticas: acertar o lance certo é "acertar o centro". */
 export function TargetIcon(props: IconProps) {
   return (

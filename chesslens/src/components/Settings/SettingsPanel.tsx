@@ -50,14 +50,14 @@ function BoardPreview({ light, dark, isSelected }: { light: string; dark: string
       display: 'grid',
       gridTemplateColumns: '1fr 1fr',
       gridTemplateRows: '1fr 1fr',
-      borderRadius: 7,
+      borderRadius: 'var(--radius-sm)',
       overflow: 'hidden',
       border: '1.5px solid var(--color-gray-border)',
       outline: isSelected ? '2px solid var(--color-blue-bright)' : '2px solid transparent',
       outlineOffset: 2,
       boxShadow: isSelected ? '0 2px 8px -1px color-mix(in srgb, var(--color-blue-bright) 45%, transparent)' : 'none',
       flexShrink: 0,
-      transition: 'outline-color 0.12s, box-shadow 0.12s',
+      transition: 'outline-color var(--dur-tap) var(--ease-tap), box-shadow var(--dur-tap) var(--ease-tap)',
     }}>
       <div style={{ background: light }} />
       <div style={{ background: dark }} />
@@ -104,7 +104,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
         borderLeft: '3px solid var(--color-gray-border)',
         zIndex: 50,
         transform: open ? 'translateX(0)' : 'translateX(100%)',
-        transition: 'transform 0.25s cubic-bezier(0.4,0,0.2,1)',
+        transition: 'transform 240ms var(--ease-hinge)',
         display: 'flex', flexDirection: 'column',
         overflow: 'hidden',
       }}>
@@ -115,7 +115,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           flexShrink: 0,
         }}>
-          <div className="cl-display" style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-on-dark)', letterSpacing: '-0.01em' }}>Configurações</div>
+          <h2 className="cl-display" style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-on-dark)', letterSpacing: '-0.01em' }}>Configurações</h2>
           <button
             onClick={onClose}
             className="cl-btn cl-btn-sm"
@@ -137,7 +137,8 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
               placeholder="Buscar configurações"
               style={{
                 width: '100%', padding: '9px 12px 9px 32px', fontSize: 13,
-                background: 'var(--color-bg-surface)', border: '1px solid var(--color-gray-border)', borderRadius: 9,
+                background: 'var(--color-bg-surface)', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 'var(--radius-sm)',
+                boxShadow: 'inset 0 2px 4px 0 rgba(0,0,0,0.18), inset 0 1px 2px 0 rgba(0,0,0,0.1)',
                 color: 'var(--color-text-on-light)', outline: 'none',
               }}
             />
@@ -159,20 +160,20 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
                   onClick={() => setCategory(c.id)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 10, width: '100%',
-                    padding: '9px 10px', marginBottom: 3, borderRadius: 0,
+                    padding: '9px 10px', marginBottom: 3, borderRadius: '0 var(--radius-sm) var(--radius-sm) 0',
                     border: 'none', borderLeft: isActive ? '3px solid var(--color-blue-bright)' : '3px solid transparent',
                     cursor: 'pointer', textAlign: 'left',
                     background: isActive ? 'var(--color-bg-panel)' : 'transparent',
                     color: isActive ? 'var(--color-text-on-dark)' : 'var(--color-gray-muted)',
                     fontWeight: isActive ? 700 : 500,
-                    transition: 'background 0.12s, border-color 0.12s',
+                    transition: `background var(--dur-tap) var(--ease-tap), border-color var(--dur-tap) var(--ease-tap)`,
                   }}
                   onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'var(--color-bg-panel)' }}
                   onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
                 >
                   <span style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    width: 26, height: 26, borderRadius: 7, flexShrink: 0,
+                    width: 26, height: 26, borderRadius: 'var(--radius-sm)', flexShrink: 0,
                     background: isActive ? 'var(--color-bg-main)' : 'transparent',
                     color: isActive ? 'var(--color-blue-bright)' : 'var(--color-gray-muted)',
                   }}>
@@ -190,7 +191,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
                 <span style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  width: 34, height: 34, borderRadius: 9, flexShrink: 0,
+                  width: 34, height: 34, borderRadius: 'var(--radius-sm)', flexShrink: 0,
                   background: 'var(--color-bg-panel)', border: '1.5px solid var(--color-gray-border)', color: 'var(--color-blue-bright)',
                 }}>
                   {active.icon({ size: 18 })}
@@ -298,7 +299,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
 function Section({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div style={{ marginBottom: 4 }}>
-      <div style={{
+      <div className="cl-display" style={{
         display: 'flex', alignItems: 'center', gap: 8,
         fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--color-gray-muted)',
         textTransform: 'uppercase', marginBottom: 12,
@@ -323,6 +324,13 @@ function Divider() {
   return <div style={{ height: 2, background: 'var(--color-gray-border)', margin: '18px 0' }} />
 }
 
+const KEYCAP_IDLE_SHADOW =
+  'inset 0 1px 0 0 rgba(255,255,255,0.06), inset 0 -2px 0 0 rgba(0,0,0,0.3), 0 3px 0 0 var(--color-shadow-btn), 0 6px 10px -4px rgba(0,0,0,0.55)'
+const KEYCAP_HOVER_SHADOW =
+  'inset 0 1px 0 0 rgba(255,255,255,0.08), inset 0 -2px 0 0 rgba(0,0,0,0.3), 0 4px 0 0 var(--color-shadow-btn), 0 8px 12px -4px rgba(0,0,0,0.6)'
+const KEYCAP_PRESSED_SHADOW = 'inset 0 2px 4px 0 rgba(0,0,0,0.35), 0 1px 0 0 var(--color-shadow-btn)'
+const KEYCAP_TRANSITION = 'transform var(--dur-tap) var(--ease-tap), box-shadow var(--dur-tap) var(--ease-tap), background var(--dur-tap) var(--ease-tap), border-color var(--dur-tap) var(--ease-tap)'
+
 function ThemeRow({ label, isSelected, onClick, children }: { label: string; isSelected: boolean; onClick: () => void; children: ReactNode }) {
   return (
     <button
@@ -330,13 +338,27 @@ function ThemeRow({ label, isSelected, onClick, children }: { label: string; isS
       style={{
         display: 'flex', alignItems: 'center', gap: 10,
         padding: '7px 9px',
-        background: isSelected ? 'var(--color-bg-panel)' : 'transparent',
-        border: isSelected ? '1.5px solid var(--color-gray-border)' : '1.5px solid transparent',
-        borderRadius: 0, cursor: 'pointer',
-        width: '100%', textAlign: 'left', transition: 'background 0.12s, border-color 0.12s',
+        background: isSelected ? 'color-mix(in srgb, var(--color-blue-bright) 14%, var(--color-bg-panel))' : 'transparent',
+        border: isSelected ? '1.5px solid var(--color-blue-bright)' : '1.5px solid transparent',
+        borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+        width: '100%', textAlign: 'left', transition: KEYCAP_TRANSITION,
+        transform: isSelected ? 'translateY(1px)' : 'translateY(0)',
+        boxShadow: isSelected ? KEYCAP_PRESSED_SHADOW : 'none',
       }}
-      onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = 'var(--color-bg-panel)' }}
-      onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+      onMouseEnter={(e) => {
+        if (isSelected) return
+        const el = e.currentTarget as HTMLElement
+        el.style.background = 'var(--color-bg-panel)'
+        el.style.boxShadow = KEYCAP_HOVER_SHADOW
+        el.style.transform = 'translateY(-1px)'
+      }}
+      onMouseLeave={(e) => {
+        if (isSelected) return
+        const el = e.currentTarget as HTMLElement
+        el.style.background = 'transparent'
+        el.style.boxShadow = 'none'
+        el.style.transform = 'translateY(0)'
+      }}
     >
       {children}
       <span style={{ fontSize: 13, color: isSelected ? 'var(--color-text-on-dark)' : 'var(--color-gray-muted)', fontWeight: isSelected ? 700 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -354,13 +376,26 @@ function PieceSetButton({ label, pieceSetKey, isSelected, onClick }: { label: st
       style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
         padding: '9px 4px',
-        background: isSelected ? 'var(--color-bg-panel)' : 'var(--color-bg-main)',
-        border: isSelected ? '2px solid var(--color-blue-bright)' : '2px solid var(--color-gray-border)',
-        borderRadius: 0, cursor: 'pointer', transition: 'border-color 0.12s, background 0.12s, box-shadow 0.12s',
-        boxShadow: isSelected ? '0 2px 8px -1px color-mix(in srgb, var(--color-blue-bright) 45%, transparent)' : 'none',
+        background: isSelected ? 'color-mix(in srgb, var(--color-blue-bright) 16%, var(--color-bg-panel))' : 'var(--color-bg-panel)',
+        border: isSelected ? '1.5px solid var(--color-blue-bright)' : '1px solid var(--color-gray-border)',
+        borderRadius: 'var(--radius-sm)', cursor: 'pointer', transition: KEYCAP_TRANSITION,
+        transform: isSelected ? 'translateY(2px)' : 'translateY(0)',
+        boxShadow: isSelected ? KEYCAP_PRESSED_SHADOW : KEYCAP_IDLE_SHADOW,
       }}
-      onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-gray-muted)' }}
-      onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-gray-border)' }}
+      onMouseEnter={(e) => {
+        if (isSelected) return
+        const el = e.currentTarget as HTMLElement
+        el.style.borderColor = 'var(--color-gray-muted)'
+        el.style.boxShadow = KEYCAP_HOVER_SHADOW
+        el.style.transform = 'translateY(-1px)'
+      }}
+      onMouseLeave={(e) => {
+        if (isSelected) return
+        const el = e.currentTarget as HTMLElement
+        el.style.borderColor = 'var(--color-gray-border)'
+        el.style.boxShadow = KEYCAP_IDLE_SHADOW
+        el.style.transform = 'translateY(0)'
+      }}
     >
       <img
         src={`https://lichess1.org/assets/piece/${pieceSetKey}/bQ.svg`}
@@ -381,15 +416,28 @@ function SizeButton({ label, isSelected, onClick }: { label: string; isSelected:
       style={{
         padding: '7px 4px',
         background: isSelected ? 'var(--color-blue-bright)' : 'var(--color-bg-panel)',
-        border: isSelected ? '2px solid var(--color-blue-bright)' : '2px solid var(--color-gray-border)',
-        borderRadius: 0, cursor: 'pointer',
-        fontSize: 11, color: isSelected ? '#ffffff' : 'var(--color-gray-muted)',
+        border: isSelected ? '1.5px solid var(--color-blue-primary)' : '1px solid var(--color-gray-border)',
+        borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+        fontSize: 11, color: isSelected ? 'var(--color-text-on-light)' : 'var(--color-gray-muted)',
         fontWeight: isSelected ? 700 : 400,
-        boxShadow: isSelected ? '0 2px 8px -1px color-mix(in srgb, var(--color-blue-bright) 45%, transparent)' : 'none',
-        transition: 'border-color 0.12s, background 0.12s, box-shadow 0.12s, color 0.12s',
+        boxShadow: isSelected ? 'inset 0 2px 4px 0 rgba(0,0,0,0.25), 0 1px 0 0 var(--color-blue-primary)' : KEYCAP_IDLE_SHADOW,
+        transform: isSelected ? 'translateY(2px)' : 'translateY(0)',
+        transition: `${KEYCAP_TRANSITION}, color var(--dur-tap) var(--ease-tap)`,
       }}
-      onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-gray-muted)' }}
-      onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-gray-border)' }}
+      onMouseEnter={(e) => {
+        if (isSelected) return
+        const el = e.currentTarget as HTMLElement
+        el.style.borderColor = 'var(--color-gray-muted)'
+        el.style.boxShadow = KEYCAP_HOVER_SHADOW
+        el.style.transform = 'translateY(-1px)'
+      }}
+      onMouseLeave={(e) => {
+        if (isSelected) return
+        const el = e.currentTarget as HTMLElement
+        el.style.borderColor = 'var(--color-gray-border)'
+        el.style.boxShadow = KEYCAP_IDLE_SHADOW
+        el.style.transform = 'translateY(0)'
+      }}
     >
       {label}
     </button>
@@ -401,8 +449,8 @@ function Toggle({ label, description, checked, onChange }: { label: string; desc
     <div
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '11px 10px', margin: '0 -10px', borderRadius: 8,
-        cursor: 'pointer', transition: 'background 0.12s',
+        padding: '11px 10px', margin: '0 -10px', borderRadius: 'var(--radius-sm)',
+        cursor: 'pointer', transition: 'background var(--dur-tap) var(--ease-tap)',
       }}
       onClick={() => onChange(!checked)}
       onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--color-bg-panel)' }}
@@ -412,8 +460,20 @@ function Toggle({ label, description, checked, onChange }: { label: string; desc
         <div style={{ fontSize: 13, color: 'var(--color-text-on-dark)', fontWeight: 600 }}>{label}</div>
         <div style={{ fontSize: 11, color: 'var(--color-gray-muted)', marginTop: 1 }}>{description}</div>
       </div>
-      <div style={{ width: 36, height: 20, background: checked ? 'var(--color-blue-bright)' : 'var(--color-bg-main)', border: '2px solid var(--color-gray-border)', borderRadius: 10, position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
-        <div style={{ position: 'absolute', top: 1, left: checked ? 16 : 1, width: 14, height: 14, background: checked ? '#ffffff' : 'var(--color-gray-muted)', borderRadius: '50%', transition: 'left 0.2s, background 0.2s' }} />
+      {/* Trilho recessado (entalhe) — o polegar "pop up" da calha como uma peça física */}
+      <div style={{
+        width: 36, height: 20,
+        background: checked ? 'color-mix(in srgb, var(--color-blue-bright) 55%, var(--color-bg-main))' : 'var(--color-bg-main)',
+        border: '1px solid var(--color-gray-border)', borderRadius: 'var(--radius-sm)', position: 'relative',
+        boxShadow: 'inset 0 2px 4px 0 rgba(0,0,0,0.45), inset 0 1px 0 0 rgba(0,0,0,0.3)',
+        transition: 'background var(--dur-tap) var(--ease-tap)', flexShrink: 0,
+      }}>
+        <div style={{
+          position: 'absolute', top: 2, left: checked ? 17 : 2, width: 14, height: 14, borderRadius: '50%',
+          background: checked ? 'var(--color-blue-light)' : 'var(--color-gray-muted)',
+          boxShadow: '0 1px 3px 0 rgba(0,0,0,0.6), inset 0 1px 0 0 rgba(255,255,255,0.3)',
+          transition: 'left var(--dur-tap) var(--ease-tap), background var(--dur-tap) var(--ease-tap)',
+        }} />
       </div>
     </div>
   )

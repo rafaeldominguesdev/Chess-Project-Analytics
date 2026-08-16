@@ -20,16 +20,16 @@ function count(moves: ClassifiedMove[], color: 'w' | 'b', q: string) {
 
 function accColor(a: number) {
   if (a >= 90) return '#27ae60'
-  if (a >= 75) return '#96BC4B'
-  if (a >= 60) return '#f0c548'
-  return '#e58c2d'
+  if (a >= 75) return QUALITY_CONFIG.good.color
+  if (a >= 60) return QUALITY_CONFIG.inaccuracy.color
+  return QUALITY_CONFIG.mistake.color
 }
 
 function PlayerPhoto({ src, fallback, crowned }: { src?: string | null; fallback: string; crowned?: boolean }) {
   const shared: React.CSSProperties = {
-    width: 76, height: 76, borderRadius: 14,
+    width: 76, height: 76, borderRadius: 'var(--radius-md)',
     border: `2px solid ${crowned ? 'var(--color-blue-bright)' : 'var(--color-gray-border)'}`,
-    boxShadow: crowned ? '0 6px 18px -4px rgba(227,166,29,0.55)' : '0 6px 16px -4px rgba(0,0,0,0.5)',
+    boxShadow: crowned ? '0 6px 18px -4px color-mix(in srgb, var(--color-blue-bright) 55%, transparent)' : '0 6px 16px -4px rgba(0,0,0,0.5)',
   }
   return (
     <div style={{ position: 'relative' }}>
@@ -48,7 +48,7 @@ function PlayerPhoto({ src, fallback, crowned }: { src?: string | null; fallback
           className="cl-stat-pop"
           style={{
             position: 'absolute', top: -10, right: -10, width: 26, height: 26, borderRadius: '50%',
-            background: 'var(--color-blue-bright)', color: '#ffffff',
+            background: 'var(--color-blue-bright)', color: 'var(--color-text-on-light)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13,
             border: '2px solid var(--color-bg-panel)', boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
           }}
@@ -69,14 +69,14 @@ function AccuracyBox({ value, delay }: { value: number; delay: number }) {
       style={{
         border: `1.5px solid ${c}`,
         background: `${c}1c`,
-        borderRadius: 10,
+        borderRadius: 'var(--radius-sm)',
         padding: '6px 18px',
         lineHeight: 1,
         boxShadow: `0 4px 14px -3px ${c}77`,
         animationDelay: `${delay}ms`,
       }}
     >
-      <span className="cl-display" style={{ fontSize: 40, fontWeight: 800, color: c }}>{value}%</span>
+      <span className="cl-mono" style={{ fontSize: 40, fontWeight: 800, color: c }}>{value}%</span>
     </div>
   )
 }
@@ -144,7 +144,7 @@ function ResultBanner({ result, termination, whiteName, blackName }: { result?: 
       className="cl-stat-pop"
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-        padding: '9px 14px', borderRadius: 9,
+        padding: '9px 14px', borderRadius: 'var(--radius-sm)',
         background: isDecisive ? 'var(--color-blue-bright)' : 'var(--color-bg-panel)',
         border: isDecisive ? 'none' : '1px solid var(--color-gray-border)',
         textAlign: 'center',
@@ -154,7 +154,7 @@ function ResultBanner({ result, termination, whiteName, blackName }: { result?: 
       <span style={{ fontSize: 16, flexShrink: 0 }}>{icon}</span>
       <span style={{
         fontSize: 13.5, fontWeight: 800,
-        color: isDecisive ? '#ffffff' : 'var(--color-text-on-dark)',
+        color: isDecisive ? 'var(--color-text-on-light)' : 'var(--color-text-on-dark)',
       }}>
         {headline}
         {reason && (
@@ -217,19 +217,19 @@ export function PlayerComparison({ moves, whiteName, blackName, whiteAvatar, bla
               className="cl-row-in"
               style={{
                 display: 'grid', gridTemplateColumns: '36px 1fr 36px', alignItems: 'center', gap: 8,
-                fontSize: 14.5, padding: '5px 6px', borderRadius: 6,
+                fontSize: 14.5, padding: '5px 6px', borderRadius: 'var(--radius-sm)',
                 background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.025)',
                 animationDelay: `${130 + i * 30}ms`,
               }}
             >
-              <span className="cl-display" style={{ textAlign: 'right', fontWeight: 800, color: 'var(--color-text-on-dark)' }}>{w}</span>
+              <span className="cl-mono" style={{ textAlign: 'right', fontWeight: 800, color: 'var(--color-text-on-dark)' }}>{w}</span>
               <span style={{ textAlign: 'center', color: cfg.color, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
                 {Icon
                   ? <Icon width={19} height={19} style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }} />
                   : <span style={{ fontSize: 14 }}>{cfg.symbol}</span>}
                 <span style={{ fontSize: 13.5 }}>{cfg.label}</span>
               </span>
-              <span className="cl-display" style={{ textAlign: 'left', fontWeight: 800, color: 'var(--color-text-on-dark)' }}>{b}</span>
+              <span className="cl-mono" style={{ textAlign: 'left', fontWeight: 800, color: 'var(--color-text-on-dark)' }}>{b}</span>
             </div>
           )
         })}

@@ -6,6 +6,8 @@ export interface ClassifiedMove {
   from: string
   to: string
   fen: string
+  /** FEN da posição ANTES desse lance (útil pra converter `bestMove`, que vem em UCI, pra SAN). */
+  fenBefore: string
   moveNumber: number
   color: 'w' | 'b'
   classification: MoveQuality | null

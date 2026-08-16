@@ -27,7 +27,7 @@ export function MoveQualityBadge({ quality, size = 'sm' }: MoveQualityBadgeProps
       style={{
         fontSize: s.fontSize,
         padding: s.padding,
-        borderRadius: 5,
+        borderRadius: 'var(--radius-sm)',
         backgroundColor: cfg.bg,
         color: cfg.color,
         fontWeight: 800,

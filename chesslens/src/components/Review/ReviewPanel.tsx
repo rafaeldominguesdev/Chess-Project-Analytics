@@ -5,6 +5,7 @@ import { PlayerComparison } from '../Analysis/PlayerComparison'
 import { MoveList } from '../Analysis/MoveList'
 import { Panel } from '../Panel'
 import { GameDetailsPanel } from './GameDetailsPanel'
+import { CoachComment } from './CoachComment'
 import { ReviewShieldIcon } from './icons'
 import { identifyOpening } from '../../utils/openingsDatabase'
 import { BoardControls } from '../Board/BoardControls'
@@ -21,7 +22,7 @@ function AnalysisProgress({ progress }: { progress: { done: number; total: numbe
           <span
             style={{
               width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
-              background: finished ? '#27ae60' : 'var(--color-blue-bright)',
+              background: finished ? 'var(--color-success)' : 'var(--color-blue-bright)',
               animation: finished ? 'none' : 'cl-pulse-dot 1.1s ease-in-out infinite',
             }}
           />
@@ -29,7 +30,7 @@ function AnalysisProgress({ progress }: { progress: { done: number; total: numbe
             {finished ? 'Análise do Stockfish concluída' : 'Stockfish analisando a partida…'}
           </span>
         </span>
-        <span className="cl-display" style={{ fontSize: 11.5, color: 'var(--color-text-on-dark)', fontWeight: 800, flexShrink: 0 }}>
+        <span className="cl-mono" style={{ fontSize: 11.5, color: 'var(--color-text-on-dark)', fontWeight: 800, flexShrink: 0 }}>
           {pct}%
         </span>
       </div>
@@ -37,7 +38,7 @@ function AnalysisProgress({ progress }: { progress: { done: number; total: numbe
         <div
           style={{
             height: '100%', width: `${pct}%`, borderRadius: 3,
-            background: finished ? '#27ae60' : 'var(--color-blue-bright)',
+            background: finished ? 'var(--color-success)' : 'var(--color-blue-bright)',
             transition: 'width 0.35s ease, background 0.3s ease',
           }}
         />
@@ -96,12 +97,13 @@ export function ReviewPanel({
         <div
           style={{
             display: 'flex', alignItems: 'center', gap: 8,
-            padding: '9px 12px', borderRadius: 8,
+            padding: '9px 12px', borderRadius: 'var(--radius-sm)',
             background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)',
+            boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.04), 0 1px 0 0 rgba(0,0,0,0.5), 0 16px 36px -12px rgba(0,0,0,0.6)',
           }}
         >
-          <ReviewShieldIcon width={18} height={18} style={{ color: '#27ae60', flexShrink: 0 }} />
-          <h2 style={{ fontSize: 14, fontWeight: 800, color: 'var(--color-text-on-dark)', flex: 1 }}>Revisão da Partida</h2>
+          <ReviewShieldIcon width={18} height={18} style={{ color: 'var(--color-success)', flexShrink: 0 }} />
+          <h2 className="cl-display" style={{ fontSize: 14, fontWeight: 800, color: 'var(--color-text-on-dark)', flex: 1 }}>Revisão da Partida</h2>
         </div>
 
         {/* Ficha da partida (evento, resultado, término) — sempre visível */}
@@ -112,7 +114,7 @@ export function ReviewPanel({
             {/* Tela de resumo: fotos lado a lado + precisão + comparação por categoria.
                 O Stockfish já está analisando em segundo plano, então esses números
                 vão se populando sozinhos antes mesmo de clicar em "Começar a Revisão". */}
-            <div style={{ background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)', borderRadius: 10, boxShadow: '0 4px 16px rgba(0,0,0,0.22)', padding: 13 }}>
+            <div className="cl-card" style={{ padding: 13 }}>
               {progress && <AnalysisProgress progress={progress} />}
               <PlayerComparison
                 moves={moves}
@@ -135,9 +137,13 @@ export function ReviewPanel({
           </div>
         ) : (
           <div key="review" className="cl-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {/* Tela de revisão: gráfico + lances com avaliação por lance */}
+            {/* Tela de revisão: comentário do coach + gráfico + lances com avaliação por lance */}
+            <div className="cl-row-in" style={{ animationDelay: '10ms' }}>
+              <CoachComment move={currentMoveIndex >= 0 ? moves[currentMoveIndex] ?? null : null} />
+            </div>
+
             <div className="cl-row-in" style={{ animationDelay: '30ms' }}>
-              <Panel icon="📈" title="Avaliação" right={progress ? <span style={{ fontSize: 10, color: 'var(--color-gray-muted)' }}>{Math.round((progress.done / progress.total) * 100)}%</span> : undefined}>
+              <Panel icon="📈" title="Avaliação" right={progress ? <span className="cl-mono" style={{ fontSize: 10, color: 'var(--color-gray-muted)' }}>{Math.round((progress.done / progress.total) * 100)}%</span> : undefined}>
                 <EvalGraph evals={evals} currentPosition={currentMoveIndex + 1} onSeek={(i) => onGoTo(i - 1)} />
               </Panel>
             </div>

@@ -1,41 +1,67 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=Syne:wght@600;700;800&family=Spline+Sans+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  /* Identidade visual do site: moderno, limpo, tema azul. Só os BOTÕES usam o
-     estilo arcade/pixel-art (ver seção de botões mais abaixo) — o resto do
-     site (cards, painéis, inputs) é liso, com raio de borda normal.
-     --color-bg-main/--color-bg-panel/--color-blue-bright/--color-text-on-dark/
-     --color-gray-muted/--color-gray-border trocam de valor conforme o tema de
-     UI escolhido nas Configurações (ver ThemeContext) — os daqui são o fallback
-     antes do primeiro render. As outras (blue-primary, blue-light, blue-ice,
-     bg-surface, shadow-btn, text-on-light) são fixas, não trocam por tema.
+  /* Identidade visual "ChessLens Âmbar": fundo quase preto, painéis carvão,
+     destaque em âmbar/dourado. Elementos interativos (botões, cards, toggles)
+     têm visual "físico"/skeumórfico — parecem teclas encaixadas num soquete,
+     com sombra dupla (corte claro em cima, assento escuro embaixo) e cantos
+     bem arredondados. --color-bg-main/--color-bg-panel/--color-blue-bright/
+     --color-text-on-dark/--color-gray-muted/--color-gray-border trocam de
+     valor conforme o tema de UI escolhido (ver ThemeContext/UI_THEMES) — os
+     daqui são o fallback antes do primeiro render. As outras (blue-primary,
+     blue-light, blue-ice, bg-surface, shadow-btn, text-on-light, cores de
+     resultado, tokens de raio/animação) são fixas, não trocam por tema.
   */
-  --color-bg-main: #0D1B35;
-  --color-bg-panel: #1A2A4A;
-  --color-bg-surface: #EAF2FA;
-  --color-blue-primary: #2266CC;
-  --color-blue-bright: #3388FF;
-  --color-blue-light: #55AAFF;
-  --color-blue-ice: #AAD4FF;
-  --color-gray-border: #3A4560;
-  --color-gray-muted: #8899AA;
-  --color-shadow-btn: #0A1E55;
-  --color-text-on-dark: #DDEEFF;
-  --color-text-on-light: #1A2A4A;
-  --board-light: #EEEED2;
-  --board-dark: #769656;
-  --board-highlight: #F6F669;
-  --board-highlight-dark: #BACA2B;
-  --font-display: 'Outfit', 'Inter', system-ui, sans-serif;
+  --color-bg-main: #0A0A0B;
+  --color-bg-panel: #1A1A1D;
+  --color-bg-raised: #202024;
+  --color-bg-surface: #EDE8E0;
+  --color-blue-primary: #C68A22;
+  --color-blue-bright: #E8A93C;
+  --color-blue-light: #F2C368;
+  --color-blue-ice: #FBE7BE;
+  --color-gray-border: #2C2C30;
+  --color-gray-muted: #8C8A85;
+  --color-shadow-btn: #000000;
+  --color-text-on-dark: #ECEAE6;
+  --color-text-on-light: #1C1916;
+
+  /* Semânticas de resultado — vitória/derrota/empate (usar em vez de hex fixo) */
+  --color-success: #4CAF6E;
+  --color-error: #E0654F;
+  --color-draw: #9C9890;
+
+  /* Tabuleiro em tons de cinza, com marcação de lance em âmbar translúcido */
+  --board-light: #D7D6D2;
+  --board-dark: #55565A;
+  --board-highlight: #E8A93C;
+  --board-highlight-dark: #C68A22;
+
+  /* Tipografia: interface geral (Onest), destaque/título (Syne), dados numéricos (Spline Sans Mono) */
+  --font-body: 'Onest', system-ui, -apple-system, sans-serif;
+  --font-display: 'Syne', 'Onest', system-ui, sans-serif;
+  --font-mono: 'Spline Sans Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  /* Raios — cantos bem arredondados, estilo tecla física */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+
+  /* Timings/easings — toque curto e seco; entrada um pouco mais lenta */
+  --dur-tap: 110ms;
+  --dur-enter: 200ms;
+  --ease-tap: cubic-bezier(0.4, 0, 0.2, 1);       /* seca, sem overshoot — feedback de toque */
+  --ease-snap: cubic-bezier(0.16, 1, 0.3, 1);      /* início rápido, assentamento suave — elementos que aparecem */
+  --ease-hinge: cubic-bezier(0.34, 1.56, 0.64, 1); /* leve overshoot tipo dobradiça — elementos que abrem */
 }
 
 body {
   background-color: var(--color-bg-main);
   color: var(--color-text-on-dark);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -43,6 +69,13 @@ body {
 .cl-display {
   font-family: var(--font-display);
   letter-spacing: -0.01em;
+}
+
+/* Fonte monoespaçada — usada em dados numéricos (avaliação, relógios, contagens, ratings) */
+.cl-mono {
+  font-family: var(--font-mono);
+  font-feature-settings: 'tnum' 1;
+  font-variant-numeric: tabular-nums;
 }
 
 #root { width: 100%; min-height: 100vh; }
@@ -59,7 +92,6 @@ body {
 
 @keyframes pop {
   0% { transform: scale(0.4); opacity: 0; }
-  70% { transform: scale(1.15); opacity: 1; }
   100% { transform: scale(1); opacity: 1; }
 }
 
@@ -83,124 +115,184 @@ body {
   100% { transform: translateX(0); opacity: 1; }
 }
 
-.cl-modal-in { animation: cl-modal-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.cl-fade-in { animation: cl-fade-in 0.18s ease-out both; }
-.cl-stat-pop { animation: cl-stat-pop 0.32s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.cl-row-in { animation: cl-row-in 0.28s ease-out both; }
+/* Entradas: curva "snap" (início rápido, assentamento suave), ~200ms */
+.cl-modal-in { animation: cl-modal-in var(--dur-enter) var(--ease-hinge) both; }
+.cl-fade-in { animation: cl-fade-in var(--dur-enter) var(--ease-snap) both; }
+.cl-stat-pop { animation: cl-stat-pop var(--dur-enter) var(--ease-snap) both; }
+.cl-row-in { animation: cl-row-in var(--dur-enter) var(--ease-snap) both; }
 
-.cl-game-row { transition: border-color 0.15s, transform 0.15s; }
+.cl-game-row { transition: border-color var(--dur-tap) var(--ease-tap), transform var(--dur-tap) var(--ease-tap); }
 .cl-game-row:hover { border-color: var(--color-blue-bright); transform: translateX(2px); }
 
-.cl-search-btn { transition: transform 0.12s, filter 0.12s; }
+.cl-search-btn { transition: transform var(--dur-tap) var(--ease-tap), filter var(--dur-tap) var(--ease-tap); }
 .cl-search-btn:active { transform: scale(0.97); }
 
 .cl-move-btn { background: transparent; }
-.cl-move-btn:hover { background: var(--color-bg-panel); }
+.cl-move-btn:hover { background: var(--color-bg-raised); }
 .cl-move-active,
 .cl-move-active:hover {
   background: var(--color-blue-bright) !important;
+  color: var(--color-text-on-light) !important;
   box-shadow: 0 3px 10px -2px color-mix(in srgb, var(--color-blue-bright) 60%, transparent);
 }
 
 /* ══════════════════════════════════════════════
-   Botões estilo arcade/pixel-art — únicos elementos do site com esse estilo
-   (o resto é moderno e liso). Quadrados (border-radius: 0), borda grossa,
-   sombra dura deslocada sem blur, maiúsculas com letter-spacing. Ao passar o
-   mouse "levantam" (translada pro canto oposto da sombra, sombra cresce); ao
-   clicar "afundam" (translada pra cima da sombra, sombra encolhe).
+   Botões e cards estilo "físico"/skeumórfico — parecem teclas ou fichas
+   encaixadas num soquete: sombra dupla (corte claro no topo, "assento"
+   escuro embaixo) simulando profundidade, cantos bem arredondados.
+   Ao passar o mouse a tecla "levanta" (sobe + sombra de assento cresce);
+   ao clicar "afunda" no soquete (desce + sombra vira entalhe interno).
+   Transições curtas e secas (var(--dur-tap)) pro toque.
    ══════════════════════════════════════════════ */
 .cl-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-family: inherit;
+  font-family: var(--font-body);
   font-weight: 600;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  padding: 10px 22px;
-  border: 2px solid var(--color-blue-primary);
-  border-radius: 0;
-  background: transparent;
-  color: var(--color-blue-bright);
+  letter-spacing: 0.01em;
+  padding: 10px 20px;
+  border: 1px solid var(--color-gray-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-panel);
+  color: var(--color-text-on-dark);
   cursor: pointer;
-  box-shadow: 4px 4px 0 var(--color-shadow-btn);
-  transform: translate(0, 0);
-  transition: all 80ms linear;
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.3),
+    0 4px 0 0 var(--color-shadow-btn),
+    0 8px 14px -5px rgba(0, 0, 0, 0.55);
+  transform: translateY(0);
+  transition: transform var(--dur-tap) var(--ease-tap), box-shadow var(--dur-tap) var(--ease-tap),
+    background-color var(--dur-tap) var(--ease-tap), border-color var(--dur-tap) var(--ease-tap),
+    color var(--dur-tap) var(--ease-tap);
 }
 .cl-btn:hover:not(:disabled) {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--color-shadow-btn);
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.3),
+    0 5px 0 0 var(--color-shadow-btn),
+    0 11px 18px -5px rgba(0, 0, 0, 0.6);
 }
 .cl-btn:active:not(:disabled),
 .cl-btn.cl-btn-pressed {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0 var(--color-shadow-btn);
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 2px 4px 0 rgba(0, 0, 0, 0.4),
+    0 1px 0 0 var(--color-shadow-btn);
 }
 .cl-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* Variante de destaque (Primário) — cor sólida, pro CTA principal */
+/* Variante de destaque (Primário) — âmbar sólido, pro CTA principal */
 .cl-btn-accent {
-  background: var(--color-blue-primary);
-  border-color: var(--color-blue-bright);
-  color: #ffffff;
+  background: var(--color-blue-bright);
+  border-color: var(--color-blue-primary);
+  color: var(--color-text-on-light);
 }
 
 /* Variante "fantasma" — sem preenchimento nem sombra, pra ações bem discretas */
 .cl-btn-ghost {
   background: transparent;
+  border-color: transparent;
   box-shadow: none;
 }
-.cl-btn-ghost:hover:not(:disabled) { box-shadow: none; }
+.cl-btn-ghost:hover:not(:disabled) { box-shadow: none; background: var(--color-bg-raised); transform: none; }
+.cl-btn-ghost:active:not(:disabled) { transform: none; }
 
-/* Botão ícone — quadrado 40×40, painel escuro (engrenagem, fechar, navegação) */
+/* Botão ícone — quadrado 40×40 (engrenagem, fechar, navegação) */
 .cl-btn-sm {
   width: 40px;
   height: 40px;
   padding: 0;
-  border-width: 2px;
-  background: var(--color-bg-panel);
-  border-color: var(--color-gray-border);
-  box-shadow: 3px 3px 0 var(--color-shadow-btn);
+  border-radius: var(--radius-sm);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.3),
+    0 3px 0 0 var(--color-shadow-btn),
+    0 6px 10px -4px rgba(0, 0, 0, 0.55);
 }
 .cl-btn-sm:hover:not(:disabled) {
-  transform: translate(-2px, -2px);
-  box-shadow: 5px 5px 0 var(--color-shadow-btn);
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.3),
+    0 4px 0 0 var(--color-shadow-btn),
+    0 8px 12px -4px rgba(0, 0, 0, 0.6);
 }
 .cl-btn-sm:active:not(:disabled),
 .cl-btn-sm.cl-btn-pressed {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 var(--color-shadow-btn);
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 2px 4px 0 rgba(0, 0, 0, 0.4),
+    0 1px 0 0 var(--color-shadow-btn);
 }
 
 /* Estado selecionado permanente (abas, toggles de opção) — fica "afundado" igual pressionado */
 .cl-btn-selected {
-  background: var(--color-blue-primary) !important;
+  background: color-mix(in srgb, var(--color-blue-bright) 18%, var(--color-bg-panel)) !important;
   border-color: var(--color-blue-bright) !important;
-  color: #ffffff !important;
-  transform: translate(4px, 4px);
-  box-shadow: 0 0 0 var(--color-shadow-btn) !important;
+  color: var(--color-blue-light) !important;
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 2px 4px 0 rgba(0, 0, 0, 0.35),
+    0 1px 0 0 var(--color-shadow-btn) !important;
 }
-.cl-btn-sm.cl-btn-selected { transform: translate(3px, 3px); }
+.cl-btn-sm.cl-btn-selected { transform: translateY(2px); }
+
+/* Card "soquete" — painéis e superfícies elevadas (ver também componente Panel) */
+.cl-card {
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-gray-border);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+    0 1px 0 0 rgba(0, 0, 0, 0.5),
+    0 16px 36px -12px rgba(0, 0, 0, 0.6);
+}
+
+/* Superfície recessada (encaixe/entalhe) — inputs, trilhos de toggle, calha de slider */
+.cl-inset {
+  background: var(--color-bg-main);
+  border: 1px solid var(--color-gray-border);
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.45), inset 0 1px 0 0 rgba(0, 0, 0, 0.3);
+}
 
 /* ══════════════════════════════════════════════
-   Home — card de hero responsivo (mascote + conteúdo lado a lado,
-   empilha em telas estreitas pra não espremer o texto).
+   Home — hero com a mascote como plano de fundo. Em telas estreitas o texto
+   (que normalmente fica encostado à direita) precisa ocupar a largura toda,
+   senão vaza pra fora da área de conteúdo.
    ══════════════════════════════════════════════ */
-.cl-home-hero {
-  display: flex;
+@media (max-width: 760px) {
+  .cl-home-hero-content {
+    flex-basis: 100% !important;
+  }
 }
-.cl-home-hero-image {
-  flex: 0 0 38%;
-  min-height: 200px;
+
+/* Plano de fundo do hero — SEMPRE `cover` (nunca `contain`), então nunca sobra um vão/gap
+   pra aparecer uma tira "borrada" na lateral — cover cobre a caixa inteira sem exceção. O
+   recorte horizontal muda por largura de tela: a capivara (o sujeito mais importante) fica
+   sempre enquadrada; o que sai de cena primeiro, em telas mais estreitas, é o canto vazio/
+   spotlight da direita — não a capivara. A fatia vertical (--hero-bg-pos-y) vem do componente
+   via HERO_BG_POSITION_Y, é a mesma em todos os tamanhos.
+   ══════════════════════════════════════════════ */
+.cl-hero-bg {
+  background-image: url(/hero-bg.png);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: 18% var(--hero-bg-pos-y, 20%);
+  /* Sem fade/máscara — imagem nítida do início ao fim, sem nenhum degradê. */
+}
+@media (max-width: 1200px) {
+  .cl-hero-bg { background-position: 28% var(--hero-bg-pos-y, 20%); }
+}
+@media (max-width: 900px) {
+  .cl-hero-bg { background-position: 36% var(--hero-bg-pos-y, 20%); }
 }
 @media (max-width: 760px) {
-  .cl-home-hero {
-    flex-direction: column;
-  }
-  .cl-home-hero-image {
-    flex: 0 0 160px;
-  }
+  .cl-hero-bg { background-position: 42% var(--hero-bg-pos-y, 20%); }
 }
 
 /* ══════════════════════════════════════════════
@@ -220,7 +312,7 @@ a,
 input,
 select,
 textarea {
-  transition: color 0.15s ease-out, background-color 0.15s ease-out, border-color 0.15s ease-out;
+  transition: color var(--dur-tap) var(--ease-tap), background-color var(--dur-tap) var(--ease-tap), border-color var(--dur-tap) var(--ease-tap);
 }
 
 /* Anel pulsante da dica no treino de táticas — "essa é a peça que precisa mover". */

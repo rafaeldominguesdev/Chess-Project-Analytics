@@ -112,14 +112,10 @@ export default function PlayerSearch({ open, onClose, initialPlatform, onAnalyze
       {/* Modal — para o clique não fechar ao interagir com o conteúdo */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="cl-modal-in"
+        className="cl-modal-in cl-card"
         style={{
           width: 'min(880px, 100%)',
           maxHeight: '88vh',
-          background: 'var(--color-bg-panel)',
-          border: '1px solid var(--color-gray-border)',
-          borderRadius: 12,
-          boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
         }}
@@ -182,9 +178,10 @@ export default function PlayerSearch({ open, onClose, initialPlatform, onAnalyze
                 fontSize: 14,
                 background: 'var(--color-bg-surface)',
                 border: '1px solid var(--color-gray-border)',
-                borderRadius: 10,
+                borderRadius: 'var(--radius-sm)',
                 color: 'var(--color-text-on-light)',
                 outline: 'none',
+                boxShadow: 'inset 0 2px 4px 0 rgba(28,25,22,0.18), inset 0 1px 0 0 rgba(28,25,22,0.1)',
               }}
             />
             <button
@@ -272,7 +269,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 function LoadingSkeleton() {
   const shimmer: React.CSSProperties = {
     background: 'var(--color-bg-panel)',
-    borderRadius: 8,
+    borderRadius: 'var(--radius-sm)',
   }
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
@@ -285,12 +282,12 @@ function LoadingSkeleton() {
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 12 }}>
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} style={{ ...shimmer, height: 100 }} />
+          <div key={i} style={{ ...shimmer, height: 100, borderRadius: 'var(--radius-lg)' }} />
         ))}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {[0, 1, 2].map((i) => (
-          <div key={i} style={{ ...shimmer, height: 56 }} />
+          <div key={i} style={{ ...shimmer, height: 56, borderRadius: 'var(--radius-md)' }} />
         ))}
       </div>
     </div>

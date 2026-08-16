@@ -64,11 +64,8 @@ export function StatsGrid({ stats }: { stats: ChessComStats }) {
       })}
 
       <div
-        className="cl-stat-pop"
+        className="cl-stat-pop cl-card"
         style={{
-          background: 'var(--color-bg-panel)',
-          border: '1px solid var(--color-gray-border)',
-          borderRadius: 8,
           padding: '14px 16px',
           display: 'flex',
           flexDirection: 'column',
@@ -80,7 +77,7 @@ export function StatsGrid({ stats }: { stats: ChessComStats }) {
         <div style={{ fontSize: 11, color: 'var(--color-gray-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Total de partidas
         </div>
-        <div className="cl-display" style={{ fontSize: 28, fontWeight: 700, color: 'var(--color-text-on-dark)', lineHeight: 1.1 }}>
+        <div className="cl-mono" style={{ fontSize: 28, fontWeight: 700, color: 'var(--color-text-on-dark)', lineHeight: 1.1 }}>
           {total}
         </div>
       </div>
