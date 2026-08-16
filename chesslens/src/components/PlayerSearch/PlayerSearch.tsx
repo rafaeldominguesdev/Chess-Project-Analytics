@@ -1,150 +1,196 @@
 import { useEffect, useRef, useState } from 'react'
 import { usePlayerSearch } from '../../hooks/usePlayerSearch'
+import { useRecentGames } from '../../hooks/useRecentGames'
+import { useLichessSearch } from '../../hooks/useLichessSearch'
+import { useLichessRecentGames } from '../../hooks/useLichessRecentGames'
 import { PlayerCard } from './PlayerCard'
+import { LichessPlayerCard } from './LichessPlayerCard'
 import { StatsGrid } from './StatsGrid'
+import { LichessStatsGrid } from './LichessStatsGrid'
+import { RecentGames } from './RecentGames'
+import { ChesscomMarkIcon, LichessMarkIcon } from '../PlatformIcons'
+
+export type Platform = 'chesscom' | 'lichess'
 
 const LAST_SEARCH_KEY = 'chesslens-last-player-search'
+const LAST_PLATFORM_KEY = 'chesslens-last-platform'
 
-/**
- * Componente autocontido: renderiza o botão de gatilho + o painel deslizante
- * de busca de jogador do chess.com. Gerencia seu próprio estado aberto/fechado,
- * então basta montar <PlayerSearch /> em qualquer lugar do app.
- */
-export default function PlayerSearch() {
-  const [open, setOpen] = useState(false)
+const PLATFORM_META: Record<Platform, { label: string; placeholder: string; Icon: typeof ChesscomMarkIcon }> = {
+  chesscom: { label: 'Chess.com', placeholder: 'Username do chess.com...', Icon: ChesscomMarkIcon },
+  lichess: { label: 'Lichess', placeholder: 'Username do Lichess...', Icon: LichessMarkIcon },
+}
+
+interface PlayerSearchProps {
+  open: boolean
+  onClose: () => void
+  initialPlatform?: Platform
+  /** Chamado quando o usuário clica em "Analisar" numa partida recente — recebe o PGN completo. */
+  onAnalyzeGame?: (pgn: string) => void
+}
+
+/** Modal de busca de jogador — chess.com ou Lichess, alternável por abas. Totalmente controlado pelo pai. */
+export default function PlayerSearch({ open, onClose, initialPlatform, onAnalyzeGame }: PlayerSearchProps) {
+  const [platform, setPlatform] = useState<Platform>(initialPlatform ?? 'chesscom')
   const [input, setInput] = useState('')
-  const { profile, stats, loading, error, search } = usePlayerSearch()
   const inputRef = useRef<HTMLInputElement>(null)
-  const didAutoSearch = useRef(false)
 
-  // Restaura o último username buscado (uma vez, no primeiro mount).
+  const chesscom = usePlayerSearch()
+  const lichess = useLichessSearch()
+  const chesscomGames = useRecentGames(chesscom.profile?.username ?? null)
+  const lichessGames = useLichessRecentGames(lichess.profile?.username ?? null)
+
+  const active = platform === 'chesscom' ? chesscom : lichess
+  const games = platform === 'chesscom' ? chesscomGames : lichessGames
+  const meta = PLATFORM_META[platform]
+
+  // Ao abrir, sincroniza com a plataforma pedida (ex: card da home) e refoca o input.
   useEffect(() => {
-    if (didAutoSearch.current) return
-    didAutoSearch.current = true
-    const saved = localStorage.getItem(LAST_SEARCH_KEY)
-    if (saved) {
+    if (!open) return
+    setPlatform(initialPlatform ?? (localStorage.getItem(LAST_PLATFORM_KEY) as Platform | null) ?? 'chesscom')
+    const id = window.setTimeout(() => inputRef.current?.focus(), 60)
+    return () => window.clearTimeout(id)
+  }, [open, initialPlatform])
+
+  // Restaura o último username buscado pra essa plataforma quando ela fica ativa.
+  useEffect(() => {
+    if (!open) return
+    const saved = localStorage.getItem(`${LAST_SEARCH_KEY}-${platform}`)
+    if (saved && !active.profile) {
       setInput(saved)
-      search(saved)
+      active.search(saved)
     }
-  }, [search])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, platform])
 
   useEffect(() => {
-    if (open) {
-      // pequeno delay para garantir que o elemento já esteja montado/visível
-      const id = window.setTimeout(() => inputRef.current?.focus(), 50)
-      return () => window.clearTimeout(id)
+    if (!open) return
+    function onEsc(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
     }
-  }, [open])
+    window.addEventListener('keydown', onEsc)
+    return () => window.removeEventListener('keydown', onEsc)
+  }, [open, onClose])
+
+  if (!open) return null
 
   function runSearch() {
     const trimmed = input.trim()
     if (!trimmed) return
-    search(trimmed)
-    localStorage.setItem(LAST_SEARCH_KEY, trimmed)
+    active.search(trimmed)
+    localStorage.setItem(`${LAST_SEARCH_KEY}-${platform}`, trimmed)
+    localStorage.setItem(LAST_PLATFORM_KEY, platform)
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter') runSearch()
   }
 
+  function handleAnalyze(pgn: string) {
+    onAnalyzeGame?.(pgn)
+    onClose()
+  }
+
+  function switchPlatform(p: Platform) {
+    setPlatform(p)
+    setInput('')
+    localStorage.setItem(LAST_PLATFORM_KEY, p)
+    window.setTimeout(() => inputRef.current?.focus(), 30)
+  }
+
   return (
-    <>
-      {/* Botão de gatilho */}
-      <button
-        onClick={() => setOpen(true)}
-        style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          padding: '10px 18px',
-          background: 'var(--accent)',
-          color: '#fff',
-          border: 'none',
-          borderRadius: 10,
-          fontSize: 14,
-          fontWeight: 700,
-          cursor: 'pointer',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
-          transition: 'transform 0.1s, filter 0.1s',
-        }}
-        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.08)' }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.filter = 'none' }}
-      >
-        🔍 Buscar Jogador
-      </button>
-
-      {/* Overlay */}
-      {open && (
-        <div
-          onClick={() => setOpen(false)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 49 }}
-        />
-      )}
-
-      {/* Painel deslizante */}
+    <div
+      onClick={onClose}
+      className="cl-fade-in"
+      style={{
+        position: 'fixed', inset: 0, zIndex: 49,
+        background: 'rgba(5,4,12,0.65)',
+        backdropFilter: 'blur(10px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 20,
+      }}
+    >
+      {/* Modal — para o clique não fechar ao interagir com o conteúdo */}
       <div
+        onClick={(e) => e.stopPropagation()}
+        className="cl-modal-in"
         style={{
-          position: 'fixed', top: 0, right: 0, bottom: 0,
-          width: 380,
-          maxWidth: '100vw',
-          background: 'var(--bg)',
-          borderLeft: '1px solid var(--border)',
-          zIndex: 50,
-          transform: open ? 'translateX(0)' : 'translateX(100%)',
-          transition: 'transform 0.25s cubic-bezier(0.4,0,0.2,1)',
+          width: 'min(880px, 100%)',
+          maxHeight: '88vh',
+          background: 'var(--surface)',
+          border: '1px solid var(--border)',
+          borderRadius: 12,
+          boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
         }}
       >
-        {/* Header */}
+        {/* Header + abas + busca */}
         <div style={{
-          padding: '20px 20px 16px',
+          padding: '22px 26px 18px',
           borderBottom: '1px solid var(--border)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           flexShrink: 0,
+          display: 'flex', flexDirection: 'column', gap: 14,
         }}>
-          <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>Buscar Jogador</div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Perfil e ratings do chess.com</div>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+            <div>
+              <div className="cl-display" style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)' }}>Buscar Jogador</div>
+              <div style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 2 }}>Perfil, ratings e partidas recentes</div>
+            </div>
+            <button
+              onClick={onClose}
+              className="cl-btn cl-btn-sm"
+              style={{ color: 'var(--text)', fontSize: 16, lineHeight: 1, padding: '8px 10px', flexShrink: 0 }}
+            >
+              ✕
+            </button>
           </div>
-          <button
-            onClick={() => setOpen(false)}
-            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: '4px 8px', borderRadius: 6 }}
-          >
-            ✕
-          </button>
-        </div>
 
-        {/* Busca */}
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+          {/* Abas de plataforma */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {(Object.keys(PLATFORM_META) as Platform[]).map((p) => {
+              const m = PLATFORM_META[p]
+              const isActive = platform === p
+              return (
+                <button
+                  key={p}
+                  onClick={() => switchPlatform(p)}
+                  className={`cl-btn cl-btn-sm${isActive ? ' cl-btn-selected' : ''}`}
+                  style={{
+                    flex: 1, gap: 8,
+                    padding: '8px 0',
+                    fontSize: 13.5,
+                    color: isActive ? undefined : 'var(--text)',
+                  }}
+                >
+                  <m.Icon width={17} height={17} />
+                  {m.label}
+                </button>
+              )
+            })}
+          </div>
+
           <div style={{ display: 'flex', gap: 8 }}>
             <input
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Username do chess.com..."
+              placeholder={meta.placeholder}
               style={{
                 flex: 1,
-                padding: '10px 12px',
+                padding: '11px 14px',
                 fontSize: 14,
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-                borderRadius: 8,
+                background: 'var(--surface2)',
+                border: '2px solid var(--border)',
+                borderRadius: 10,
                 color: 'var(--text)',
                 outline: 'none',
               }}
             />
             <button
               onClick={runSearch}
-              style={{
-                padding: '10px 16px',
-                background: 'var(--accent)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 8,
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
+              className="cl-btn cl-btn-accent"
+              style={{ padding: '11px 20px', fontSize: 14, flexShrink: 0 }}
             >
               Buscar
             </button>
@@ -152,39 +198,74 @@ export default function PlayerSearch() {
         </div>
 
         {/* Conteúdo com scroll */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-          {loading && <LoadingSkeleton />}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '22px 26px 26px' }}>
+          {active.loading && <LoadingSkeleton />}
 
-          {!loading && error && (
+          {!active.loading && active.error && (
             <div style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-              padding: '40px 16px', textAlign: 'center',
+              padding: '56px 16px', textAlign: 'center',
             }}>
-              <span style={{ fontSize: 32 }}>😕</span>
-              <span style={{ fontSize: 14, color: 'var(--text)', fontWeight: 600 }}>{error}</span>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Verifique o username e tente novamente.</span>
+              <span style={{ fontSize: 36 }}>😕</span>
+              <span style={{ fontSize: 15, color: 'var(--text)', fontWeight: 700 }}>{active.error}</span>
+              <span style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>Verifique o username e tente novamente.</span>
             </div>
           )}
 
-          {!loading && !error && profile && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-              <PlayerCard profile={profile} />
-              {stats && <StatsGrid stats={stats} />}
+          {!active.loading && !active.error && platform === 'chesscom' && chesscom.profile && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 26 }} key={chesscom.profile.username}>
+              <PlayerCard profile={chesscom.profile} />
+              {chesscom.stats && (
+                <section>
+                  <SectionTitle>Ratings</SectionTitle>
+                  <StatsGrid stats={chesscom.stats} />
+                </section>
+              )}
+              <section>
+                <SectionTitle>Partidas recentes</SectionTitle>
+                <RecentGames games={games.games} loading={games.loading} onAnalyze={handleAnalyze} />
+              </section>
             </div>
           )}
 
-          {!loading && !error && !profile && (
+          {!active.loading && !active.error && platform === 'lichess' && lichess.profile && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 26 }} key={lichess.profile.username}>
+              <LichessPlayerCard profile={lichess.profile} totalGames={lichess.stats?.totalGames} />
+              {lichess.stats && (
+                <section>
+                  <SectionTitle>Ratings</SectionTitle>
+                  <LichessStatsGrid stats={lichess.stats} />
+                </section>
+              )}
+              <section>
+                <SectionTitle>Partidas recentes</SectionTitle>
+                <RecentGames games={games.games} loading={games.loading} onAnalyze={handleAnalyze} />
+              </section>
+            </div>
+          )}
+
+          {!active.loading && !active.error && !active.profile && (
             <div style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-              padding: '40px 16px', textAlign: 'center',
+              padding: '64px 16px', textAlign: 'center',
             }}>
-              <span style={{ fontSize: 32 }}>♟️</span>
-              <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Busque um username do chess.com para ver o perfil e os ratings.</span>
+              <meta.Icon width={36} height={36} style={{ opacity: 0.5, color: 'var(--text-muted)' }} />
+              <span style={{ fontSize: 13.5, color: 'var(--text-muted)' }}>
+                Busque um username do {meta.label} para ver o perfil, os ratings e as últimas partidas.
+              </span>
             </div>
           )}
         </div>
       </div>
-    </>
+    </div>
+  )
+}
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="cl-display" style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
+      {children}
+    </div>
   )
 }
 
@@ -194,15 +275,22 @@ function LoadingSkeleton() {
     borderRadius: 8,
   }
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-        <div style={{ ...shimmer, width: 96, height: 96, borderRadius: '50%' }} />
-        <div style={{ ...shimmer, width: 140, height: 18 }} />
-        <div style={{ ...shimmer, width: 100, height: 12 }} />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+        <div style={{ ...shimmer, width: 116, height: 116, borderRadius: '50%', flexShrink: 0 }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ ...shimmer, width: 180, height: 22 }} />
+          <div style={{ ...shimmer, width: 120, height: 12 }} />
+        </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 12 }}>
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} style={{ ...shimmer, height: 90 }} />
+          <div key={i} style={{ ...shimmer, height: 100 }} />
+        ))}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {[0, 1, 2].map((i) => (
+          <div key={i} style={{ ...shimmer, height: 56 }} />
         ))}
       </div>
     </div>

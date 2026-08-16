@@ -4,97 +4,129 @@ interface EvalBarProps {
   isMate?: number | null
 }
 
-export function EvalBar({ evaluation, orientation = 'white', isMate }: EvalBarProps) {
-  const sigmoid = (x: number) => 1 / (1 + Math.exp(-x / 400))
+// Tons suavizados (não branco/preto puro) pra combinar melhor com o fundo escuro do app.
+const WHITE_FILL = '#EDE9DF'
+const WHITE_FILL_DEEP = '#C9C3B2'
+const BLACK_FILL = '#221F1A'
+const BLACK_FILL_DEEP = '#0A0907'
 
+// Mesma curva de "chance de vitória" que o Lichess usa pra converter centipawns em % da barra
+// (lila/ui/chess/src/winningChances.ts) — achata bem mais rápido que uma sigmoide genérica,
+// batendo com a sensação de barra a que quem joga lá está acostumado: uma vantagem de ~3 peões
+// já lê como "quase ganho", não uma inclinação suave até muito além disso.
+function winningChances(cp: number): number {
+  const MULTIPLIER = -0.00368208
+  return 2 / (1 + Math.exp(MULTIPLIER * cp)) - 1 // -1..1
+}
+
+export function EvalBar({ evaluation, orientation = 'white', isMate }: EvalBarProps) {
   let whitePercent: number
   if (isMate !== null && isMate !== undefined) {
-    whitePercent = isMate > 0 ? 95 : 5
+    whitePercent = isMate > 0 ? 97 : 3
   } else {
-    whitePercent = sigmoid(evaluation) * 100
-    whitePercent = Math.max(5, Math.min(95, whitePercent))
+    whitePercent = 50 + 50 * winningChances(evaluation)
+    whitePercent = Math.max(3, Math.min(97, whitePercent))
   }
 
   const blackPercent = 100 - whitePercent
 
   const topPercent = orientation === 'white' ? blackPercent : whitePercent
   const bottomPercent = orientation === 'white' ? whitePercent : blackPercent
-  const topColor = orientation === 'white' ? '#1a1a1a' : '#ffffff'
-  const bottomColor = orientation === 'white' ? '#ffffff' : '#1a1a1a'
+  const topColor = orientation === 'white' ? BLACK_FILL : WHITE_FILL
+  const bottomColor = orientation === 'white' ? WHITE_FILL : BLACK_FILL
+  const topDeep = orientation === 'white' ? BLACK_FILL_DEEP : WHITE_FILL_DEEP
+  const bottomDeep = orientation === 'white' ? WHITE_FILL_DEEP : BLACK_FILL_DEEP
 
   const evalLabel = isMate !== null && isMate !== undefined
-    ? `M${Math.abs(isMate)}`
+    ? `#${Math.abs(isMate)}`
     : evaluation > 0
       ? `+${(evaluation / 100).toFixed(1)}`
-      : (evaluation / 100).toFixed(1)
+      : evaluation < 0
+        ? (evaluation / 100).toFixed(1)
+        : '0.0'
+
+  // Lado com a fatia maior (visualmente "ganhando") — é onde a etiqueta numérica fica mais legível,
+  // sempre perto da borda externa daquele lado.
+  const advantageIsTop = topPercent >= bottomPercent
+  const labelBg = advantageIsTop ? topColor : bottomColor
+  const labelText = labelBg === WHITE_FILL ? '#1A1712' : '#F5F2E9'
 
   return (
-    <div style={{
-      width: 24,
-      height: '100%',
-      minHeight: 400,
-      display: 'flex',
-      flexDirection: 'column',
-      borderRadius: 4,
-      overflow: 'hidden',
-      position: 'relative',
-      flexShrink: 0,
-    }}>
-      <div style={{
-        flex: topPercent,
-        background: topColor,
-        transition: 'flex 0.5s cubic-bezier(0.4,0,0.2,1)',
+    <div
+      title={`Avaliação: ${evalLabel}`}
+      style={{
+        width: 26,
+        height: '100%',
+        minHeight: 400,
         display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-        paddingTop: 4,
-      }}>
-        {topPercent > 85 && (
-          <span style={{ fontSize: 9, fontWeight: 700, color: topColor === '#ffffff' ? '#1a1a1a' : '#ffffff', lineHeight: 1 }}>
-            {evalLabel}
-          </span>
-        )}
-      </div>
+        flexDirection: 'column',
+        borderRadius: 5,
+        overflow: 'hidden',
+        position: 'relative',
+        flexShrink: 0,
+        border: '1px solid var(--border)',
+        boxShadow: 'inset 0 1px 4px rgba(0,0,0,0.4)',
+      }}
+    >
+      <div
+        style={{
+          flex: topPercent,
+          background: `linear-gradient(${orientation === 'white' ? '180deg' : '0deg'}, ${topColor}, ${topDeep})`,
+          transition: 'flex 0.4s cubic-bezier(0.4,0,0.2,1)',
+        }}
+      />
+      <div
+        style={{
+          flex: bottomPercent,
+          background: `linear-gradient(${orientation === 'white' ? '0deg' : '180deg'}, ${bottomColor}, ${bottomDeep})`,
+          transition: 'flex 0.4s cubic-bezier(0.4,0,0.2,1)',
+        }}
+      />
 
-      <div style={{
-        flex: bottomPercent,
-        background: bottomColor,
-        transition: 'flex 0.5s cubic-bezier(0.4,0,0.2,1)',
-        display: 'flex',
-        alignItems: 'flex-end',
-        justifyContent: 'center',
-        paddingBottom: 4,
-      }}>
-        {bottomPercent > 85 && (
-          <span style={{ fontSize: 9, fontWeight: 700, color: bottomColor === '#ffffff' ? '#1a1a1a' : '#ffffff', lineHeight: 1 }}>
-            {evalLabel}
-          </span>
-        )}
-      </div>
-
-      {topPercent <= 85 && bottomPercent <= 85 && (
-        <div style={{
+      {/* Marca fixa do centro físico da barra (referência de eval = 0) */}
+      <div
+        style={{
           position: 'absolute',
-          left: 0, right: 0,
+          left: 0,
+          right: 0,
           top: '50%',
-          transform: 'translateY(-50%)',
+          height: 2,
+          marginTop: -1,
+          background: 'var(--accent)',
+          opacity: 0.9,
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Etiqueta numérica da avaliação, sempre visível junto à borda do lado em vantagem */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          ...(advantageIsTop ? { top: 4 } : { bottom: 4 }),
           display: 'flex',
           justifyContent: 'center',
           pointerEvents: 'none',
-        }}>
-          <span style={{
-            fontSize: 9,
-            fontWeight: 700,
-            color: evaluation >= 0 ? '#1a1a1a' : '#ffffff',
-            background: evaluation >= 0 ? '#ffffff' : '#1a1a1a',
-            padding: '1px 3px',
-            borderRadius: 2,
-            lineHeight: 1.4,
-          }}>
-            {evalLabel}
-          </span>
-        </div>
-      )}
+        }}
+      >
+        <span
+          style={{
+            fontSize: 10,
+            fontWeight: 800,
+            letterSpacing: -0.2,
+            color: labelText,
+            background: labelBg,
+            border: '1px solid rgba(0,0,0,0.3)',
+            padding: '1px 4px',
+            borderRadius: 3,
+            lineHeight: 1.5,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.45)',
+          }}
+        >
+          {evalLabel}
+        </span>
+      </div>
     </div>
   )
 }

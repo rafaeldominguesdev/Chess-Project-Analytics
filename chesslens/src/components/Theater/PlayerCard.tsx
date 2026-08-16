@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { countryCodeToFlagEmoji } from '../../utils/flags'
+import { PremiumIcon, isPremiumStatus } from '../PremiumIcon'
 
 interface PlayerCardProps {
   username: string
@@ -6,9 +8,12 @@ interface PlayerCardProps {
   color: 'white' | 'black'
   avatarUrl?: string | null
   title?: string | null
+  countryCode?: string | null
+  status?: string | null
   isActive?: boolean
   size?: 'md' | 'lg'
-  variant?: 'panel' | 'plain'
+  /** Precisão (%) calculada da partida até o momento — opcional, mostra um badge quando presente. */
+  accuracy?: number
 }
 
 function hashColor(str: string): string {
@@ -18,50 +23,64 @@ function hashColor(str: string): string {
   return `linear-gradient(135deg, hsl(${hue},55%,45%), hsl(${(hue + 40) % 360},55%,35%))`
 }
 
+/** Cores do badge de precisão, em faixas parecidas com o "Game Review" do chess.com. */
+function accuracyStyle(value: number): { bg: string; color: string } {
+  if (value >= 90) return { bg: 'var(--accent)', color: 'var(--on-accent, #fff)' }
+  if (value >= 70) return { bg: 'var(--surface2)', color: 'var(--text)' }
+  return { bg: '#5E1A1A', color: '#F5D6D6' }
+}
+
 export function PlayerCard({
-  username, rating, color, avatarUrl, title,
-  isActive = false, size = 'lg', variant = 'panel',
+  username, rating, color, avatarUrl, title, countryCode, status,
+  isActive = false, size = 'lg', accuracy,
 }: PlayerCardProps) {
   const initials = username.slice(0, 2).toUpperCase()
   const bg = useMemo(() => hashColor(username), [username])
+  const flag = countryCodeToFlagEmoji(countryCode)
+  const isPremium = isPremiumStatus(status)
+  const hasAccuracy = typeof accuracy === 'number' && !Number.isNaN(accuracy)
 
-  const dim = size === 'lg' ? 52 : 40
-  const nameSize = size === 'lg' ? 19 : 15
-  const ratingSize = size === 'lg' ? 15 : 12
-
-  const isPanel = variant === 'panel'
+  const dim = size === 'lg' ? 38 : 32
+  const nameSize = size === 'lg' ? 14.5 : 13
+  const ratingSize = size === 'lg' ? 12 : 11
 
   return (
     <div
       style={{
-        display: 'flex', alignItems: 'center', gap: 14,
-        padding: isPanel ? '10px 16px' : 0,
-        borderRadius: 12,
-        background: isPanel
-          ? (isActive ? 'linear-gradient(90deg, var(--surface2), var(--surface))' : 'var(--surface)')
-          : 'transparent',
-        border: isPanel ? `1px solid ${isActive ? 'var(--accent)' : 'var(--border)'}` : 'none',
-        boxShadow: isPanel && isActive ? '0 0 0 1px var(--accent)' : 'none',
-        transition: 'all 0.2s',
+        display: 'flex', alignItems: 'center', gap: 10,
+        padding: '2px 2px',
         width: '100%',
       }}
     >
+      {/* Animação do pulso de "vez de jogar" — escopada aqui pra não mexer no index.css global. */}
+      <style>{`
+        @keyframes clPlayerTurnPulse {
+          0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); }
+          50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 0%, transparent); }
+        }
+      `}</style>
+
       {/* Avatar */}
       <div style={{ position: 'relative', flexShrink: 0 }}>
         {avatarUrl ? (
           <img
             src={avatarUrl}
             alt={username}
-            style={{ width: dim, height: dim, borderRadius: 10, objectFit: 'cover', border: '2px solid rgba(255,255,255,0.15)' }}
+            style={{
+              width: dim, height: dim, borderRadius: 7, objectFit: 'cover',
+              border: isActive ? '2px solid var(--accent)' : '2px solid rgba(255,255,255,0.15)',
+              transition: 'border-color 0.2s ease',
+            }}
           />
         ) : (
           <div
             style={{
-              width: dim, height: dim, borderRadius: 10,
+              width: dim, height: dim, borderRadius: 7,
               background: bg,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#fff', fontWeight: 700, fontSize: dim * 0.36,
-              border: '2px solid rgba(255,255,255,0.15)',
+              border: isActive ? '2px solid var(--accent)' : '2px solid rgba(255,255,255,0.15)',
+              transition: 'border-color 0.2s ease',
             }}
           >
             {initials}
@@ -70,12 +89,12 @@ export function PlayerCard({
         {/* Piece color indicator */}
         <div
           style={{
-            position: 'absolute', bottom: -4, right: -4,
-            width: 20, height: 20, borderRadius: '50%',
+            position: 'absolute', bottom: -3, right: -3,
+            width: 15, height: 15, borderRadius: '50%',
             background: color === 'white' ? '#f5f5f5' : '#1a1a1a',
             border: '2px solid var(--bg)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 11,
+            fontSize: 8.5,
             color: color === 'white' ? '#1a1a1a' : '#f5f5f5',
           }}
         >
@@ -84,40 +103,52 @@ export function PlayerCard({
       </div>
 
       {/* Name + rating */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {title && (
-            <span style={{
-              fontSize: 11, fontWeight: 800, color: '#fff',
-              background: '#b5382e', padding: '1px 5px', borderRadius: 4, flexShrink: 0,
-            }}>
-              {title}
-            </span>
-          )}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flexWrap: 'wrap' }}>
+        {title && (
           <span style={{
-            fontSize: nameSize, fontWeight: 700, color: 'var(--text)',
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            fontSize: 10.5, fontWeight: 800, color: '#fff',
+            background: '#b5382e', padding: '1px 5px', borderRadius: 4, flexShrink: 0,
           }}>
-            {username}
+            {title}
           </span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{
-            fontSize: ratingSize, fontWeight: 700, color: 'var(--accent)',
-            background: 'var(--surface2)', padding: '1px 8px', borderRadius: 6,
-          }}>
-            {rating && rating !== '?' ? rating : 'Unrated'}
+        )}
+        {isPremium && <PremiumIcon size={13} />}
+        <span style={{
+          fontSize: nameSize, fontWeight: 700, color: 'var(--text)',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>
+          {username}
+        </span>
+        {flag && <span style={{ fontSize: nameSize, flexShrink: 0 }} title={countryCode ?? ''}>{flag}</span>}
+        <span style={{
+          fontSize: ratingSize, fontWeight: 700, color: 'var(--text)',
+          background: 'var(--surface2)', padding: '1px 7px', borderRadius: 5, flexShrink: 0,
+        }}>
+          {rating && rating !== '?' ? rating : 'Unrated'}
+        </span>
+        {hasAccuracy && (
+          <span
+            title="Precisão"
+            style={{
+              fontSize: ratingSize, fontWeight: 800, letterSpacing: -0.1,
+              background: accuracyStyle(accuracy as number).bg,
+              color: accuracyStyle(accuracy as number).color,
+              padding: '1px 7px', borderRadius: 5, flexShrink: 0,
+            }}
+          >
+            {(accuracy as number).toFixed(1)}%
           </span>
-          {isActive && (
-            <span style={{
-              fontSize: 11, color: '#27ae60', fontWeight: 600,
-              display: 'flex', alignItems: 'center', gap: 4,
-            }}>
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#27ae60', display: 'inline-block' }} />
-              jogando
-            </span>
-          )}
-        </div>
+        )}
+        {isActive && (
+          <span
+            style={{
+              width: 7, height: 7, borderRadius: '50%',
+              background: 'var(--accent)', display: 'inline-block', flexShrink: 0,
+              animation: 'clPlayerTurnPulse 1.6s ease-out infinite',
+            }}
+            title="Jogando"
+          />
+        )}
       </div>
     </div>
   )

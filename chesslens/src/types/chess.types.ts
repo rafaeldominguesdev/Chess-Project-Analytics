@@ -22,8 +22,6 @@ export interface GameInfo {
   result: string
   date: string
   event: string
-  opening: string
-  eco: string
   termination: string
 }
 

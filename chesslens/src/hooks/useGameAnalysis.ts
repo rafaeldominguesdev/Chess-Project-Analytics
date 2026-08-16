@@ -6,7 +6,9 @@ export interface PositionEval {
   bestMove: string | null
 }
 
-const ENGINE_URL = '/stockfish/stockfish-18-lite-single.js'
+// Mesmo build completo (NNUE cheia) usado pela avaliação ao vivo — mantém as duas
+// análises consistentes entre si e com o que o chess.com mostra.
+const ENGINE_URL = '/stockfish/stockfish-18-single.js'
 
 /**
  * Analisa a partida inteira posição por posição num worker Stockfish dedicado.
@@ -28,7 +30,7 @@ export function useGameAnalysis(depth = 12) {
     w.onmessage = (e: MessageEvent<string>) => {
       const line = typeof e.data === 'string' ? e.data : String(e.data)
       if (line === 'uciok') {
-        w.postMessage('setoption name Hash value 32')
+        w.postMessage('setoption name Hash value 64')
         w.postMessage('setoption name Threads value 1')
         w.postMessage('isready')
         return

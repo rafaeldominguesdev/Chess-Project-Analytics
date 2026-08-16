@@ -1,38 +1,49 @@
 import { useState, useEffect } from 'react'
+import { countryUrlToCode } from '../utils/flags'
 
 export interface PlayerProfile {
   avatar: string | null
   title: string | null
+  countryCode: string | null
+  status: string | null
   loading: boolean
 }
 
-const cache = new Map<string, { avatar: string | null; title: string | null }>()
+type CachedProfile = Omit<PlayerProfile, 'loading'>
 
-async function fetchProfile(username: string): Promise<{ avatar: string | null; title: string | null }> {
+const EMPTY_PROFILE: CachedProfile = { avatar: null, title: null, countryCode: null, status: null }
+
+const cache = new Map<string, CachedProfile>()
+
+async function fetchProfile(username: string): Promise<CachedProfile> {
   const key = username.toLowerCase()
   if (cache.has(key)) return cache.get(key)!
   try {
     const res = await fetch(`https://api.chess.com/pub/player/${key}`)
     if (!res.ok) throw new Error('not found')
     const data = await res.json()
-    const result = { avatar: data.avatar ?? null, title: data.title ?? null }
+    const result: CachedProfile = {
+      avatar: data.avatar ?? null,
+      title: data.title ?? null,
+      countryCode: countryUrlToCode(data.country ?? null),
+      status: data.status ?? null,
+    }
     cache.set(key, result)
     return result
   } catch {
-    const result = { avatar: null, title: null }
-    cache.set(key, result)
-    return result
+    cache.set(key, EMPTY_PROFILE)
+    return EMPTY_PROFILE
   }
 }
 
 /**
- * Busca avatar + título dos jogadores na API pública do chess.com.
+ * Busca avatar, título, país e status (assinatura) dos jogadores na API pública do chess.com.
  * Usuários que não existem no chess.com caem no fallback (avatar null → iniciais).
  */
 export function usePlayerProfiles(white?: string, black?: string) {
   const [profiles, setProfiles] = useState<{ white: PlayerProfile; black: PlayerProfile }>({
-    white: { avatar: null, title: null, loading: false },
-    black: { avatar: null, title: null, loading: false },
+    white: { ...EMPTY_PROFILE, loading: false },
+    black: { ...EMPTY_PROFILE, loading: false },
   })
 
   useEffect(() => {
@@ -40,14 +51,14 @@ export function usePlayerProfiles(white?: string, black?: string) {
     const valid = (u?: string) => !!u && u !== '?' && u !== 'Brancas' && u !== 'Pretas' && /^[\w-]+$/.test(u)
 
     setProfiles({
-      white: { avatar: null, title: null, loading: valid(white) },
-      black: { avatar: null, title: null, loading: valid(black) },
+      white: { ...EMPTY_PROFILE, loading: valid(white) },
+      black: { ...EMPTY_PROFILE, loading: valid(black) },
     })
 
     async function run() {
       const [w, b] = await Promise.all([
-        valid(white) ? fetchProfile(white!) : Promise.resolve({ avatar: null, title: null }),
-        valid(black) ? fetchProfile(black!) : Promise.resolve({ avatar: null, title: null }),
+        valid(white) ? fetchProfile(white!) : Promise.resolve(EMPTY_PROFILE),
+        valid(black) ? fetchProfile(black!) : Promise.resolve(EMPTY_PROFILE),
       ])
       if (cancelled) return
       setProfiles({
