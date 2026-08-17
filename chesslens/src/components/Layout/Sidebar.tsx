@@ -6,6 +6,7 @@ interface SidebarProps {
   onToggleTraining: () => void
   onToggleBoard: () => void
   onGoHome: () => void
+  onAnalyzeClick: () => void
   onMaintenanceClick: (feature: string) => void
   trainingActive: boolean
   boardActive: boolean
@@ -31,7 +32,7 @@ const TRAIN_PLACEHOLDERS = ['Treino de Erros', 'Treino de Aberturas']
  *  fica colado no topo, ao lado da marca — e os dois estados (colapsada / ferramentas aberta)
  *  persistem entre sessões (localStorage), já que são preferência de layout, não algo que muda
  *  por partida. Rola internamente (overflowY) porque com tudo expandido não cabe numa tela baixa. */
-export function Sidebar({ onSettings, onToggleTraining, onToggleBoard, onGoHome, onMaintenanceClick, trainingActive, boardActive }: SidebarProps) {
+export function Sidebar({ onSettings, onToggleTraining, onToggleBoard, onGoHome, onAnalyzeClick, onMaintenanceClick, trainingActive, boardActive }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSED_KEY) === '1')
   const [toolsOpen, setToolsOpen] = useState(() => {
     const saved = localStorage.getItem(TOOLS_OPEN_KEY)
@@ -147,7 +148,7 @@ export function Sidebar({ onSettings, onToggleTraining, onToggleBoard, onGoHome,
         )}
         {(collapsed || toolsOpen) && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <NavItem icon={<AnalyzeNavIcon width={20} height={20} />} label="Analisar" active={!trainingActive && !boardActive} onClick={onGoHome} collapsed={collapsed} />
+            <NavItem icon={<AnalyzeNavIcon width={20} height={20} />} label="Analisar" active={!trainingActive && !boardActive} onClick={onAnalyzeClick} collapsed={collapsed} />
             <NavItem icon={<BoardNavIcon width={20} height={20} />} label="Tabuleiro" active={boardActive} onClick={onToggleBoard} collapsed={collapsed} />
             <NavItem icon={<WrenchIcon width={19} height={19} />} label="Definir Posição" collapsed={collapsed} soon
               onClick={() => onMaintenanceClick('Definir Posição')} />

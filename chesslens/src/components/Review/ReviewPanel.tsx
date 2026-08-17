@@ -1,13 +1,9 @@
-import { useMemo } from 'react'
 import type { ClassifiedMove, GameInfo } from '../../types/chess.types'
 import { EvalGraph } from '../Analysis/EvalGraph'
 import { PlayerComparison } from '../Analysis/PlayerComparison'
 import { MoveList } from '../Analysis/MoveList'
 import { Panel } from '../Panel'
-import { GameDetailsPanel } from './GameDetailsPanel'
 import { CoachComment } from './CoachComment'
-import { ReviewShieldIcon } from './icons'
-import { identifyOpening } from '../../utils/openingsDatabase'
 import { BoardControls } from '../Board/BoardControls'
 
 /** Barra de progresso animada da análise do Stockfish rodando em segundo plano. */
@@ -78,12 +74,6 @@ export function ReviewPanel({
   const whiteName = gameInfo?.white ?? 'Brancas'
   const blackName = gameInfo?.black ?? 'Pretas'
 
-  const opening = useMemo(() => {
-    if (moves.length === 0) return null
-    const match = identifyOpening(moves.map((m) => m.san))
-    return match ? `${match.eco} · ${match.name}` : null
-  }, [moves])
-
   return (
     <aside style={{ width: 360, flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
       <div
@@ -93,22 +83,6 @@ export function ReviewPanel({
           paddingRight: 2,
         }}
       >
-        {/* Cabeçalho */}
-        <div
-          style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            padding: '9px 12px', borderRadius: 'var(--radius-sm)',
-            background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)',
-            boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.04), 0 1px 0 0 rgba(0,0,0,0.5), 0 16px 36px -12px rgba(0,0,0,0.6)',
-          }}
-        >
-          <ReviewShieldIcon width={18} height={18} style={{ color: 'var(--color-success)', flexShrink: 0 }} />
-          <h2 className="cl-display" style={{ fontSize: 14, fontWeight: 800, color: 'var(--color-text-on-dark)', flex: 1 }}>Revisão da Partida</h2>
-        </div>
-
-        {/* Ficha da partida (evento, resultado, término) — sempre visível */}
-        {gameInfo && <GameDetailsPanel gameInfo={gameInfo} opening={opening} />}
-
         {!reviewStarted ? (
           <div key="summary" className="cl-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {/* Tela de resumo: fotos lado a lado + precisão + comparação por categoria.

@@ -147,6 +147,7 @@ function AppInner() {
         onToggleTraining={() => { setTrainingMode((v) => !v); setBoardMode(false) }}
         onToggleBoard={() => { setBoardMode((v) => !v); setTrainingMode(false) }}
         onGoHome={() => { setTrainingMode(false); setBoardMode(false) }}
+        onAnalyzeClick={() => { setTrainingMode(false); setBoardMode(false); openSearch() }}
         onMaintenanceClick={setMaintenanceFeature}
         trainingActive={trainingMode}
         boardActive={boardMode}

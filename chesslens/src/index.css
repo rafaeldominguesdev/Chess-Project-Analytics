@@ -45,10 +45,10 @@
   --font-display: 'Syne', 'Onest', system-ui, sans-serif;
   --font-mono: 'Spline Sans Mono', ui-monospace, 'SFMono-Regular', monospace;
 
-  /* Raios — cantos bem arredondados, estilo tecla física */
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 18px;
+  /* Raios — cantos discretos, estilo tecla física (menos arredondado que antes) */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
 
   /* Timings/easings — toque curto e seco; entrada um pouco mais lenta */
   --dur-tap: 110ms;

@@ -131,7 +131,7 @@ export function TrainingView({ boardWidth, containerRef }: TrainingViewProps) {
               boardOrientation={solverColor}
               hintSquare={hintSquare}
               extraArrows={hintMove ? [{ startSquare: hintMove.from, endSquare: hintMove.to, color: '#E8A93C' }] : undefined}
-              onPieceDrop={({ sourceSquare, targetSquare }) => (targetSquare ? attemptMove(sourceSquare, targetSquare) : false)}
+              onPieceDrop={({ sourceSquare, targetSquare, promotion }) => (targetSquare ? attemptMove(sourceSquare, targetSquare, promotion) : false)}
             />
           )}
 
@@ -191,24 +191,6 @@ export function TrainingView({ boardWidth, containerRef }: TrainingViewProps) {
       {/* Right — mesma posição/largura do painel de análise */}
       <aside style={{ width: 360, flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto', maxHeight: 'calc(100vh - 20px)', paddingRight: 2 }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', borderRadius: 'var(--radius-sm)',
-            background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)',
-            boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.04), 0 1px 0 0 rgba(0,0,0,0.5), 0 16px 36px -12px rgba(0,0,0,0.6)',
-          }}>
-            <TargetIcon width={18} height={18} style={{ color: 'var(--color-blue-bright)', flexShrink: 0 }} />
-            <h2 className="cl-display" style={{ fontSize: 14, fontWeight: 800, color: 'var(--color-text-on-dark)', flex: 1 }}>Treino de Táticas</h2>
-            <button
-              onClick={() => setDifficultyMenuOpen((v) => !v)}
-              className="cl-btn cl-btn-sm"
-              style={{ width: 'auto', height: 'auto', padding: '6px 10px', fontSize: 10.5, gap: 5 }}
-              title="Trocar dificuldade"
-            >
-              <GearIcon width={13} height={13} />
-              Trocar dificuldade
-            </button>
-          </div>
-
           {puzzle && (
             <div className="cl-card" style={{
               display: 'flex', flexDirection: 'column', gap: 10, padding: 14,
