@@ -1,9 +1,9 @@
 # Progresso do redesign
 
 ## Estado atual
-- Fase atual: 7 — Tabuleiro, motor, lances e gráfico (dentro dela: fechamento da funcionalidade "Definir Posição")
+- Fase atual: 10 — Acessibilidade e performance (escopo: tela "Definir Posição", recém-criada)
 - Status: EM ANDAMENTO
-- Próxima ação: decidir com o usuário se o trabalho pendente (editor de posição) deve ser commitado, depois seguir para Fase 3 (pesquisa de referências, nunca feita formalmente) ou Fase 8/10 (responsividade/acessibilidade, ainda não auditadas)
+- Próxima ação: auditar responsividade da tela "Definir Posição" em telas pequenas (Fase 8), ou partir para a Fase 3 (pesquisa de referências), conforme o usuário priorizar
 - Última atualização: 2026-08-17
 
 ## Fases
@@ -15,10 +15,10 @@
 | 4 | Direção visual e integração da capivara | CONCLUÍDA | Capivara é a imagem central da Home (mascote com lupa), presente também como coach de lances. Preservada e não substituída (commits 97ae793, f20fd79). | — |
 | 5 | Tokens, tipografia e design system | CONCLUÍDA | Tokens em `chesslens/src/index.css` + skill `.claude/skills/chesslens-design`. Paleta âmbar/quase-preto, tipografia mono para FEN/avaliação. | Manter consistência ao criar novas telas (usar a skill) |
 | 6 | Grid, cards e espaços vazios | EM ANDAMENTO | Cards padronizados (`cl-card`), sidebar reorganizada estilo chessigma. Editor de posição segue o mesmo padrão de cards/painel lateral de 360px do resto do app. | Revisar espaços vazios acidentais se algum for reportado |
-| 7 | Tabuleiro, motor, lances e gráfico | EM ANDAMENTO | Nesta sessão: funcionalidade "Definir Posição" (estava "em manutenção") foi implementada por completo — editor de posição livre (`PositionEditor/PositionEditorView.tsx` + `fenBoard.ts`), integrado ao fluxo real do Tabuleiro/Stockfish via `onAnalyze`. Validado: typecheck limpo, lint sem novos avisos, build de produção ok, teste manual no navegador (remover peça, FEN atualiza ao vivo, "Analisar posição" abre o Tabuleiro já na posição editada com avaliação real do motor). | Commitar (aguardando confirmação do usuário) e continuar refinando (ex: feedback de teclado no editor) |
+| 7 | Tabuleiro, motor, lances e gráfico | EM ANDAMENTO | Funcionalidade "Definir Posição" (estava "em manutenção") implementada por completo, commitada e validada — editor de posição livre integrado ao fluxo real do Tabuleiro/Stockfish via `onAnalyze`. | Continuar refinando conforme necessidade |
 | 8 | Responsividade | PENDENTE | Não auditada nesta sessão. | Testar breakpoints tablet/celular, inclusive a tela nova do editor de posição |
 | 9 | Motion e microinterações | EM ANDAMENTO | Barra de avaliação estável, setas de sugestão com transição (commits anteriores). Editor de posição tem hover sutil nas casas (`.cl-editor-square`). | Revisar `prefers-reduced-motion` e demais telas |
-| 10 | Acessibilidade e performance | PENDENTE | Não auditada nesta sessão. | Checar foco/teclado/contraste, inclusive nos novos botões do editor de posição |
+| 10 | Acessibilidade e performance | EM ANDAMENTO | Editor de posição (única área com elementos interativos construídos do zero, sem lib) agora é operável por teclado: casas viraram `role="button"` com `tabIndex`, `aria-label` ("Casa e4, Dama branca") e Enter/Espaço; botões de estado (vez de jogar, roque, peça armada) ganharam `aria-pressed` pra não depender só de cor; erro de FEN inválido agora tem `role="alert"`. Testado no navegador: Tab + Enter colocou peça só com teclado, anel de foco visível. Resto do app (que usa uma lib de tabuleiro) ainda não auditado. | Auditar contraste e demais telas fora do editor de posição |
 | 11 | QA visual e funcional | EM ANDAMENTO | Feature do editor de posição testada manualmente ponta a ponta nesta sessão (ver Fase 7). Resto do app não foi re-testado nesta sessão. | Testar demais fluxos se houver alteração neles |
 | 12 | Revisão final e documentação | PENDENTE | — | Fazer ao final do ciclo de melhorias |
 
@@ -42,20 +42,24 @@
 - `chesslens/src/components/Analysis/AnalysisBoardView.tsx` — repassa `initialFen`.
 - `chesslens/src/index.css` — estilo de hover das casas do editor (`.cl-editor-square`).
 
-Nota: essas alterações já estavam no working tree (não commitadas) no início desta sessão. Esta sessão as revisou, validou e testou — não as reescreveu.
+- `chesslens/src/components/PositionEditor/PositionEditorView.tsx` — acessibilidade: casas do tabuleiro com `role="button"`/`tabIndex`/`aria-label`/`onKeyDown`, `aria-pressed` nos botões de estado, `aria-label` no botão de copiar FEN (ícone puro), `role="alert"` no erro de validação.
+
+Nota: as alterações do editor de posição já estavam no working tree (não commitadas) no início desta sessão; foram revisadas, validadas, testadas e commitadas (commits `28925d1`, `e9b1561`). A acessibilidade foi implementada nesta sessão (commit `9f387c7`).
 
 ## Testes executados
-- `tsc --noEmit` (typecheck completo): sem erros.
+- `tsc --noEmit` (typecheck completo): sem erros, antes e depois dos ajustes de acessibilidade.
 - `oxlint` (projeto todo): só avisos pré-existentes, nenhum novo nos arquivos alterados.
 - `npm run build`: build de produção concluído sem erros.
-- Teste manual no navegador (Vite dev server): Home → "Definir Posição" → remover a dama preta (clique na casa) → FEN atualiza ao vivo → "Analisar posição" → abre o Tabuleiro já na posição editada, com avaliação real do Stockfish (+7.1) e setas de sugestão.
+- Teste manual no navegador (Vite dev server), duas rodadas:
+  1. Home → "Definir Posição" → remover a dama preta (clique na casa) → FEN atualiza ao vivo → "Analisar posição" → abre o Tabuleiro já na posição editada, com avaliação real do Stockfish (+7.1) e setas de sugestão.
+  2. Depois dos ajustes de a11y: `read_page` confirmou `aria-label` correto em todas as 64 casas e nos botões de estado; teste 100% por teclado (Tab até a casa f4, Enter com dama branca armada) colocou a peça e mostrou o anel de foco — sem usar o mouse.
 
 ## Problemas encontrados
-- Nenhum. A funcionalidade estava completa e funcionando; só não tinha sido validada nem commitada ainda.
+- Nenhum bloqueio. O único gap real encontrado foi de acessibilidade (casas do editor não eram focáveis/anunciáveis) — corrigido e validado nesta sessão.
 
 ## Pendências
-- Confirmar com o usuário se deve commitar o trabalho do editor de posição (não commitei — commit só acontece quando pedido explicitamente).
-- Fases 3, 8 e 10 (referências, responsividade, acessibilidade) nunca foram formalmente auditadas em nenhuma sessão — fazer quando priorizado.
+- Fases 3 e 8 (referências, responsividade) nunca foram formalmente auditadas em nenhuma sessão — fazer quando priorizado.
+- Fase 10 (acessibilidade) só cobre a tela "Definir Posição" até agora; o resto do app (que usa uma lib de tabuleiro de terceiros) ainda não foi auditado.
 
 ## Próximo checkpoint
-- Depois de decidido o commit: seguir para a auditoria de responsividade/acessibilidade da tela "Definir Posição" (é a mais nova, ainda não testada em telas pequenas nem com teclado) ou para a Fase 3 (referências), conforme o usuário priorizar.
+- Auditar responsividade da tela "Definir Posição" em breakpoints menores (tablet/celular), ou avançar pra Fase 3 (matriz de referências Chess.com/Chessigma/Lichess), conforme o usuário priorizar.
