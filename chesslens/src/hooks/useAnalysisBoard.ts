@@ -3,7 +3,7 @@ import { Chess } from 'chess.js'
 import { useMoveSound } from './useMoveSound'
 import type { MoveQuality } from '../utils/moveClassifier'
 
-const INITIAL_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+const STANDARD_START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 
 export interface PlayedMove {
   san: string
@@ -21,15 +21,19 @@ export interface PlayedMove {
  * (`currentMoveIndex === -1` é a posição inicial) pra poder reusar `BoardControls` sem alterações.
  * Navegar pra trás e jogar um lance novo dali descarta o "futuro" da linha atual (sem ramificação —
  * como o tabuleiro de análise do lichess/chess.com quando você não guarda a variante).
+ *
+ * @param initialFen posição de partida — padrão é a inicial do xadrez, mas a tela "Definir
+ *   Posição" pode mandar outra (ex: um estudo de final montado à mão). "Nova partida" sempre
+ *   volta pra ESSA posição (a que o tabuleiro nasceu), não necessariamente pro início padrão.
  */
-export function useAnalysisBoard() {
-  const [fens, setFens] = useState<string[]>([INITIAL_FEN])
+export function useAnalysisBoard(initialFen: string = STANDARD_START_FEN) {
+  const [fens, setFens] = useState<string[]>([initialFen])
   const [moves, setMoves] = useState<PlayedMove[]>([])
   const [currentMoveIndex, setCurrentMoveIndex] = useState(-1)
   const [boardOrientation, setBoardOrientation] = useState<'white' | 'black'>('white')
   const { playForSan } = useMoveSound()
 
-  const currentFen = fens[currentMoveIndex + 1] ?? INITIAL_FEN
+  const currentFen = fens[currentMoveIndex + 1] ?? initialFen
   const lastMove = currentMoveIndex >= 0 && moves[currentMoveIndex]
     ? { from: moves[currentMoveIndex].from, to: moves[currentMoveIndex].to }
     : null
@@ -37,7 +41,7 @@ export function useAnalysisBoard() {
   // Retorna o FEN resultante (pra quem chama saber a posição exata do lance sem ter que
   // recalcular com chess.js de novo) — `false` quando o lance é ilegal.
   const makeMove = useCallback((from: string, to: string, promotion?: string): string | false => {
-    const chess = new Chess(fens[currentMoveIndex + 1] ?? INITIAL_FEN)
+    const chess = new Chess(fens[currentMoveIndex + 1] ?? initialFen)
     let result: ReturnType<Chess['move']>
     try {
       result = chess.move({ from, to, promotion: promotion ?? 'q' })
@@ -56,7 +60,7 @@ export function useAnalysisBoard() {
     setCurrentMoveIndex((i) => i + 1)
     playForSan(result.san)
     return newFen
-  }, [fens, currentMoveIndex, playForSan])
+  }, [fens, currentMoveIndex, playForSan, initialFen])
 
   const updateMoveClassification = useCallback((index: number, classification: MoveQuality) => {
     setMoves((prev) => {
@@ -74,10 +78,10 @@ export function useAnalysisBoard() {
   const goLast = useCallback(() => setCurrentMoveIndex(fens.length - 2), [fens.length])
 
   const reset = useCallback(() => {
-    setFens([INITIAL_FEN])
+    setFens([initialFen])
     setMoves([])
     setCurrentMoveIndex(-1)
-  }, [])
+  }, [initialFen])
 
   const flipBoard = useCallback(() => {
     setBoardOrientation((o) => (o === 'white' ? 'black' : 'white'))

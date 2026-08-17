@@ -14,6 +14,8 @@ import type { MoveQuality } from '../../utils/moveClassifier'
 interface AnalysisBoardViewProps {
   boardWidth: number
   containerRef: RefObject<HTMLDivElement | null>
+  /** Posição de partida (ex: vinda de "Definir Posição") — padrão é o início do xadrez. */
+  initialFen?: string
 }
 
 // As 3 melhores sugestões do Stockfish pra posição atual — todas no mesmo verde escuro (não
@@ -33,12 +35,12 @@ const SUGGESTION_STYLE = [
  * e tabuleiro interativo já usados no resto do app. Mesmo layout de coluna central + painel
  * lateral das outras telas (Review/Treino), pra manter a sensação de "mesmo app".
  */
-export function AnalysisBoardView({ boardWidth, containerRef }: AnalysisBoardViewProps) {
+export function AnalysisBoardView({ boardWidth, containerRef, initialFen }: AnalysisBoardViewProps) {
   const {
     currentFen, currentMoveIndex, moves, lastMove,
     boardOrientation, flipBoard,
     makeMove, updateMoveClassification, goToMove, goFirst, goPrev, goNext, goLast, reset,
-  } = useAnalysisBoard()
+  } = useAnalysisBoard(initialFen)
 
   // multiPv=3 pede as 3 melhores linhas ao engine (não só a melhor) — é isso que alimenta as
   // 3 setas de sugestão. `evaluation` continua sendo só a linha 1 (pra barra de avaliação).

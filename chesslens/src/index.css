@@ -352,3 +352,13 @@ textarea {
   50% { box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--color-blue-bright) 40%, transparent); }
 }
 
+/* Casa do tabuleiro no editor de posição livre — clicável (arma peça/borracha), sem drag-drop
+   como o ChessBoard "de verdade", então o feedback de toque é só um leve realce no hover. */
+.cl-editor-square {
+  cursor: pointer;
+  transition: filter var(--dur-tap) var(--ease-tap);
+}
+.cl-editor-square:hover {
+  filter: brightness(1.18);
+}
+

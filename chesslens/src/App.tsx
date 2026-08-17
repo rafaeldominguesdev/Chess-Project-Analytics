@@ -11,6 +11,7 @@ import { ReviewPanel } from './components/Review/ReviewPanel'
 import { SettingsPanel } from './components/Settings/SettingsPanel'
 import { TrainingView } from './components/Training/TrainingView'
 import { AnalysisBoardView } from './components/Analysis/AnalysisBoardView'
+import { PositionEditorView } from './components/PositionEditor/PositionEditorView'
 import { PlayerCard } from './components/Theater/PlayerCard'
 import { Sidebar } from './components/Layout/Sidebar'
 import { MaintenanceNotice } from './components/Layout/MaintenanceNotice'
@@ -29,6 +30,12 @@ function AppInner() {
   // Tabuleiro de análise livre (posição inicial, joga dos dois lados) — mesmo esquema do treino:
   // substitui o conteúdo principal, mutuamente exclusivo com ele e com a revisão de partida.
   const [boardMode, setBoardMode] = useState(false)
+  // Editor de posição livre ("Definir Posição") — mesmo esquema dos outros modos: substitui o
+  // conteúdo principal, mutuamente exclusivo com eles.
+  const [positionEditorMode, setPositionEditorMode] = useState(false)
+  // FEN vindo do editor de posição, aguardando o Tabuleiro montar já nessa posição — some (volta
+  // pro padrão) assim que o Tabuleiro é aberto por qualquer outro caminho.
+  const [pendingBoardFen, setPendingBoardFen] = useState<string | undefined>(undefined)
   // Nome da função clicada num item de menu "em manutenção" (ver Sidebar) — null = fechado.
   const [maintenanceFeature, setMaintenanceFeature] = useState<string | null>(null)
   const [positionEvals, setPositionEvals] = useState<number[]>([])
@@ -111,7 +118,7 @@ function AppInner() {
     onPrev: goPrev, onNext: goNext, onFirst: goFirst, onLast: goLast,
     // Desligado no tabuleiro de análise livre também — lá as setas navegariam por engano o
     // histórico da revisão escondida atrás, em vez do próprio jogo livre (que não usa teclado).
-    enabled: !settingsOpen && !searchOpen && !trainingMode && !boardMode,
+    enabled: !settingsOpen && !searchOpen && !trainingMode && !boardMode && !positionEditorMode,
   })
 
   const handleAnalyzeGame = useCallback((pgn: string) => {
@@ -144,21 +151,29 @@ function AppInner() {
     <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: 'var(--color-bg-main)', color: 'var(--color-text-on-dark)' }}>
       <Sidebar
         onSettings={() => setSettingsOpen(true)}
-        onToggleTraining={() => { setTrainingMode((v) => !v); setBoardMode(false) }}
-        onToggleBoard={() => { setBoardMode((v) => !v); setTrainingMode(false) }}
-        onGoHome={() => { setTrainingMode(false); setBoardMode(false) }}
-        onAnalyzeClick={() => { setTrainingMode(false); setBoardMode(false); openSearch() }}
+        onToggleTraining={() => { setTrainingMode((v) => !v); setBoardMode(false); setPositionEditorMode(false) }}
+        onToggleBoard={() => { setBoardMode((v) => !v); setTrainingMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined) }}
+        onGoHome={() => { setTrainingMode(false); setBoardMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined) }}
+        onAnalyzeClick={() => { setTrainingMode(false); setBoardMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); openSearch() }}
         onMaintenanceClick={setMaintenanceFeature}
+        onTogglePositionEditor={() => { setPositionEditorMode((v) => !v); setTrainingMode(false); setBoardMode(false) }}
         trainingActive={trainingMode}
         boardActive={boardMode}
+        positionEditorActive={positionEditorMode}
       />
 
       {/* Main */}
       <main style={{ flex: 1, minWidth: 0, display: 'flex', gap: 10, padding: 10, minHeight: '100vh' }}>
         {trainingMode ? (
           <TrainingView boardWidth={boardWidth} containerRef={containerRef} />
+        ) : positionEditorMode ? (
+          <PositionEditorView
+            boardWidth={boardWidth}
+            containerRef={containerRef}
+            onAnalyze={(fen) => { setPendingBoardFen(fen); setBoardMode(true); setPositionEditorMode(false) }}
+          />
         ) : boardMode ? (
-          <AnalysisBoardView boardWidth={boardWidth} containerRef={containerRef} />
+          <AnalysisBoardView boardWidth={boardWidth} containerRef={containerRef} initialFen={pendingBoardFen} />
         ) : !isLoaded ? (
           <HomePage onOpenSearch={openSearch} />
         ) : (
