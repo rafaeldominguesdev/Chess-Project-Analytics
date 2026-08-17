@@ -8,6 +8,10 @@ interface PlayerComparisonProps {
   blackName: string
   whiteAvatar?: string | null
   blackAvatar?: string | null
+  /** Rating de cada lado NESSA partida (do PGN — chess.com/Lichess mandam isso no cabeçalho),
+   *  não o rating atual do perfil. "?" quando o PGN não informa (ex.: partida colada na mão). */
+  whiteElo?: string
+  blackElo?: string
   /** PGN Result (ex.: "1-0", "0-1", "1/2-1/2", "*") — usado pro banner de resultado. */
   result?: string
   /** PGN Termination (ex.: "fulano venceu por xeque-mate") — usado pra extrair o motivo. */
@@ -165,7 +169,7 @@ function ResultBanner({ result, termination, whiteName, blackName }: { result?: 
   )
 }
 
-export function PlayerComparison({ moves, whiteName, blackName, whiteAvatar, blackAvatar, result, termination }: PlayerComparisonProps) {
+export function PlayerComparison({ moves, whiteName, blackName, whiteAvatar, blackAvatar, whiteElo, blackElo, result, termination }: PlayerComparisonProps) {
   const wAcc = calcAccuracy(moves, 'w')
   const bAcc = calcAccuracy(moves, 'b')
   const { winnerColor } = describeResult(result, termination, whiteName, blackName)
@@ -234,6 +238,18 @@ export function PlayerComparison({ moves, whiteName, blackName, whiteAvatar, bla
           )
         })}
       </div>
+
+      {/* Rating de cada lado nessa partida — só aparece se o PGN informou pelo menos um dos dois
+          (o valor cai pra "?" quando falta, ver GameInfo — "?" sozinho não conta como informado). */}
+      {((whiteElo && whiteElo !== '?') || (blackElo && blackElo !== '?')) && (
+        <>
+          <div style={{ fontSize: 10.5, color: 'var(--color-gray-muted)', textAlign: 'center', fontWeight: 700, letterSpacing: '0.08em' }}>RATING NA PARTIDA</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <span className="cl-mono" style={{ textAlign: 'center', fontSize: 17, fontWeight: 800, color: 'var(--color-text-on-dark)' }}>{whiteElo ?? '?'}</span>
+            <span className="cl-mono" style={{ textAlign: 'center', fontSize: 17, fontWeight: 800, color: 'var(--color-text-on-dark)' }}>{blackElo ?? '?'}</span>
+          </div>
+        </>
+      )}
     </div>
   )
 }

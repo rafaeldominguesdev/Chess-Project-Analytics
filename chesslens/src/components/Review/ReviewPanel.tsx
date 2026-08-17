@@ -122,6 +122,8 @@ export function ReviewPanel({
                 blackName={blackName}
                 whiteAvatar={whiteAvatar}
                 blackAvatar={blackAvatar}
+                whiteElo={gameInfo?.whiteElo}
+                blackElo={gameInfo?.blackElo}
                 result={gameInfo?.result}
                 termination={gameInfo?.termination}
               />
