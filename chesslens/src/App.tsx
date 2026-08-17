@@ -13,6 +13,7 @@ import { TrainingView } from './components/Training/TrainingView'
 import { AnalysisBoardView } from './components/Analysis/AnalysisBoardView'
 import { PlayerCard } from './components/Theater/PlayerCard'
 import { Sidebar } from './components/Layout/Sidebar'
+import { MaintenanceNotice } from './components/Layout/MaintenanceNotice'
 import { HomePage } from './components/Home/HomePage'
 import PlayerSearch from './components/PlayerSearch/PlayerSearch'
 import type { Platform } from './components/PlayerSearch/PlayerSearch'
@@ -28,6 +29,8 @@ function AppInner() {
   // Tabuleiro de análise livre (posição inicial, joga dos dois lados) — mesmo esquema do treino:
   // substitui o conteúdo principal, mutuamente exclusivo com ele e com a revisão de partida.
   const [boardMode, setBoardMode] = useState(false)
+  // Nome da função clicada num item de menu "em manutenção" (ver Sidebar) — null = fechado.
+  const [maintenanceFeature, setMaintenanceFeature] = useState<string | null>(null)
   const [positionEvals, setPositionEvals] = useState<number[]>([])
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchPlatform, setSearchPlatform] = useState<Platform>('chesscom')
@@ -144,6 +147,7 @@ function AppInner() {
         onToggleTraining={() => { setTrainingMode((v) => !v); setBoardMode(false) }}
         onToggleBoard={() => { setBoardMode((v) => !v); setTrainingMode(false) }}
         onGoHome={() => { setTrainingMode(false); setBoardMode(false) }}
+        onMaintenanceClick={setMaintenanceFeature}
         trainingActive={trainingMode}
         boardActive={boardMode}
       />
@@ -206,6 +210,7 @@ function AppInner() {
       </main>
 
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <MaintenanceNotice feature={maintenanceFeature} onClose={() => setMaintenanceFeature(null)} />
 
       <PlayerSearch
         open={searchOpen}
