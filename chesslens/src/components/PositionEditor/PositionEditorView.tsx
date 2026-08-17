@@ -26,6 +26,14 @@ function pieceUrl(code: string, pieceSet: string) {
   return `https://lichess1.org/assets/piece/${pieceSet}/${code}.svg`
 }
 
+const PIECE_COLOR_LABEL: Record<string, string> = { w: 'branca', b: 'preta' }
+
+/** Descrição da casa pro leitor de tela — só a leitura visual do tabuleiro comunica hoje. */
+function describeSquare(square: string, code: string | undefined): string {
+  if (!code) return `Casa ${square}, vazia`
+  return `Casa ${square}, ${PIECE_LABELS[code[1]]} ${PIECE_COLOR_LABEL[code[0]]}`
+}
+
 function iconBase(props: SVGProps<SVGSVGElement>): SVGProps<SVGSVGElement> {
   return { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', ...props }
 }
@@ -206,7 +214,13 @@ export function PositionEditorView({ boardWidth, containerRef, onAnalyze }: Posi
                 <div
                   key={square}
                   className="cl-editor-square"
+                  role="button"
+                  tabIndex={0}
+                  aria-label={describeSquare(square, code)}
                   onClick={() => handleSquareClick(square)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSquareClick(square) }
+                  }}
                   style={{
                     position: 'relative',
                     width: squareSize,
@@ -251,6 +265,7 @@ export function PositionEditorView({ boardWidth, containerRef, onAnalyze }: Posi
           </div>
           <button
             onClick={() => toggleArm('remove')}
+            aria-pressed={armed === 'remove'}
             className={`cl-btn cl-btn-sm${armed === 'remove' ? ' cl-btn-selected' : ''}`}
             style={{ width: '100%', height: 'auto', padding: '10px 0', fontSize: 12.5, gap: 8 }}
           >
@@ -268,10 +283,10 @@ export function PositionEditorView({ boardWidth, containerRef, onAnalyze }: Posi
             <div>
               <SectionLabel>Vez de jogar</SectionLabel>
               <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                <button onClick={() => setTurn('w')} className={`cl-btn${turn === 'w' ? ' cl-btn-selected' : ''}`} style={{ flex: 1, padding: '10px 0', fontSize: 13 }}>
+                <button onClick={() => setTurn('w')} aria-pressed={turn === 'w'} className={`cl-btn${turn === 'w' ? ' cl-btn-selected' : ''}`} style={{ flex: 1, padding: '10px 0', fontSize: 13 }}>
                   Brancas
                 </button>
-                <button onClick={() => setTurn('b')} className={`cl-btn${turn === 'b' ? ' cl-btn-selected' : ''}`} style={{ flex: 1, padding: '10px 0', fontSize: 13 }}>
+                <button onClick={() => setTurn('b')} aria-pressed={turn === 'b'} className={`cl-btn${turn === 'b' ? ' cl-btn-selected' : ''}`} style={{ flex: 1, padding: '10px 0', fontSize: 13 }}>
                   Pretas
                 </button>
               </div>
@@ -331,12 +346,12 @@ export function PositionEditorView({ boardWidth, containerRef, onAnalyze }: Posi
                 style={{ flex: 1, minWidth: 0, padding: '10px 12px', fontSize: 11.5, color: 'var(--color-text-on-dark)' }}
                 spellCheck={false}
               />
-              <button onClick={copyFen} className="cl-btn cl-btn-sm" title="Copiar FEN" style={{ flexShrink: 0 }}>
+              <button onClick={copyFen} className="cl-btn cl-btn-sm" title="Copiar FEN" aria-label={copied ? 'FEN copiado' : 'Copiar FEN'} style={{ flexShrink: 0 }}>
                 {copied ? <CheckIcon /> : <CopyIcon />}
               </button>
             </div>
             {!validation.valid && (
-              <span style={{ fontSize: 11.5, color: 'var(--color-error)' }}>{validation.message}</span>
+              <span role="alert" style={{ fontSize: 11.5, color: 'var(--color-error)' }}>{validation.message}</span>
             )}
             <button
               onClick={() => onAnalyze(computedFen)}
@@ -369,10 +384,12 @@ function PaletteRow({ color, pieceSet, armed, onToggle, squareSize }: {
             key={code}
             onClick={() => onToggle(code)}
             title={`${PIECE_LABELS[type]} ${color === 'w' ? 'branca' : 'preta'}`}
+            aria-label={`${PIECE_LABELS[type]} ${color === 'w' ? 'branca' : 'preta'}`}
+            aria-pressed={armed === code}
             className={`cl-btn cl-btn-sm${armed === code ? ' cl-btn-selected' : ''}`}
             style={{ width: squareSize, height: squareSize }}
           >
-            <img src={pieceUrl(code, pieceSet)} alt={code} draggable={false} style={{ width: '80%', height: '80%', pointerEvents: 'none' }} />
+            <img src={pieceUrl(code, pieceSet)} alt="" draggable={false} style={{ width: '80%', height: '80%', pointerEvents: 'none' }} />
           </button>
         )
       })}
@@ -390,10 +407,10 @@ function CastlingRow({ label, kingside, queenside, onToggleKingside, onToggleQue
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       <span style={{ fontSize: 12, color: 'var(--color-gray-muted)', width: 52, flexShrink: 0 }}>{label}</span>
-      <button onClick={onToggleKingside} className={`cl-btn cl-btn-sm${kingside ? ' cl-btn-selected' : ''}`} style={{ flex: 1, width: 'auto', height: 'auto', padding: '8px 0', fontSize: 12.5 }}>
+      <button onClick={onToggleKingside} aria-pressed={kingside} aria-label={`Roque curto — ${label}`} className={`cl-btn cl-btn-sm${kingside ? ' cl-btn-selected' : ''}`} style={{ flex: 1, width: 'auto', height: 'auto', padding: '8px 0', fontSize: 12.5 }}>
         O-O
       </button>
-      <button onClick={onToggleQueenside} className={`cl-btn cl-btn-sm${queenside ? ' cl-btn-selected' : ''}`} style={{ flex: 1, width: 'auto', height: 'auto', padding: '8px 0', fontSize: 12.5 }}>
+      <button onClick={onToggleQueenside} aria-pressed={queenside} aria-label={`Roque longo — ${label}`} className={`cl-btn cl-btn-sm${queenside ? ' cl-btn-selected' : ''}`} style={{ flex: 1, width: 'auto', height: 'auto', padding: '8px 0', fontSize: 12.5 }}>
         O-O-O
       </button>
     </div>
