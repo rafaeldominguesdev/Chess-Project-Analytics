@@ -46,9 +46,12 @@ export function usePuzzleTrainer(initialRange: RatingRange = { min: 1500, max: 1
   const solutionIndexRef = useRef(1)
   const solvedIdsRef = useRef(new Set<string>())
   const replyTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  // Timer do "Mostrar lance": depois de exibir a seta, joga o lance sozinho após 1s.
+  const hintTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const loadPuzzle = useCallback(() => {
     clearTimeout(replyTimerRef.current)
+    clearTimeout(hintTimerRef.current)
     setWrongAttempts(0)
     setHintSquare(null)
     setHintMove(null)
@@ -75,10 +78,14 @@ export function usePuzzleTrainer(initialRange: RatingRange = { min: 1500, max: 1
 
   useEffect(() => {
     loadPuzzle()
-    return () => clearTimeout(replyTimerRef.current)
+    return () => {
+      clearTimeout(replyTimerRef.current)
+      clearTimeout(hintTimerRef.current)
+    }
   }, [loadPuzzle])
 
   const retryPuzzle = useCallback(() => {
+    clearTimeout(hintTimerRef.current)
     setHintSquare(null)
     setHintMove(null)
     setStatus((s) => (s === 'wrong' ? 'solving' : s))
@@ -89,20 +96,74 @@ export function usePuzzleTrainer(initialRange: RatingRange = { min: 1500, max: 1
     setHintSquare(puzzle.moves[solutionIndexRef.current].slice(0, 2))
   }, [puzzle, status])
 
+  // Aceita o lance da solução (seja o real jogado pelo usuário, seja o executado sozinho pelo
+  // "Mostrar lance") e avança o puzzle: agenda a resposta forçada do adversário ou marca resolvido.
+  const advanceWithSolutionMove = useCallback((result: { from: string; to: string; san: string }) => {
+    if (!puzzle) return
+    setHintSquare(null)
+    setHintMove(null)
+    solutionIndexRef.current++
+    setFen(chessRef.current.fen())
+    setLastMove({ from: result.from, to: result.to })
+    playForSan(result.san)
+
+    if (solutionIndexRef.current >= puzzle.moves.length) {
+      setStatus('solved')
+      setSolvedCount((c) => c + 1)
+      solvedIdsRef.current.add(puzzle.id)
+      play('victory')
+      return
+    }
+
+    setStatus('correct')
+    const replyUci = puzzle.moves[solutionIndexRef.current]
+    replyTimerRef.current = setTimeout(() => {
+      try {
+        const reply = chessRef.current.move(uciToMoveObj(replyUci))
+        solutionIndexRef.current++
+        setFen(chessRef.current.fen())
+        setLastMove({ from: reply.from, to: reply.to })
+        playForSan(reply.san)
+        const finished = solutionIndexRef.current >= puzzle.moves.length
+        setStatus(finished ? 'solved' : 'solving')
+        if (finished) {
+          setSolvedCount((c) => c + 1)
+          solvedIdsRef.current.add(puzzle.id)
+          play('victory')
+        }
+      } catch {
+        setStatus('solving')
+      }
+    }, 400)
+  }, [puzzle, playForSan, play])
+
+  // Mostra a seta do lance e, depois de 1s, joga ele sozinho — igual arrastar a peça na mão.
   const showMoveHint = useCallback(() => {
     if (!puzzle || status !== 'solving') return
     const uci = puzzle.moves[solutionIndexRef.current]
     setHintSquare(null)
     setHintMove({ from: uci.slice(0, 2), to: uci.slice(2, 4) })
-  }, [puzzle, status])
 
-  const attemptMove = useCallback((sourceSquare: string, targetSquare: string): boolean => {
+    clearTimeout(hintTimerRef.current)
+    hintTimerRef.current = setTimeout(() => {
+      let result: ReturnType<Chess['move']>
+      try {
+        result = chessRef.current.move(uciToMoveObj(uci))
+      } catch {
+        return
+      }
+      advanceWithSolutionMove(result)
+    }, 1000)
+  }, [puzzle, status, advanceWithSolutionMove])
+
+  const attemptMove = useCallback((sourceSquare: string, targetSquare: string, promotion?: string): boolean => {
     if (!puzzle || status !== 'solving') return false
 
+    clearTimeout(hintTimerRef.current)
     const chess = chessRef.current
     let result: ReturnType<Chess['move']>
     try {
-      result = chess.move({ from: sourceSquare, to: targetSquare, promotion: 'q' })
+      result = chess.move({ from: sourceSquare, to: targetSquare, promotion: promotion ?? 'q' })
     } catch {
       return false // lance ilegal — o tabuleiro volta a peça sozinho
     }
@@ -118,44 +179,9 @@ export function usePuzzleTrainer(initialRange: RatingRange = { min: 1500, max: 1
       return false
     }
 
-    setHintSquare(null)
-    setHintMove(null)
-    solutionIndexRef.current++
-    setFen(chess.fen())
-    setLastMove({ from: result.from, to: result.to })
-    playForSan(result.san)
-
-    if (solutionIndexRef.current >= puzzle.moves.length) {
-      setStatus('solved')
-      setSolvedCount((c) => c + 1)
-      solvedIdsRef.current.add(puzzle.id)
-      play('victory')
-      return true
-    }
-
-    setStatus('correct')
-    const replyUci = puzzle.moves[solutionIndexRef.current]
-    replyTimerRef.current = setTimeout(() => {
-      try {
-        const reply = chess.move(uciToMoveObj(replyUci))
-        solutionIndexRef.current++
-        setFen(chess.fen())
-        setLastMove({ from: reply.from, to: reply.to })
-        playForSan(reply.san)
-        const finished = solutionIndexRef.current >= puzzle.moves.length
-        setStatus(finished ? 'solved' : 'solving')
-        if (finished) {
-          setSolvedCount((c) => c + 1)
-          solvedIdsRef.current.add(puzzle.id)
-          play('victory')
-        }
-      } catch {
-        setStatus('solving')
-      }
-    }, 400)
-
+    advanceWithSolutionMove(result)
     return true
-  }, [puzzle, status, playForSan, play])
+  }, [puzzle, status, play, advanceWithSolutionMove])
 
   return {
     puzzle, fen, lastMove, status, solverColor, hintSquare, hintMove,

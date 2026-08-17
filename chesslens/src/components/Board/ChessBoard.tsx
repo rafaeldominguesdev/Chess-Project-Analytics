@@ -37,6 +37,24 @@ interface PieceDropArgs {
   piece: { pieceType?: string } | null
   sourceSquare: string
   targetSquare: string | null
+  /** Peça escolhida no seletor de promoção ('q'|'n'|'r'|'b') — ausente em lances normais. */
+  promotion?: string
+}
+
+const PROMOTION_PIECES = ['q', 'n', 'r', 'b'] as const
+const PROMOTION_LABELS: Record<string, string> = { q: 'Dama', n: 'Cavalo', r: 'Torre', b: 'Bispo' }
+
+/** Pawn indo pra última fileira dele — não valida legalidade completa, só se vale a pena
+ *  perguntar qual peça promover (lance ilegal de verdade é pego depois pelo chess.js do chamador). */
+function isPromotionMove(fen: string, from: string, to: string): boolean {
+  try {
+    const chess = new Chess(fen)
+    const piece = chess.get(from as Square)
+    if (!piece || piece.type !== 'p') return false
+    return (piece.color === 'w' && to[1] === '8') || (piece.color === 'b' && to[1] === '1')
+  } catch {
+    return false
+  }
 }
 
 interface ChessBoardProps {
@@ -84,6 +102,26 @@ export function ChessBoard({
   // se for captura. Some sozinho quando a posição muda (o lance foi feito) ou perde o foco.
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null)
   useEffect(() => setSelectedSquare(null), [fen])
+
+  // Peão chegando na última fileira: pergunta qual peça promover em vez de virar dama sozinho.
+  const [pendingPromotion, setPendingPromotion] = useState<{ from: string; to: string; color: 'w' | 'b' } | null>(null)
+  useEffect(() => setPendingPromotion(null), [fen])
+
+  function tryDrop(sourceSquare: string, targetSquare: string): boolean {
+    if (isPromotionMove(fen, sourceSquare, targetSquare)) {
+      const color = fen.split(' ')[1] === 'b' ? 'b' : 'w'
+      setPendingPromotion({ from: sourceSquare, to: targetSquare, color })
+      return false
+    }
+    return onPieceDrop?.({ piece: null, sourceSquare, targetSquare }) ?? false
+  }
+
+  function handlePromotionPick(piece: string) {
+    if (!pendingPromotion) return
+    const { from, to } = pendingPromotion
+    setPendingPromotion(null)
+    onPieceDrop?.({ piece: null, sourceSquare: from, targetSquare: to, promotion: piece })
+  }
 
   // Setas desenhadas à mão (botão direito segurando e arrastando até outra casa, igual
   // lichess/chess.com) — clique direito sem arrastar (solta na mesma casa) limpa todas de uma
@@ -200,8 +238,20 @@ export function ChessBoard({
   // não relativo às brancas. Como a vez alterna a cada lance, sem essa inversão a barra
   // "pulava" de forma absurda a cada jogada — metade das vezes mostrando o lado errado.
   const sideToMove = fen.split(' ')[1] === 'b' ? 'b' : 'w'
-  const evalCp = evaluation?.cp != null ? (sideToMove === 'w' ? evaluation.cp : -evaluation.cp) : 0
-  const evalMate = evaluation?.mate != null ? (sideToMove === 'w' ? evaluation.mate : -evaluation.mate) : null
+
+  // A cada lance o motor zera a linha por um instante (recomeça a busca do zero) — sem isso a
+  // barra "piscava" pro centro e voltava pro valor certo pouco depois. Guarda o último valor já
+  // convertido pra brancas (que não precisa mudar de sinal depois) e só atualiza quando chega
+  // avaliação nova de verdade, senão mantém proporcional ao que já se sabia da posição.
+  const lastEvalRef = useRef<{ cp: number; mate: number | null }>({ cp: 0, mate: null })
+  if (evaluation) {
+    lastEvalRef.current = {
+      cp: evaluation.cp != null ? (sideToMove === 'w' ? evaluation.cp : -evaluation.cp) : 0,
+      mate: evaluation.mate != null ? (sideToMove === 'w' ? evaluation.mate : -evaluation.mate) : null,
+    }
+  }
+  const evalCp = lastEvalRef.current.cp
+  const evalMate = lastEvalRef.current.mate
 
   const squareSize = boardWidth / 8
   // Tamanho da fonte da notação (a-h/1-8) escala com a casa — o padrão da lib é um
@@ -289,7 +339,7 @@ export function ChessBoard({
   function handleSquareClick({ square, piece }: { square: string; piece: { pieceType: string } | null }) {
     if (!interactive) return
     if (selectedSquare && legalTargets.has(square)) {
-      onPieceDrop?.({ piece: null, sourceSquare: selectedSquare, targetSquare: square })
+      tryDrop(selectedSquare, square)
       setSelectedSquare(null)
       return
     }
@@ -355,13 +405,50 @@ export function ChessBoard({
             // anotar mesmo num tabuleiro só de leitura (ex: revendo um lance no treino).
             onSquareMouseDown: handleSquareMouseDown,
             onSquareMouseUp: handleSquareMouseUp,
-            ...(onPieceDrop ? { onPieceDrop } : {}),
+            ...(onPieceDrop ? { onPieceDrop: ({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }) => (targetSquare ? tryDrop(sourceSquare, targetSquare) : false) } : {}),
             ...(interactive ? {
               onSquareClick: handleSquareClick,
               onPieceDrag: ({ square }) => setSelectedSquare(square),
             } : {}),
           }}
         />
+
+        {/* Seletor de peça de promoção — some ao escolher ou ao clicar fora (cancela o lance). */}
+        {pendingPromotion && (() => {
+          const origin = squareOrigin(pendingPromotion.to, boardOrientation, squareSize)
+          const goingDown = origin.top === 0
+          return (
+            <div
+              onClick={() => setPendingPromotion(null)}
+              style={{ position: 'absolute', inset: 0, zIndex: 20, background: 'rgba(10,9,6,0.6)', cursor: 'pointer' }}
+            >
+              {PROMOTION_PIECES.map((piece, i) => {
+                const top = goingDown ? origin.top + i * squareSize : origin.top - i * squareSize
+                const code = `${pendingPromotion.color}${piece.toUpperCase()}`
+                return (
+                  <div
+                    key={piece}
+                    onClick={(e) => { e.stopPropagation(); handlePromotionPick(piece) }}
+                    title={PROMOTION_LABELS[piece]}
+                    style={{
+                      position: 'absolute', left: origin.left, top,
+                      width: squareSize, height: squareSize,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'var(--color-bg-panel)',
+                      boxShadow: i === 0 ? '0 4px 16px rgba(0,0,0,0.7)' : 'inset 0 1px 0 0 rgba(255,255,255,0.05)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <img
+                      src={`https://lichess1.org/assets/piece/${theme.pieceSet}/${code}.svg`}
+                      width="82%" height="82%" draggable={false} alt={PROMOTION_LABELS[piece]}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })()}
 
         {/* Setas de espessura variável (topMoveArrows) — ver comentário do prop e de `customArrows`. */}
         {customArrows.length > 0 && (

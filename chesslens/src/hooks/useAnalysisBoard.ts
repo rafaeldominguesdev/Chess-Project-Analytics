@@ -36,12 +36,11 @@ export function useAnalysisBoard() {
 
   // Retorna o FEN resultante (pra quem chama saber a posição exata do lance sem ter que
   // recalcular com chess.js de novo) — `false` quando o lance é ilegal.
-  const makeMove = useCallback((from: string, to: string): string | false => {
+  const makeMove = useCallback((from: string, to: string, promotion?: string): string | false => {
     const chess = new Chess(fens[currentMoveIndex + 1] ?? INITIAL_FEN)
     let result: ReturnType<Chess['move']>
     try {
-      // Sem tela de escolha de peça — promove pra dama sempre (mesma simplificação do treino de táticas).
-      result = chess.move({ from, to, promotion: 'q' })
+      result = chess.move({ from, to, promotion: promotion ?? 'q' })
     } catch {
       return false // lance ilegal — o tabuleiro desfaz o arraste sozinho
     }

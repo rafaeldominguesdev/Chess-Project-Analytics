@@ -1,4 +1,4 @@
-import { QUALITY_CONFIG, qualityAlphaColor } from '../../utils/moveClassifier'
+import { QUALITY_CONFIG } from '../../utils/moveClassifier'
 import type { MoveQuality } from '../../utils/moveClassifier'
 import { QUALITY_ICONS } from './QualityIcons'
 
@@ -11,11 +11,13 @@ interface MoveQualityBadgeProps {
 // entre categorias com ícone vetorial (brilhante, livro, melhor, ótimo, bom, chance perdida) e as
 // que ainda usam símbolo de texto (excelente !, imprecisão ?!, erro ?, capivarada ??).
 const SIZES = {
-  sm: { fontSize: 12, icon: 14, padding: '3px 6px' },
-  md: { fontSize: 15, icon: 17, padding: '3px 8px' },
-  lg: { fontSize: 20, icon: 22, padding: '5px 11px' },
+  sm: { fontSize: 12, icon: 14 },
+  md: { fontSize: 15, icon: 17 },
+  lg: { fontSize: 20, icon: 22 },
 } as const
 
+// Só o ícone/símbolo, sem caixinha ao redor (era um chip com fundo+borda antes — pedido pra
+// ficar "como se fosse só ele", sem parecer emoji dentro de quadrado).
 export function MoveQualityBadge({ quality, size = 'sm' }: MoveQualityBadgeProps) {
   const cfg = QUALITY_CONFIG[quality]
   const Icon = QUALITY_ICONS[quality]
@@ -26,18 +28,14 @@ export function MoveQualityBadge({ quality, size = 'sm' }: MoveQualityBadgeProps
       title={cfg.label}
       style={{
         fontSize: s.fontSize,
-        padding: s.padding,
-        borderRadius: 'var(--radius-sm)',
-        backgroundColor: cfg.bg,
         color: cfg.color,
         fontWeight: 800,
-        lineHeight: 1.2,
+        lineHeight: 1,
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,
-        border: `1px solid ${qualityAlphaColor(quality, 0.4)}`,
-        boxShadow: `0 2px 6px -1px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.03) inset`,
+        filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))',
       }}
     >
       {Icon ? <Icon width={s.icon} height={s.icon} /> : cfg.symbol}

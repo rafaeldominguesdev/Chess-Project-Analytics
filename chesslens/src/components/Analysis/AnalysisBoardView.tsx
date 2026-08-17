@@ -7,7 +7,6 @@ import type { StockfishEval } from '../../hooks/useStockfish'
 import { ChessBoard, BOARD_ROW_CHROME_WIDTH } from '../Board/ChessBoard'
 import { BoardControls } from '../Board/BoardControls'
 import { MoveQualityBadge } from '../Board/MoveQualityBadge'
-import { BoardNavIcon } from '../Layout/icons'
 import { identifyOpening, isBookMove } from '../../utils/openingsDatabase'
 import { classifyMove, materialForSide, toWhiteCp } from '../../utils/moveClassifier'
 import type { MoveQuality } from '../../utils/moveClassifier'
@@ -22,9 +21,9 @@ interface AnalysisBoardViewProps {
 // grossa e sólida, a 2ª mais fina e um pouco mais transparente, a 3ª ainda mais fina e apagada.
 const SUGGESTION_GREEN = '#1B7A3D'
 const SUGGESTION_STYLE = [
-  { color: SUGGESTION_GREEN, strokeWidth: 20, opacity: 0.85, label: 'Melhor lance' },
-  { color: SUGGESTION_GREEN, strokeWidth: 13, opacity: 0.6, label: '2ª melhor opção' },
-  { color: SUGGESTION_GREEN, strokeWidth: 8, opacity: 0.35, label: '3ª melhor opção' },
+  { color: SUGGESTION_GREEN, strokeWidth: 20, opacity: 0.85 },
+  { color: SUGGESTION_GREEN, strokeWidth: 13, opacity: 0.6 },
+  { color: SUGGESTION_GREEN, strokeWidth: 8, opacity: 0.35 },
 ] as const
 
 /**
@@ -116,7 +115,7 @@ export function AnalysisBoardView({ boardWidth, containerRef }: AnalysisBoardVie
   const rows = Math.ceil(moves.length / 2)
   const currentQuality = currentMoveIndex >= 0 ? moves[currentMoveIndex]?.classification ?? null : null
 
-  function handleDrop(sourceSquare: string, targetSquare: string): boolean {
+  function handleDrop(sourceSquare: string, targetSquare: string, promotion?: string): boolean {
     const fenBefore = currentFen
     const color = fenBefore.split(' ')[1] === 'b' ? 'b' : 'w'
     // Só dá pra classificar se já tínhamos uma avaliação de referência PARA ESSA posição exata
@@ -125,7 +124,7 @@ export function AnalysisBoardView({ boardWidth, containerRef }: AnalysisBoardVie
     const before = lastEvalRef.current?.fen === fenBefore ? lastEvalRef.current : null
     const moveIndex = currentMoveIndex + 1
 
-    const fenAfter = makeMove(sourceSquare, targetSquare)
+    const fenAfter = makeMove(sourceSquare, targetSquare, promotion)
     if (!fenAfter) return false
 
     if (before) {
@@ -155,7 +154,7 @@ export function AnalysisBoardView({ boardWidth, containerRef }: AnalysisBoardVie
           boardOrientation={boardOrientation}
           topMoveArrows={topMoveArrows}
           currentQuality={currentQuality}
-          onPieceDrop={({ sourceSquare, targetSquare }) => (targetSquare ? handleDrop(sourceSquare, targetSquare) : false)}
+          onPieceDrop={({ sourceSquare, targetSquare, promotion }) => (targetSquare ? handleDrop(sourceSquare, targetSquare, promotion) : false)}
         />
 
         <div style={{ width: cardWidth }}>
@@ -175,19 +174,14 @@ export function AnalysisBoardView({ boardWidth, containerRef }: AnalysisBoardVie
       {/* Right — mesma posição/largura do painel de análise/treino */}
       <aside style={{ width: 360, flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto', maxHeight: 'calc(100vh - 20px)', paddingRight: 2 }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', borderRadius: 'var(--radius-sm)',
-            background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)',
-            boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.04), 0 1px 0 0 rgba(0,0,0,0.5), 0 16px 36px -12px rgba(0,0,0,0.6)',
-          }}>
-            <BoardNavIcon width={18} height={18} style={{ color: 'var(--color-blue-bright)', flexShrink: 0 }} />
-            <h2 className="cl-display" style={{ fontSize: 14, fontWeight: 800, color: 'var(--color-text-on-dark)', flex: 1 }}>Tabuleiro de Análise</h2>
-            <button onClick={reset} className="cl-btn cl-btn-sm" style={{ width: 'auto', height: 'auto', padding: '6px 10px', fontSize: 10.5 }} title="Recomeçar do zero">
-              Nova partida
-            </button>
-          </div>
-
-          <SuggestionLegend />
+          <button
+            onClick={reset}
+            className="cl-btn cl-btn-sm"
+            style={{ width: 'auto', height: 'auto', alignSelf: 'flex-end', padding: '6px 10px', fontSize: 10.5 }}
+            title="Recomeçar do zero"
+          >
+            Nova partida
+          </button>
 
           {opening && (
             <div style={{
@@ -229,29 +223,6 @@ export function AnalysisBoardView({ boardWidth, containerRef }: AnalysisBoardVie
         </div>
       </aside>
     </>
-  )
-}
-
-/** Legenda das 3 setas de sugestão — cor + espessura de cada uma, pra não precisar adivinhar. */
-function SuggestionLegend() {
-  return (
-    <div style={{
-      display: 'flex', flexDirection: 'column', gap: 7,
-      padding: '9px 10px', borderRadius: 'var(--radius-sm)',
-      background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)',
-    }}>
-      <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-gray-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-        Setas de sugestão
-      </span>
-      {SUGGESTION_STYLE.map((s) => (
-        <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <svg width={40} height={26} style={{ flexShrink: 0, overflow: 'visible' }}>
-            <line x1={3} y1={13} x2={33} y2={13} stroke={s.color} strokeWidth={s.strokeWidth} strokeLinecap="round" opacity={s.opacity} />
-          </svg>
-          <span style={{ fontSize: 12, color: 'var(--color-text-on-dark)' }}>{s.label}</span>
-        </div>
-      ))}
-    </div>
   )
 }
 
