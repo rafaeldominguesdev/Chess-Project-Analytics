@@ -1,0 +1,639 @@
+# Prompt-mestre para melhorar o site de xadrez no Fable 5
+
+## Instruções de uso
+
+Copie todo o conteúdo da seção **Prompt para o Claude** e cole-o no Claude/Fable 5 junto com o acesso ao projeto, repositório, arquivos ou link da aplicação. O objetivo deste prompt não é criar outro produto. É **refinar profundamente o produto que já existe**, preservando a ideia, a função e a identidade visual central.
+
+---
+
+# Prompt para o Claude
+
+Você atuará como uma equipe sênior de produto composta por estrategista de UX, diretor de arte, designer de interface, especialista em design system, engenheiro de front-end, especialista em motion design, analista de acessibilidade, QA visual e gerente de projeto.
+
+Sua missão é melhorar a qualidade geral do meu site de análise de xadrez, mas sem descaracterizá-lo.
+
+## Regra máxima: preservar o produto original
+
+Antes de qualquer alteração, compreenda e documente a ideia atual do site. **Não transforme o site em outro produto. Não mude sua proposta. Não substitua a imagem central da capivara. Não remova a capivara. Não troque a capivara por cavalo, rei, peça abstrata, mascote genérico ou ilustração diferente.**
+
+A capivara é um elemento central da identidade do produto e deve continuar presente, reconhecível e importante. Você pode melhorar sua integração com a composição, iluminação, escala, enquadramento, contraste, posicionamento, responsividade, animação sutil e relação com os cards, mas não pode alterar sua identidade sem autorização explícita.
+
+Preserve também:
+
+- o propósito de analisar posições, partidas e lances de xadrez;
+
+- as funções já existentes;
+
+- os fluxos que já funcionam;
+
+- o tom e a personalidade do produto;
+
+- a linguagem visual própria que já estiver estabelecida;
+
+- os dados, integrações, lógica de análise e chamadas existentes;
+
+- os nomes e comportamentos importantes das funções;
+
+- a estrutura de navegação, salvo quando uma melhoria for necessária para corrigir um problema claro de usabilidade.
+
+As mudanças desejadas são principalmente de **encaixe, composição, estilização, tipografia, espaçamento, hierarquia, responsividade, consistência, microinterações e acabamento profissional**.
+
+> Se uma decisão puder ser interpretada como mudança de identidade, interrompa a execução daquela decisão, registre a dúvida e apresente uma alternativa conservadora.
+
+## 1. Primeira etapa: entender antes de modificar
+
+Não comece alterando o código imediatamente. Primeiro leia e inspecione todo o material disponível no projeto: páginas, componentes, funções, rotas, estilos, assets, imagens, fontes, configurações, chamadas de API, estado da aplicação, integração com motor de xadrez, lógica do tabuleiro e comportamento responsivo.
+
+Faça um inventário das funções existentes em uma tabela:
+
+| Função ou fluxo | Onde está implementado | Como funciona hoje | Deve ser preservado? | Possível melhoria visual ou de UX | Risco |
+| --- | --- | --- | --- | --- | --- |
+| Análise da posição |  |  | Sim, salvo confirmação |  |  |
+| Tabuleiro |  |  | Sim |  |  |
+| Avaliação do motor |  |  | Sim |  |  |
+| Melhor lance |  |  | Sim |  |  |
+| Linhas alternativas |  |  | Sim |  |  |
+| Histórico de lances |  |  | Sim |  |  |
+| FEN ou PGN |  |  | Sim, se existir |  |  |
+| Compartilhamento |  |  | Sim, se existir |  |  |
+| Tema claro/escuro |  |  | Sim, se existir |  |  |
+| Capivara central |  |  | Obrigatoriamente |  |  |
+| Outras funções |  |  | Verificar |  |  |
+
+Depois, descreva o fluxo principal do usuário desde a entrada no site até a análise da posição. Identifique onde o usuário pode ficar confuso, onde precisa procurar uma ação, onde existem espaços vazios, onde os cards parecem desconectados e quais pontos precisam de feedback visual.
+
+Não invente problemas que você não observou. Para cada problema, apresente evidência, impacto e solução concreta.
+
+## 2. Auditoria visual atual
+
+Faça uma auditoria completa da interface, observando:
+
+| Área | Perguntas obrigatórias |
+| --- | --- |
+| Composição | A tela parece uma composição única ou vários cards soltos? |
+| Capivara | Ela está bem encaixada, com escala e destaque adequados? Está competindo com o tabuleiro? |
+| Tabuleiro | É o foco visual correto? Está confortável, proporcional e fácil de entender? |
+| Cards | Eles têm relação visual entre si? Há bordas, sombras ou gaps demais? |
+| Espaços vazios | São intencionais ou resultam de alturas fixas, desalinhamento ou grid ruim? |
+| Tipografia | A leitura de títulos, avaliações, lances, números e textos está clara? |
+| Cores | Cada cor possui função? O contraste é suficiente? |
+| Hierarquia | O usuário entende imediatamente o que é principal e o que é secundário? |
+| Controles | As ações são fáceis de encontrar e têm estados claros? |
+| Feedback | O site comunica carregamento, erro, análise em andamento e conclusão? |
+| Responsividade | O layout se adapta ou simplesmente encolhe? |
+| Acessibilidade | Há foco, contraste, navegação por teclado e labels adequados? |
+| Motion | As animações ajudam a entender a interface ou distraem? |
+
+Produza um diagnóstico com a estrutura:
+
+| Problema | Evidência | Consequência para o usuário | Alteração proposta | Prioridade |
+| --- | --- | --- | --- | --- |
+|  |  |  |  |  |
+
+## 3. Direção visual: melhorar sem descaracterizar
+
+Crie uma direção visual mais refinada para o site mantendo a capivara e a ideia original. O resultado deve parecer uma evolução natural do produto, não um template genérico de SaaS e não uma cópia de Chess.com, Chessigma ou Lichess.
+
+Priorize:
+
+- melhor alinhamento entre capivara, tabuleiro e painéis;
+
+- agrupamento de cards que pertencem à mesma tarefa;
+
+- redução de bordas, sombras e containers redundantes;
+
+- uso mais inteligente de espaços vazios;
+
+- tipografia mais legível e expressiva;
+
+- contraste confortável para análise prolongada;
+
+- destaque controlado para avaliação, melhor lance e estado do motor;
+
+- identidade própria, simpática e memorável;
+
+- equilíbrio entre precisão técnica e personalidade da capivara.
+
+Evite:
+
+- mudar a capivara ou substituí-la;
+
+- inventar uma nova proposta de produto;
+
+- remover funções sem justificativa;
+
+- redesenhar tudo com estética de outro site;
+
+- adicionar gradientes, neon, glassmorphism ou sombras apenas por moda;
+
+- usar animações contínuas que cansam o usuário;
+
+- preencher espaços vazios com elementos inúteis;
+
+- esconder funções existentes durante o redesign;
+
+- reduzir o tabuleiro para dar espaço a painéis secundários.
+
+## 4. Referências de estudo, não de cópia
+
+Estude estas referências para extrair princípios de interface:
+
+- [Chess.com Analysis](https://www.chess.com/analysis), para observar composição do tabuleiro, painel de análise, navegação de lances e organização de ferramentas.
+
+- [Chessigma Analysis](https://www.chessigma.com/tools/analysis), para observar relação entre tabuleiro, avaliação, linhas principais, FEN, PGN e análise contínua.
+
+- [Chessigma](https://www.chessigma.com/), para observar relatórios, precisão, classificação de lances, pontos de virada e comunicação de insights.
+
+- [Lichess Analysis](https://lichess.org/analysis), para observar densidade, árvore de variantes, gráfico de avaliação e utilização eficiente do espaço.
+
+Crie uma comparação:
+
+| Referência | O que funciona bem | O que não deve ser copiado | Princípio que pode ser adaptado ao nosso site |
+| --- | --- | --- | --- |
+| Chess.com |  |  |  |
+| Chessigma |  |  |  |
+| Lichess |  |  |  |
+
+A referência deve inspirar princípios como hierarquia, densidade, proximidade, feedback, navegação e clareza. Não copie identidade visual, logotipo, textos, ícones proprietários, layout específico ou aparência de marca concorrente.
+
+## 5. Encaixe dos elementos e composição
+
+Reestruture a composição sem mudar as funções. Pense na interface como um sistema visual único.
+
+O tabuleiro deve continuar sendo o centro da análise. A capivara deve ser integrada de maneira intencional, podendo funcionar como elemento de personalidade, guia visual, estado contextual, mascote de feedback ou presença decorativa controlada, conforme o papel que ela já possui no projeto.
+
+Analise se a capivara deve ficar ao lado, acima, atrás, dentro de uma área contextual ou em uma posição responsiva diferente. Não escolha por preferência estética isolada: compare pelo menos duas alternativas e explique qual preserva melhor a identidade e a usabilidade.
+
+Para os cards:
+
+- una cards que pertençam ao mesmo fluxo;
+
+- use divisores discretos quando a separação for necessária;
+
+- remova bordas redundantes;
+
+- mantenha títulos curtos e informativos;
+
+- alinhe conteúdos por uma grade comum;
+
+- faça a altura acompanhar o conteúdo quando possível;
+
+- evite espaços vazios gerados por alturas fixas;
+
+- defina uma hierarquia entre card principal, card secundário e detalhes avançados;
+
+- mantenha controles importantes visíveis;
+
+- use drawers, accordions ou abas apenas para informações realmente secundárias.
+
+Para espaços vazios, classifique cada caso como respiração visual, separação estrutural, espaço acidental, falha de alinhamento ou espaço necessário ao tabuleiro. Reduza somente os espaços acidentais e preserve os espaços que melhoram foco e leitura.
+
+## 6. Tipografia e design system
+
+Defina um sistema tipográfico completo. Considere fontes de interface, fonte numérica, pesos, tamanhos, line-height, letter-spacing e comportamento em telas pequenas.
+
+Teste a leitura de exemplos como:
+
+- `+1.24`, `-0.87`, `0.00` e `#3`;
+
+- `Nf3`, `Qxd5+`, `O-O-O` e variantes extensas;
+
+- profundidade, velocidade, precisão e centipawn loss;
+
+- títulos, labels, tooltips, mensagens de erro e textos explicativos.
+
+Crie tokens para:
+
+| Categoria | Decisão |
+| --- | --- |
+| Fonte de interface |  |
+| Fonte numérica |  |
+| Escala de títulos |  |
+| Escala de texto |  |
+| Pesos |  |
+| Line-height |  |
+| Cores de fundo |  |
+| Cores de superfície |  |
+| Texto principal e secundário |  |
+| Acento da marca |  |
+| Estados positivo, negativo, aviso e neutro |  |
+| Espaçamento |  |
+| Raios |  |
+| Sombras |  |
+| Duração das transições |  |
+
+A tipografia deve elevar o produto sem transformar a interface em algo ornamental ou difícil de usar.
+
+## 7. Funções e preservação técnica
+
+Leia as funções existentes antes de modificá-las. Preserve assinaturas, contratos, dados, integrações e comportamentos importantes. Se houver uma função de análise, importação, navegação, configuração, compartilhamento ou renderização do tabuleiro, trate-a como funcionalidade crítica.
+
+Para cada mudança técnica, informe:
+
+| Mudança | Função afetada | Motivo | Risco | Como validar | Plano de reversão |
+| --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |
+
+Não substitua uma função funcional por um mock visual. Não remova chamadas reais para simular uma interface mais bonita. Não desative o motor para melhorar a aparência. Não altere a lógica de xadrez sem necessidade e sem testes.
+
+## 8. Motion e microinterações
+
+Crie um sistema de motion discreto, elegante e útil. As animações devem explicar mudanças, reforçar continuidade e dar feedback, sem transformar a análise em espetáculo.
+
+Planeje motion para:
+
+- entrada e carregamento inicial da interface;
+
+- aparição ou mudança de avaliação do motor;
+
+- atualização de profundidade e linha principal;
+
+- transição de lances no tabuleiro;
+
+- destaque do último lance;
+
+- abertura e fechamento de painéis;
+
+- expansão de variantes;
+
+- mudança de tema;
+
+- estados da capivara, se já existirem ou se puderem ser adicionados sem descaracterizá-la;
+
+- mensagens de sucesso, erro e conclusão;
+
+- hover, foco, pressionamento e arraste.
+
+Para cada animação, defina:
+
+| Interação | Elemento | Movimento | Duração aproximada | Easing | Objetivo | Fallback sem motion |
+| --- | --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |  |
+
+Respeite `prefers-reduced-motion`. Evite movimento contínuo, parallax excessivo, pulso constante, mudanças rápidas de escala e efeitos que atrapalhem a leitura do tabuleiro.
+
+## 9. Arquitetura multiagente
+
+Organize o trabalho em agentes especializados. Cada agente deve receber contexto, objetivo, limites, arquivos a observar, entregáveis e critérios de conclusão. Um agente não deve sobrescrever decisões de outro sem registrar a mudança.
+
+### Agente 1 — Auditor do produto
+
+Lê o projeto, lista as funções, entende o fluxo, identifica dependências e registra o que não pode ser quebrado. Deve confirmar explicitamente que a capivara e a ideia central serão preservadas.
+
+### Agente 2 — Pesquisador de referências
+
+Estuda Chess.com, Chessigma, Lichess e outras referências. Extrai princípios de composição e usabilidade sem copiar identidade. Entrega uma matriz comparativa.
+
+### Agente 3 — Diretor de arte
+
+Define direção visual, paleta, relação entre capivara e interface, tratamento de superfícies, densidade, estilo de ícones e linguagem visual própria.
+
+### Agente 4 — Especialista em tipografia e design system
+
+Define fontes, escala, pesos, métricas, tokens de espaçamento, raios, sombras, cores semânticas e regras de consistência.
+
+### Agente 5 — Especialista em layout
+
+Resolve grid, encaixe do tabuleiro, cards, painéis, espaços vazios, alinhamentos e pontos de quebra responsivos.
+
+### Agente 6 — Especialista em UX de xadrez
+
+Revisa avaliação, melhor lance, variações, histórico, gráfico, FEN, PGN, estados do motor e explicações para diferentes níveis de jogador.
+
+### Agente 7 — Especialista em motion
+
+Planeja e implementa microinterações e transições, garantindo clareza, performance e suporte a movimento reduzido.
+
+### Agente 8 — Especialista em acessibilidade e responsividade
+
+Testa contraste, foco, teclado, toque, leitura em telas menores, ordem de conteúdo, labels e estados não baseados apenas em cor.
+
+### Agente 9 — Implementador cuidadoso
+
+Executa as mudanças aprovadas por fases pequenas, preservando funções e evitando reescritas desnecessárias.
+
+### Agente 10 — QA visual e funcional
+
+Compara antes e depois, testa as funções críticas, procura regressões, verifica responsividade e registra pendências.
+
+## 10. Ordem obrigatória de execução
+
+Execute nesta sequência:
+
+1. Inventário do produto e das funções.
+
+1. Auditoria visual e técnica.
+
+1. Registro das restrições de identidade.
+
+1. Pesquisa de referências.
+
+1. Direção visual com duas ou três opções conservadoras.
+
+1. Aprovação ou escolha da direção recomendada.
+
+1. Tokens e tipografia.
+
+1. Grid e encaixe dos principais elementos.
+
+1. Integração visual da capivara.
+
+1. Refinamento do tabuleiro e do painel do motor.
+
+1. Refinamento de histórico, variantes e gráfico.
+
+1. Responsividade.
+
+1. Motion e microinterações.
+
+1. Acessibilidade e performance.
+
+1. Testes de funções.
+
+1. Revisão visual final.
+
+1. Relatório de mudanças e itens pendentes.
+
+Não pule diretamente para o passo 9 ou para uma implementação completa. Faça mudanças pequenas, valide cada etapa e só avance quando o critério de conclusão estiver satisfeito.
+
+## 11. Formato de saída de cada agente
+
+Cada agente deve entregar:
+
+```
+Nome do agente:
+Objetivo:
+Arquivos ou telas analisados:
+Descobertas:
+Decisões recomendadas:
+Restrições respeitadas:
+Riscos:
+Alterações realizadas:
+Como validar:
+Pendências:
+```
+
+## 12. Critérios de aceitação finais
+
+O trabalho estará aprovado somente se:
+
+- a ideia original permanecer reconhecível;
+
+- a capivara continuar sendo a imagem central e não for substituída;
+
+- as funções existentes continuarem funcionando;
+
+- o tabuleiro permanecer central e confortável;
+
+- cards relacionados parecerem um sistema integrado;
+
+- espaços vazios acidentais forem reduzidos;
+
+- a tipografia ficar mais clara e consistente;
+
+- avaliações, lances e dados do motor forem fáceis de escanear;
+
+- a interface funcionar em desktop, notebook, tablet e celular;
+
+- motion melhorar feedback sem distrair;
+
+- o site não parecer cópia de Chess.com, Chessigma ou Lichess;
+
+- acessibilidade, foco, contraste e teclado forem tratados;
+
+- nenhuma alteração irreversível for feita sem registro;
+
+- o resultado final for comparado visual e funcionalmente com a versão anterior.
+
+## 13. Entregáveis finais
+
+Entregue:
+
+1. Diagnóstico inicial.
+
+1. Inventário das funções preservadas.
+
+1. Matriz de referências.
+
+1. Direção visual recomendada.
+
+1. Sistema de design.
+
+1. Plano multiagente.
+
+1. Plano de implementação faseado.
+
+1. Alterações executadas.
+
+1. Checklist de testes.
+
+1. Comparação antes/depois.
+
+1. Lista de riscos e pendências.
+
+1. Instruções para a próxima etapa.
+
+Comece agora lendo o projeto e produzindo o inventário. **Não faça mudanças visuais antes de confirmar a função da capivara, a proposta central do site e os fluxos que precisam ser preservados.**
+
+---
+
+## Referências de estudo
+
+[1]: https://www.chess.com/analysis "Chess.com Analysis"
+
+[2]: https://www.chessigma.com/tools/analysis "Chessigma Analysis Board"
+
+[3]: https://www.chessigma.com/ "Chessigma Chess Analyzer"
+
+[4]: https://lichess.org/analysis "Lichess Analysis Board"
+
+[5]: https://dribbble.com/search/chess-ui "Dribbble Chess UI Inspiration"
+
+# Instrução de continuidade para o Claude/Fable 5
+
+Continue o trabalho de melhoria do site de xadrez a partir do estado atual do projeto.
+
+## Regra principal
+
+Não reinicie o projeto, não repita etapas já concluídas e não faça uma nova análise geral desnecessária. O arquivo `original.md` já contém as instruções-mestre e as restrições do projeto. Use-o como contexto já definido e siga a execução a partir do ponto atual.
+
+A identidade original deve continuar preservada: **não mude a ideia do site, não substitua a capivara, não remova a capivara e não altere o propósito central do analisador de xadrez**. Continue melhorando apenas o que foi autorizado: encaixe dos elementos, composição, cards, espaços vazios, tipografia, estilização, responsividade, acessibilidade, motion, microinterações, consistência e qualidade de implementação.
+
+## Como descobrir onde retomar
+
+Antes de realizar qualquer alteração, faça somente uma verificação objetiva do estado atual do trabalho:
+
+1. Verifique o que já foi implementado no projeto.
+
+1. Procure um arquivo de controle chamado `PROGRESSO_REDESIGN.md`, `.redesign-progress.md`, `STATUS_REDESIGN.md` ou equivalente.
+
+1. Verifique os últimos registros de decisão, alterações, testes e pendências.
+
+1. Identifique a última fase marcada como `CONCLUÍDA`, `EM ANDAMENTO`, `BLOQUEADA` ou `PENDENTE`.
+
+1. Se não existir registro de progresso, crie `PROGRESSO_REDESIGN.md` e comece pela Fase 1, sem reescrever o `original.md`.
+
+Não fique apenas descrevendo o que deveria ser feito. Após identificar a fase atual, execute o próximo passo lógico permitido.
+
+## Registro obrigatório de progresso
+
+Mantenha sempre o arquivo `PROGRESSO_REDESIGN.md` atualizado. Esse arquivo é o diário operacional do projeto e deve permitir que qualquer nova sessão retome o trabalho sem perder contexto.
+
+Use esta estrutura:
+
+```markdown
+# Progresso do redesign
+
+## Estado atual
+- Fase atual:
+- Status: CONCLUÍDA | EM ANDAMENTO | BLOQUEADA | PENDENTE
+- Próxima ação:
+- Última atualização:
+
+## Fases
+| Fase | Nome | Status | Último resultado | Próxima ação |
+|---|---|---|---|---|
+| 1 | Inventário e preservação das funções |  |  |  |
+| 2 | Auditoria visual e técnica |  |  |  |
+| 3 | Pesquisa de referências |  |  |  |
+| 4 | Direção visual e integração da capivara |  |  |  |
+| 5 | Tokens, tipografia e design system |  |  |  |
+| 6 | Grid, cards e espaços vazios |  |  |  |
+| 7 | Tabuleiro, motor, lances e gráfico |  |  |  |
+| 8 | Responsividade |  |  |  |
+| 9 | Motion e microinterações |  |  |  |
+| 10 | Acessibilidade e performance |  |  |  |
+| 11 | QA visual e funcional |  |  |  |
+| 12 | Revisão final e documentação |  |  |  |
+
+## Decisões aprovadas
+- 
+
+## Restrições que não podem ser quebradas
+- A capivara continua sendo a imagem central.
+- A ideia e o propósito original do site permanecem.
+- As funções existentes devem continuar funcionando.
+- Não copiar visualmente Chess.com, Chessigma ou Lichess.
+
+## Alterações realizadas
+- 
+
+## Testes executados
+- 
+
+## Problemas encontrados
+- 
+
+## Pendências
+- 
+
+## Próximo checkpoint
+- 
+```
+
+## Fases e regra de retomada
+
+Trabalhe em uma única fase por vez. Não marque uma fase como concluída apenas porque os arquivos foram alterados. Uma fase só pode ser marcada como `CONCLUÍDA` depois de implementar, testar e registrar o resultado.
+
+Se uma fase estiver `EM ANDAMENTO`, continue exatamente da próxima tarefa não concluída dessa fase. Se estiver `BLOQUEADA`, não pule silenciosamente: registre o bloqueio, explique o motivo e escolha a alternativa mais segura. Se estiver `CONCLUÍDA`, avance para a próxima fase.
+
+Ao terminar cada tarefa relevante:
+
+1. salve as alterações;
+
+1. execute uma validação objetiva;
+
+1. atualize `PROGRESSO_REDESIGN.md`;
+
+1. registre arquivos modificados;
+
+1. registre problemas e decisões;
+
+1. defina claramente a próxima ação;
+
+1. só então continue para a tarefa seguinte.
+
+## Checkpoint antes de cada mudança
+
+Antes de modificar qualquer componente, responda internamente:
+
+- Qual fase está ativa?
+
+- Qual problema específico está sendo resolvido?
+
+- Esta mudança preserva a capivara e a ideia original?
+
+- Esta mudança pode quebrar alguma função?
+
+- Como será validada?
+
+- Como será revertida se o resultado for ruim?
+
+Se não conseguir responder, não faça a mudança ainda. Registre a dúvida no progresso.
+
+## Ordem de execução
+
+Siga esta ordem, retomando do ponto registrado:
+
+1. Inventário das funções e restrições.
+
+1. Auditoria visual e técnica.
+
+1. Referências e princípios adaptáveis.
+
+1. Direção visual conservadora.
+
+1. Tokens e tipografia.
+
+1. Grid, encaixe dos cards e espaços vazios.
+
+1. Integração visual da capivara.
+
+1. Refinamento do tabuleiro e do painel do motor.
+
+1. Histórico, variantes e gráfico.
+
+1. Responsividade.
+
+1. Motion e microinterações.
+
+1. Acessibilidade e performance.
+
+1. QA visual e funcional.
+
+1. Revisão final.
+
+Não avance para uma etapa posterior se houver uma regressão crítica em uma etapa anterior.
+
+## Como finalizar cada sessão
+
+Ao terminar a sessão atual, não diga apenas “concluído”. Atualize o arquivo de progresso e entregue um resumo curto com:
+
+```
+Fase atual:
+Tarefas concluídas nesta sessão:
+Arquivos alterados:
+Testes realizados:
+Problemas ou bloqueios:
+Próxima tarefa exata:
+```
+
+A próxima sessão deve começar lendo apenas o estado operacional já registrado e verificando o projeto atual. Não repita todo o diagnóstico nem reexecute etapas concluídas sem uma razão documentada.
+
+## Início imediato
+
+Agora:
+
+1. verifique o estado atual do projeto;
+
+1. localize ou crie `PROGRESSO_REDESIGN.md`;
+
+1. identifique a última fase válida;
+
+1. escolha a próxima tarefa exata;
+
+1. execute essa tarefa;
+
+1. atualize o progresso ao final.
+
+Comece de maneira incremental e lógica. **Não reinicie o redesign e não substitua a capivara.**
