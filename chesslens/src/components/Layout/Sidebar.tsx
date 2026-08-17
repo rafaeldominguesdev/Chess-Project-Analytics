@@ -1,29 +1,57 @@
 import { useState, type ReactNode } from 'react'
-import { AnalyzeNavIcon, BoardNavIcon, BrandMarkIcon, ChevronIcon, GearIcon, TargetIcon } from './icons'
+import { AnalyzeNavIcon, BoardNavIcon, BrandMarkIcon, ChevronIcon, GearIcon, TargetIcon, WrenchIcon } from './icons'
 
 interface SidebarProps {
   onSettings: () => void
   onToggleTraining: () => void
   onToggleBoard: () => void
   onGoHome: () => void
+  onMaintenanceClick: (feature: string) => void
   trainingActive: boolean
   boardActive: boolean
 }
 
 const COLLAPSED_KEY = 'chesslens-sidebar-collapsed'
-const WIDTH_EXPANDED = 206
+const TOOLS_OPEN_KEY = 'chesslens-sidebar-tools-open'
+const WIDTH_EXPANDED = 254
 const WIDTH_COLLAPSED = 60
 
-/** Sidebar fixa à esquerda: marca e navegação principal (analisar, treino, config) com rótulo — não só ícone.
- *  Pode encolher pra só ícones (like ChatGPT) — o botão fica colado no topo, ao lado da marca, e o estado
- *  persiste entre sessões (localStorage), já que é preferência de layout, não algo que muda por partida. */
-export function Sidebar({ onSettings, onToggleTraining, onToggleBoard, onGoHome, trainingActive, boardActive }: SidebarProps) {
+// Estrutura de menu inspirada na sidebar do chessigma.com (Treino / Ferramentas), sem a parte
+// comercial deles (preço, loja, blog) — não faz sentido num projeto pessoal. Lista enxuta, só o
+// que tem chance real de virar funcionalidade — o resto dos itens do chessigma (Woodpecker,
+// Blunder Shield, Sparring, Treino de Conversão, Próximo Lance, Calculadora de Elo) foi tirado.
+const TRAIN_PLACEHOLDERS = ['Treino de Erros', 'Treino de Aberturas']
+
+/** Sidebar fixa à esquerda: marca e navegação principal. "Treino" é uma lista simples (Puzzles +
+ *  placeholders); "Ferramentas" é um grupo que expande/recolhe (Analisar, Tabuleiro, Definir
+ *  Posição) — igual pasta de acordeão, clica no cabeçalho pra abrir/fechar, começa aberto quando
+ *  alguma ferramenta de dentro tá ativa (senão o usuário perderia a navegação principal escondida).
+ *  Itens "em breve" aparecem cinzas com a etiqueta e abrem um aviso de manutenção ao clicar, em
+ *  vez de não fazer nada. Pode encolher a sidebar inteira pra só ícones (like ChatGPT) — o botão
+ *  fica colado no topo, ao lado da marca — e os dois estados (colapsada / ferramentas aberta)
+ *  persistem entre sessões (localStorage), já que são preferência de layout, não algo que muda
+ *  por partida. Rola internamente (overflowY) porque com tudo expandido não cabe numa tela baixa. */
+export function Sidebar({ onSettings, onToggleTraining, onToggleBoard, onGoHome, onMaintenanceClick, trainingActive, boardActive }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSED_KEY) === '1')
+  const [toolsOpen, setToolsOpen] = useState(() => {
+    const saved = localStorage.getItem(TOOLS_OPEN_KEY)
+    // Sem preferência salva ainda: começa aberto se alguma ferramenta de dentro já tá ativa
+    // (Analisar é a tela padrão do app), senão o usuário perde a navegação principal de cara.
+    return saved !== null ? saved === '1' : !trainingActive
+  })
 
   function toggleCollapsed() {
     setCollapsed(prev => {
       const next = !prev
       localStorage.setItem(COLLAPSED_KEY, next ? '1' : '0')
+      return next
+    })
+  }
+
+  function toggleTools() {
+    setToolsOpen(prev => {
+      const next = !prev
+      localStorage.setItem(TOOLS_OPEN_KEY, next ? '1' : '0')
       return next
     })
   }
@@ -35,16 +63,16 @@ export function Sidebar({ onSettings, onToggleTraining, onToggleBoard, onGoHome,
         position: 'sticky', top: 0,
         height: '100vh',
         display: 'flex', flexDirection: 'column',
-        gap: 4, padding: collapsed ? '18px 10px' : '18px 14px',
+        padding: collapsed ? '18px 10px' : '18px 14px',
         background: 'var(--color-bg-panel)',
         borderRight: '1px solid var(--color-gray-border)',
         zIndex: 30,
         transition: 'width var(--dur-enter) var(--ease-snap), padding var(--dur-enter) var(--ease-snap)',
-        overflow: 'hidden',
+        overflowX: 'hidden', overflowY: 'auto',
       }}
     >
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 4, marginBottom: 16,
+        display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18,
         // Colapsada, a marca e o botão de toggle não cabem lado a lado (60px de largura total,
         // menos padding, não sobra espaço pros dois) — empilha em duas linhas centralizadas.
         flexDirection: collapsed ? 'column' : 'row',
@@ -60,9 +88,9 @@ export function Sidebar({ onSettings, onToggleTraining, onToggleBoard, onGoHome,
             }}
           >
             <span style={{ color: 'var(--color-blue-bright)', display: 'flex', flexShrink: 0 }}>
-              <BrandMarkIcon width={22} height={22} />
+              <BrandMarkIcon width={24} height={24} />
             </span>
-            <span className="cl-display" style={{ fontSize: 13.5, fontWeight: 800, color: 'var(--color-text-on-dark)', whiteSpace: 'nowrap' }}>ChessLens</span>
+            <span className="cl-display" style={{ fontSize: 14, fontWeight: 800, color: 'var(--color-text-on-dark)', whiteSpace: 'nowrap' }}>ChessLens</span>
           </button>
         )}
         <button
@@ -83,41 +111,102 @@ export function Sidebar({ onSettings, onToggleTraining, onToggleBoard, onGoHome,
         </button>
       </div>
 
-      <div style={{ height: 1, background: 'var(--color-gray-border)', marginBottom: 14 }} />
+      <div style={{ height: 1, background: 'var(--color-gray-border)', marginBottom: 18 }} />
 
-      {!collapsed && (
-        <span style={{
-          fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
-          color: 'var(--color-gray-muted)', padding: '0 6px', marginBottom: 6, whiteSpace: 'nowrap',
-        }}>
-          Menu
-        </span>
-      )}
+      <NavSection label="Treino" collapsed={collapsed}>
+        <NavItem icon={<TargetIcon width={20} height={20} />} label="Puzzles" active={trainingActive} onClick={onToggleTraining} collapsed={collapsed} />
+        {TRAIN_PLACEHOLDERS.map((label) => (
+          <NavItem key={label} icon={<WrenchIcon width={19} height={19} />} label={label} collapsed={collapsed} soon
+            onClick={() => onMaintenanceClick(label)} />
+        ))}
+      </NavSection>
 
-      <NavItem icon={<AnalyzeNavIcon width={17} height={17} />} label="Analisar" active={!trainingActive && !boardActive} onClick={onGoHome} collapsed={collapsed} />
-      <NavItem icon={<BoardNavIcon width={17} height={17} />} label="Tabuleiro" active={boardActive} onClick={onToggleBoard} collapsed={collapsed} />
-      <NavItem icon={<TargetIcon width={17} height={17} />} label="Treino" active={trainingActive} onClick={onToggleTraining} collapsed={collapsed} />
+      {/* "Ferramentas" — grupo que abre/fecha (pasta de acordeão), não uma lista fixa como Treino.
+          Colapsada, os 3 ícones aparecem direto, sem cabeçalho (não tem texto pra clicar mesmo). */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 16 }}>
+        {!collapsed && (
+          <button
+            onClick={toggleTools}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6, width: '100%',
+              background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
+              padding: '0 6px', marginBottom: 5,
+            }}
+          >
+            <span style={{
+              fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
+              color: 'var(--color-gray-muted)', whiteSpace: 'nowrap', flex: 1,
+            }}>
+              Ferramentas
+            </span>
+            <ChevronIcon width={11} height={11} style={{
+              color: 'var(--color-gray-muted)', transform: toolsOpen ? 'rotate(-90deg)' : 'rotate(-180deg)',
+              transition: 'transform var(--dur-tap) var(--ease-tap)', flexShrink: 0,
+            }} />
+          </button>
+        )}
+        {(collapsed || toolsOpen) && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <NavItem icon={<AnalyzeNavIcon width={20} height={20} />} label="Analisar" active={!trainingActive && !boardActive} onClick={onGoHome} collapsed={collapsed} />
+            <NavItem icon={<BoardNavIcon width={20} height={20} />} label="Tabuleiro" active={boardActive} onClick={onToggleBoard} collapsed={collapsed} />
+            <NavItem icon={<WrenchIcon width={19} height={19} />} label="Definir Posição" collapsed={collapsed} soon
+              onClick={() => onMaintenanceClick('Definir Posição')} />
+          </div>
+        )}
+      </div>
 
-      <div style={{ flex: 1 }} />
+      <div style={{ flex: 1, minHeight: 12 }} />
 
-      <NavItem icon={<GearIcon width={17} height={17} />} label="Configurações" onClick={onSettings} collapsed={collapsed} />
+      <NavItem icon={<GearIcon width={20} height={20} />} label="Configurações" onClick={onSettings} collapsed={collapsed} />
     </nav>
   )
 }
 
-function NavItem({ icon, label, active = false, collapsed, onClick }: { icon: ReactNode; label: string; active?: boolean; collapsed: boolean; onClick: () => void }) {
+function NavSection({ label, collapsed, children }: { label: string; collapsed: boolean; children: ReactNode }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 16 }}>
+      {!collapsed && (
+        <span style={{
+          fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
+          color: 'var(--color-gray-muted)', padding: '0 6px', marginBottom: 5, whiteSpace: 'nowrap',
+        }}>
+          {label}
+        </span>
+      )}
+      {children}
+    </div>
+  )
+}
+
+function NavItem({ icon, label, active = false, collapsed, soon = false, onClick }: {
+  icon: ReactNode; label: string; active?: boolean; collapsed: boolean; soon?: boolean; onClick: () => void
+}) {
   return (
     <button
       onClick={onClick}
-      title={collapsed ? label : undefined}
+      title={collapsed ? label + (soon ? ' (em breve)' : '') : undefined}
       className={`cl-btn${active ? ' cl-btn-selected' : ''}`}
       style={{
-        justifyContent: collapsed ? 'center' : 'flex-start', gap: 10, width: '100%',
-        padding: collapsed ? '9px 0' : '9px 12px', fontSize: 11.5, letterSpacing: '0.5px',
+        justifyContent: collapsed ? 'center' : 'flex-start', gap: 9, width: '100%',
+        padding: collapsed ? '10px 0' : '10px 11px', fontSize: soon ? 11.5 : 12, letterSpacing: '0.3px',
+        opacity: soon ? 0.55 : 1,
       }}
     >
       {icon}
-      {!collapsed && <span style={{ whiteSpace: 'nowrap' }}>{label}</span>}
+      {!collapsed && (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flex: 1 }}>
+          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>
+          {soon && (
+            <span style={{
+              marginLeft: 'auto', fontSize: 8, fontWeight: 800, letterSpacing: '0.02em', textTransform: 'uppercase',
+              padding: '2px 4px', borderRadius: 'var(--radius-sm)', flexShrink: 0,
+              background: 'var(--color-bg-main)', color: 'var(--color-gray-muted)',
+            }}>
+              em breve
+            </span>
+          )}
+        </span>
+      )}
     </button>
   )
 }

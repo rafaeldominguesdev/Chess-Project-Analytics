@@ -56,6 +56,15 @@ export function BoardNavIcon(props: IconProps) {
   )
 }
 
+/** Chave inglesa — usada em todos os itens de menu "em manutenção" (função ainda não construída). */
+export function WrenchIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M14.7 6.3a4 4 0 0 0-5.4 4.6L3 17.2V21h3.8l6.3-6.3a4 4 0 0 0 4.6-5.4l-2.8 2.8-2-2Z" />
+    </svg>
+  )
+}
+
 /** Seta simples — usada no botão de encolher/expandir a sidebar, gira via CSS conforme o estado. */
 export function ChevronIcon(props: IconProps) {
   return (
