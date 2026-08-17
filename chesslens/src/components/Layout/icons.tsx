@@ -56,6 +56,18 @@ export function BoardNavIcon(props: IconProps) {
   )
 }
 
+/** Tabuleiro pequeno + "mais" — montar uma posição peça por peça, do zero. */
+export function PositionSetupIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <rect x="2.5" y="2.5" width="12.5" height="12.5" rx="1.5" />
+      <path d="M2.5 8.75h12.5M8.75 2.5v12.5" opacity={0.55} />
+      <circle cx="18" cy="18" r="5" />
+      <path d="M18 15.5v5M15.5 18h5" />
+    </svg>
+  )
+}
+
 /** Chave inglesa — usada em todos os itens de menu "em manutenção" (função ainda não construída). */
 export function WrenchIcon(props: IconProps) {
   return (
