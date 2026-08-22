@@ -276,6 +276,32 @@ body {
 }
 
 /* ══════════════════════════════════════════════
+   Casco principal (Sidebar + <main>) — o board (via useBoardSize, ResizeObserver) já encolhe
+   sozinho até MIN_AUTO=320px, mas o painel lateral fixo de 360px (Tabuleiro, Definir Posição,
+   Revisão de partida, Puzzles) não encolhia nem empilhava: numa tela estreita, sidebar +
+   board mínimo + painel de 360px não cabem lado a lado. Abaixo de 860px o painel some da
+   linha e desce pra baixo do board (coluna única), cada um ocupando a largura toda.
+   `.cl-main-shell` é o `<main>` de App.tsx; `.cl-tool-aside` é usado pelas 4 telas com painel
+   lateral (AnalysisBoardView, PositionEditorView, ReviewPanel, TrainingView).
+   ══════════════════════════════════════════════ */
+.cl-main-shell {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  min-height: 100vh;
+}
+.cl-tool-aside {
+  width: 360px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 860px) {
+  .cl-main-shell { flex-direction: column; }
+  .cl-tool-aside { width: 100%; }
+}
+
+/* ══════════════════════════════════════════════
    Home — hero com a mascote como plano de fundo. Em telas estreitas o texto
    (que normalmente fica encostado à direita) precisa ocupar a largura toda,
    senão vaza pra fora da área de conteúdo.
