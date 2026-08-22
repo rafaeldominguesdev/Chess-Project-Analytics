@@ -16,8 +16,6 @@ import { PlayerCard } from './components/Theater/PlayerCard'
 import { Sidebar } from './components/Layout/Sidebar'
 import { MaintenanceNotice } from './components/Layout/MaintenanceNotice'
 import { HomePage } from './components/Home/HomePage'
-import PlayerSearch from './components/PlayerSearch/PlayerSearch'
-import type { Platform } from './components/PlayerSearch/PlayerSearch'
 import { usePlayerProfiles } from './hooks/useChesscomApi'
 import { useMoveSound } from './hooks/useMoveSound'
 import { classifyMove, toWhiteCp, materialForSide } from './utils/moveClassifier'
@@ -39,8 +37,6 @@ function AppInner() {
   // Nome da função clicada num item de menu "em manutenção" (ver Sidebar) — null = fechado.
   const [maintenanceFeature, setMaintenanceFeature] = useState<string | null>(null)
   const [positionEvals, setPositionEvals] = useState<number[]>([])
-  const [searchOpen, setSearchOpen] = useState(false)
-  const [searchPlatform, setSearchPlatform] = useState<Platform>('chesscom')
   const [boardOrientation, setBoardOrientation] = useState<'white' | 'black'>('white')
   // Controla qual "tela" o painel de revisão mostra: resumo (fotos + precisão + White vs Black,
   // enquanto o Stockfish analisa em segundo plano) ou a lista de lances com avaliação por lance.
@@ -118,7 +114,7 @@ function AppInner() {
     onPrev: goPrev, onNext: goNext, onFirst: goFirst, onLast: goLast,
     // Desligado no tabuleiro de análise livre também — lá as setas navegariam por engano o
     // histórico da revisão escondida atrás, em vez do próprio jogo livre (que não usa teclado).
-    enabled: !settingsOpen && !searchOpen && !trainingMode && !boardMode && !positionEditorMode,
+    enabled: !settingsOpen && !trainingMode && !boardMode && !positionEditorMode,
   })
 
   const handleAnalyzeGame = useCallback((pgn: string) => {
@@ -133,11 +129,6 @@ function AppInner() {
     setReviewStarted(true)
     goFirst()
   }, [goFirst])
-
-  const openSearch = useCallback((platform: Platform = 'chesscom') => {
-    setSearchPlatform(platform)
-    setSearchOpen(true)
-  }, [])
 
   const flipBoard = useCallback(() => {
     setBoardOrientation((o) => (o === 'white' ? 'black' : 'white'))
@@ -154,7 +145,7 @@ function AppInner() {
         onToggleTraining={() => { setTrainingMode((v) => !v); setBoardMode(false); setPositionEditorMode(false) }}
         onToggleBoard={() => { setBoardMode((v) => !v); setTrainingMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined) }}
         onGoHome={() => { setTrainingMode(false); setBoardMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined) }}
-        onAnalyzeClick={() => { setTrainingMode(false); setBoardMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); openSearch() }}
+        onAnalyzeClick={() => { setTrainingMode(false); setBoardMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined) }}
         onMaintenanceClick={setMaintenanceFeature}
         onTogglePositionEditor={() => { setPositionEditorMode((v) => !v); setTrainingMode(false); setBoardMode(false) }}
         trainingActive={trainingMode}
@@ -175,7 +166,7 @@ function AppInner() {
         ) : boardMode ? (
           <AnalysisBoardView boardWidth={boardWidth} containerRef={containerRef} initialFen={pendingBoardFen} />
         ) : !isLoaded ? (
-          <HomePage onOpenSearch={openSearch} />
+          <HomePage onAnalyzeGame={handleAnalyzeGame} />
         ) : (
           <>
             {/* Center */}
@@ -227,13 +218,6 @@ function AppInner() {
 
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <MaintenanceNotice feature={maintenanceFeature} onClose={() => setMaintenanceFeature(null)} />
-
-      <PlayerSearch
-        open={searchOpen}
-        onClose={() => setSearchOpen(false)}
-        initialPlatform={searchPlatform}
-        onAnalyzeGame={handleAnalyzeGame}
-      />
     </div>
   )
 }
