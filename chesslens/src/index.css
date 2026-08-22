@@ -364,6 +364,17 @@ textarea {
   50% { box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--color-blue-bright) 40%, transparent); }
 }
 
+/* Ponto "calculando" do painel do motor (Tabuleiro de análise livre) — pisca bem discreto
+   enquanto o Stockfish está buscando; parado (sem classe), fica sólido. Desligado por completo
+   se o usuário preferir menos movimento — sem a classe, o ponto some. */
+@keyframes cl-dot-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cl-dot-pulse { animation: cl-dot-pulse 1s ease-in-out infinite; }
+}
+
 /* Casa do tabuleiro no editor de posição livre — clicável (arma peça/borracha), sem drag-drop
    como o ChessBoard "de verdade", então o feedback de toque é só um leve realce no hover. */
 .cl-editor-square {

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 import type { RefObject } from 'react'
+import { Chess } from 'chess.js'
 import { useAnalysisBoard } from '../../hooks/useAnalysisBoard'
 import type { PlayedMove } from '../../hooks/useAnalysisBoard'
 import { useStockfish } from '../../hooks/useStockfish'
@@ -28,6 +29,45 @@ const SUGGESTION_STYLE = [
   { color: SUGGESTION_GREEN, strokeWidth: 8, opacity: 0.35 },
 ] as const
 
+// Quantos lances de cada linha do motor mostrar como texto no painel "Motor" (prévia curta,
+// não a variante inteira) — mesmo princípio do chess.com/analysis: mostrar as N melhores
+// linhas como texto, não só como seta no tabuleiro (ver matriz de referências, Fase 3).
+const PV_PREVIEW_PLIES = 4
+
+// Mesma formatação da etiqueta da barra de avaliação (EvalBar.tsx), reaproveitada aqui pra cada
+// linha do motor — cp/mate do Stockfish vêm relativos a quem tem a vez, converte pra brancas.
+function formatLineEval(line: StockfishEval, sideToMove: 'w' | 'b'): string {
+  if (line.mate !== null) {
+    const whiteMate = sideToMove === 'w' ? line.mate : -line.mate
+    return `#${Math.abs(whiteMate)}`
+  }
+  const whiteCp = sideToMove === 'w' ? (line.cp ?? 0) : -(line.cp ?? 0)
+  if (whiteCp > 0) return `+${(whiteCp / 100).toFixed(1)}`
+  if (whiteCp < 0) return (whiteCp / 100).toFixed(1)
+  return '0.0'
+}
+
+// Converte os primeiros lances (UCI, ex: "e2e4") de uma linha do motor pra SAN (ex: "e4"),
+// jogando numa cópia da posição atual — só pra exibição, não afeta o tabuleiro real.
+function pvToSan(fen: string, pv: string[], maxPlies: number): string[] {
+  const game = new Chess(fen)
+  const sans: string[] = []
+  for (const uci of pv.slice(0, maxPlies)) {
+    if (uci.length < 4) break
+    const from = uci.slice(0, 2)
+    const to = uci.slice(2, 4)
+    const promotion = uci.length > 4 ? uci.slice(4, 5) : undefined
+    try {
+      const move = game.move({ from, to, promotion })
+      if (!move) break
+      sans.push(move.san)
+    } catch {
+      break // linha do motor não bate mais com a posição atual (lance acabou de mudar) — ignora o resto
+    }
+  }
+  return sans
+}
+
 /**
  * Tabuleiro de análise livre — posição inicial, todas as peças no lugar, joga dos dois lados
  * (sem PGN carregado, diferente da tela de "Analisar" que revê uma partida já pronta). O
@@ -44,7 +84,7 @@ export function AnalysisBoardView({ boardWidth, containerRef, initialFen }: Anal
 
   // multiPv=3 pede as 3 melhores linhas ao engine (não só a melhor) — é isso que alimenta as
   // 3 setas de sugestão. `evaluation` continua sendo só a linha 1 (pra barra de avaliação).
-  const { evaluation, lines, isReady, analyze } = useStockfish(15, 3)
+  const { evaluation, lines, isReady, isAnalyzing, analyze } = useStockfish(15, 3)
 
   // Qual FEN o pedido de análise em andamento é sobre — junto com `lastEvalRef` (a última
   // avaliação que de fato chegou), dá pra saber com segurança se um resultado novo é "antes" ou
@@ -111,6 +151,15 @@ export function AnalysisBoardView({ boardWidth, containerRef, initialFen }: Anal
     const match = identifyOpening(moves.map((m) => m.san))
     return match ? `${match.eco} · ${match.name}` : null
   }, [moves])
+
+  const sideToMove = currentFen.split(' ')[1] === 'b' ? 'b' : 'w'
+
+  // Prévia em SAN das 3 linhas do motor (texto, complementando as setas de sugestão no
+  // tabuleiro) — princípio observado no chess.com/analysis (ver matriz de referências, Fase 3).
+  const enginePreviews = useMemo(
+    () => lines.map((line) => (line ? pvToSan(currentFen, line.pv, PV_PREVIEW_PLIES) : [])),
+    [lines, currentFen],
+  )
 
   const turn = currentFen.split(' ')[1] === 'b' ? 'Pretas' : 'Brancas'
   const cardWidth = boardWidth + BOARD_ROW_CHROME_WIDTH
@@ -185,6 +234,8 @@ export function AnalysisBoardView({ boardWidth, containerRef, initialFen }: Anal
             Nova partida
           </button>
 
+          <EnginePanel lines={lines} previews={enginePreviews} sideToMove={sideToMove} isAnalyzing={isAnalyzing} />
+
           {opening && (
             <div style={{
               padding: '8px 10px', borderRadius: 'var(--radius-sm)',
@@ -225,6 +276,65 @@ export function AnalysisBoardView({ boardWidth, containerRef, initialFen }: Anal
         </div>
       </aside>
     </>
+  )
+}
+
+/** Painel do motor — mostra as até 3 melhores linhas como texto (eval + prévia de lances) e o
+ *  estado calculando/parado, complementando as setas de sugestão no tabuleiro (não substituem
+ *  — algumas pessoas preferem ler a linha, outras preferem só ver a seta). Ver Fase 3 do
+ *  redesign (matriz de referências: chess.com mostra as linhas como texto; Lichess deixa claro
+ *  quando o motor está calculando ou parado). */
+function EnginePanel({
+  lines, previews, sideToMove, isAnalyzing,
+}: {
+  lines: (StockfishEval | null)[]
+  previews: string[][]
+  sideToMove: 'w' | 'b'
+  isAnalyzing: boolean
+}) {
+  const depth = lines[0]?.depth
+  return (
+    <div className="cl-card" style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-gray-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          Motor
+        </span>
+        <span aria-live="polite" style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10.5, color: 'var(--color-gray-muted)' }}>
+          <span
+            aria-hidden
+            className={isAnalyzing ? 'cl-dot-pulse' : undefined}
+            style={{
+              width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
+              background: isAnalyzing ? 'var(--color-blue-bright)' : 'var(--color-success)',
+            }}
+          />
+          {isAnalyzing ? 'Calculando' : depth ? `Profundidade ${depth}` : 'Parado'}
+        </span>
+      </div>
+
+      {!lines[0] ? (
+        <p style={{ fontSize: 12, color: 'var(--color-gray-muted)' }}>Aguardando primeira análise...</p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+          {lines.map((line, i) => {
+            if (!line) return null
+            return (
+              <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 8, opacity: i === 0 ? 1 : 0.65 }}>
+                <span className="cl-mono" style={{
+                  fontSize: 12, fontWeight: 800, minWidth: 36, flexShrink: 0,
+                  color: i === 0 ? 'var(--color-text-on-dark)' : 'var(--color-gray-muted)',
+                }}>
+                  {formatLineEval(line, sideToMove)}
+                </span>
+                <span className="cl-mono" style={{ fontSize: 11.5, color: 'var(--color-gray-muted)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {previews[i]?.join(' ') || '—'}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
   )
 }
 
