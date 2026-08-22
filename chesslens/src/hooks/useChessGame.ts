@@ -24,6 +24,15 @@ interface UseChessGameReturn {
 
 const INITIAL_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 
+// PGNs do chess.com (e de outras fontes) anotam o relógio depois de cada lance como um
+// comentário `{[%clk H:MM:SS]}` — mesmo formato que o Lichess usa. Não dá pra pegar isso de
+// `game.history()` (só devolve o lance em si), então extrai direto da string crua do PGN — a
+// ordem dos comentários bate 1:1 com a ordem dos lances, já que cada lance tem no máximo um.
+function parseClockComments(pgn: string): (string | null)[] {
+  const matches = pgn.match(/\{\[%clk\s+([\d:.]+)\]\}/g) ?? []
+  return matches.map((m) => m.match(/\{\[%clk\s+([\d:.]+)\]\}/)?.[1] ?? null)
+}
+
 function extractGameInfo(game: Chess): GameInfo {
   const h = game.header()
   return {
@@ -56,6 +65,7 @@ export function useChessGame(): UseChessGameReturn {
       game.loadPgn(pgn)
       const info = extractGameInfo(game)
       const history = game.history({ verbose: true })
+      const clocks = parseClockComments(pgn)
 
       const fenList: string[] = [INITIAL_FEN]
       const classifiedMoves: ClassifiedMove[] = []
@@ -77,6 +87,7 @@ export function useChessGame(): UseChessGameReturn {
           evalBefore: null,
           evalAfter: null,
           bestMove: null,
+          clock: clocks[i] ?? null,
         })
       })
 
