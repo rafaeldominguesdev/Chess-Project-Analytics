@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
-import { BOARD_THEMES, PIECE_SETS, PIECE_COLOR_FILTER } from '../../utils/boardThemes'
-import type { BoardSize, AnimationSpeed } from '../../types/theme.types'
+import { CURATED_THEMES_BY_CATEGORY, CURATED_PIECE_SETS, PIECE_SETS, PIECE_COLOR_FILTER } from '../../utils/boardThemes'
+import type { BoardThemeName, PieceSetName, BoardSize, AnimationSpeed } from '../../types/theme.types'
 import { BoardIcon, AppearanceIcon, MotionIcon, SoundIcon, SearchIcon } from './icons'
 
 type CategoryId = 'board' | 'appearance' | 'animation' | 'sound'
@@ -17,7 +17,7 @@ interface Category {
 
 const CATEGORIES: Category[] = [
   {
-    id: 'board', label: 'Tabuleiro e Peças', description: 'Tamanho do tabuleiro — cor e peças são fixas nesta versão.',
+    id: 'board', label: 'Tabuleiro e Peças', description: 'Cor do tabuleiro, conjunto de peças e tamanho.',
     icon: ({ size }) => <BoardIcon width={size} height={size} />,
     keywords: ['tema', 'cores', 'madeira', 'peças', 'tamanho', 'grande', 'pequeno'],
   },
@@ -77,6 +77,7 @@ function BoardPreview({ light, dark, image, isSelected }: { light: string; dark:
 export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
   const {
     theme,
+    setBoardTheme, setPieceSet,
     setShowCoordinates, setShowArrows, setShowLegalMoves, setShowLastMove,
     setBoardSize, setAnimationSpeed, setSoundEnabled,
   } = useTheme()
@@ -221,31 +222,39 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
 
             {active?.id === 'board' && (
               <>
-                <Section label="Tabuleiro e peças">
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 14,
-                    padding: '14px 16px', borderRadius: 'var(--radius-sm)',
-                    background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)',
-                  }}>
-                    <BoardPreview
-                      light={BOARD_THEMES[theme.boardTheme].light}
-                      dark={BOARD_THEMES[theme.boardTheme].dark}
-                      image={BOARD_THEMES[theme.boardTheme].image}
-                      isSelected={false}
-                    />
-                    <img
-                      src={`https://lichess1.org/assets/piece/${PIECE_SETS[theme.pieceSet]?.src ?? theme.pieceSet}/bN.svg`}
-                      style={PIECE_COLOR_FILTER[theme.pieceSet] ? { filter: PIECE_COLOR_FILTER[theme.pieceSet] } : undefined}
-                      width={40} height={40} alt=""
-                    />
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-on-dark)' }}>
-                        {BOARD_THEMES[theme.boardTheme].label} + {PIECE_SETS[theme.pieceSet]?.label}
-                      </div>
-                      <div style={{ fontSize: 11, color: 'var(--color-gray-muted)', marginTop: 2 }}>
-                        Visual padrão do ChessLens nesta versão — sem opção de troca por aqui.
+                <Section label="Tabuleiro">
+                  {Object.entries(CURATED_THEMES_BY_CATEGORY).map(([cat, themes]) => (
+                    <div key={cat} style={{ marginBottom: 16 }}>
+                      <CategoryLabel>{cat}</CategoryLabel>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                        {themes.map((t) => (
+                          <ThemeRow
+                            key={t.key}
+                            label={t.label}
+                            isSelected={theme.boardTheme === t.key}
+                            onClick={() => setBoardTheme(t.key as BoardThemeName)}
+                          >
+                            <BoardPreview light={t.light} dark={t.dark} image={t.image} isSelected={theme.boardTheme === t.key} />
+                          </ThemeRow>
+                        ))}
                       </div>
                     </div>
+                  ))}
+                </Section>
+
+                <Divider />
+
+                <Section label="Conjunto de peças">
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+                    {CURATED_PIECE_SETS.map((key) => (
+                      <PieceSetButton
+                        key={key}
+                        label={PIECE_SETS[key].label}
+                        pieceSetKey={key}
+                        isSelected={theme.pieceSet === key}
+                        onClick={() => setPieceSet(key)}
+                      />
+                    ))}
                   </div>
                 </Section>
 
@@ -321,6 +330,14 @@ function Section({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
+function CategoryLabel({ children }: { children: ReactNode }) {
+  return (
+    <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-gray-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, paddingLeft: 2 }}>
+      {children}
+    </div>
+  )
+}
+
 function Divider() {
   return <div style={{ height: 2, background: 'var(--color-gray-border)', margin: '18px 0' }} />
 }
@@ -329,7 +346,87 @@ const KEYCAP_IDLE_SHADOW =
   'inset 0 1px 0 0 rgba(255,255,255,0.06), inset 0 -2px 0 0 rgba(0,0,0,0.3), 0 3px 0 0 var(--color-shadow-btn), 0 6px 10px -4px rgba(0,0,0,0.55)'
 const KEYCAP_HOVER_SHADOW =
   'inset 0 1px 0 0 rgba(255,255,255,0.08), inset 0 -2px 0 0 rgba(0,0,0,0.3), 0 4px 0 0 var(--color-shadow-btn), 0 8px 12px -4px rgba(0,0,0,0.6)'
+const KEYCAP_PRESSED_SHADOW = 'inset 0 2px 4px 0 rgba(0,0,0,0.35), 0 1px 0 0 var(--color-shadow-btn)'
 const KEYCAP_TRANSITION = 'transform var(--dur-tap) var(--ease-tap), box-shadow var(--dur-tap) var(--ease-tap), background var(--dur-tap) var(--ease-tap), border-color var(--dur-tap) var(--ease-tap)'
+
+function ThemeRow({ label, isSelected, onClick, children }: { label: string; isSelected: boolean; onClick: () => void; children: ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 10,
+        padding: '7px 9px',
+        background: isSelected ? 'color-mix(in srgb, var(--color-blue-bright) 14%, var(--color-bg-panel))' : 'transparent',
+        border: isSelected ? '1.5px solid var(--color-blue-bright)' : '1.5px solid transparent',
+        borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+        width: '100%', textAlign: 'left', transition: KEYCAP_TRANSITION,
+        transform: isSelected ? 'translateY(1px)' : 'translateY(0)',
+        boxShadow: isSelected ? KEYCAP_PRESSED_SHADOW : 'none',
+      }}
+      onMouseEnter={(e) => {
+        if (isSelected) return
+        const el = e.currentTarget as HTMLElement
+        el.style.background = 'var(--color-bg-panel)'
+        el.style.boxShadow = KEYCAP_HOVER_SHADOW
+        el.style.transform = 'translateY(-1px)'
+      }}
+      onMouseLeave={(e) => {
+        if (isSelected) return
+        const el = e.currentTarget as HTMLElement
+        el.style.background = 'transparent'
+        el.style.boxShadow = 'none'
+        el.style.transform = 'translateY(0)'
+      }}
+    >
+      {children}
+      <span style={{ fontSize: 13, color: isSelected ? 'var(--color-text-on-dark)' : 'var(--color-gray-muted)', fontWeight: isSelected ? 700 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {label}
+      </span>
+      {isSelected && <span style={{ marginLeft: 'auto', color: 'var(--color-blue-bright)', fontSize: 14, flexShrink: 0 }}>✓</span>}
+    </button>
+  )
+}
+
+function PieceSetButton({ label, pieceSetKey, isSelected, onClick }: { label: string; pieceSetKey: PieceSetName; isSelected: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+        padding: '9px 4px',
+        background: isSelected ? 'color-mix(in srgb, var(--color-blue-bright) 16%, var(--color-bg-panel))' : 'var(--color-bg-panel)',
+        border: isSelected ? '1.5px solid var(--color-blue-bright)' : '1px solid var(--color-gray-border)',
+        borderRadius: 'var(--radius-sm)', cursor: 'pointer', transition: KEYCAP_TRANSITION,
+        transform: isSelected ? 'translateY(2px)' : 'translateY(0)',
+        boxShadow: isSelected ? KEYCAP_PRESSED_SHADOW : KEYCAP_IDLE_SHADOW,
+      }}
+      onMouseEnter={(e) => {
+        if (isSelected) return
+        const el = e.currentTarget as HTMLElement
+        el.style.borderColor = 'var(--color-gray-muted)'
+        el.style.boxShadow = KEYCAP_HOVER_SHADOW
+        el.style.transform = 'translateY(-1px)'
+      }}
+      onMouseLeave={(e) => {
+        if (isSelected) return
+        const el = e.currentTarget as HTMLElement
+        el.style.borderColor = 'var(--color-gray-border)'
+        el.style.boxShadow = KEYCAP_IDLE_SHADOW
+        el.style.transform = 'translateY(0)'
+      }}
+    >
+      <img
+        src={`https://lichess1.org/assets/piece/${PIECE_SETS[pieceSetKey]?.src ?? pieceSetKey}/bQ.svg`}
+        style={PIECE_COLOR_FILTER[pieceSetKey] ? { filter: PIECE_COLOR_FILTER[pieceSetKey] } : undefined}
+        width={32} height={32} alt={label}
+        onError={(e) => { (e.target as HTMLImageElement).style.visibility = 'hidden' }}
+      />
+      <span style={{ fontSize: 10, color: isSelected ? 'var(--color-text-on-dark)' : 'var(--color-gray-muted)', fontWeight: isSelected ? 700 : 400, textAlign: 'center', lineHeight: 1.2 }}>
+        {label}
+      </span>
+    </button>
+  )
+}
 
 function SizeButton({ label, isSelected, onClick }: { label: string; isSelected: boolean; onClick: () => void }) {
   return (

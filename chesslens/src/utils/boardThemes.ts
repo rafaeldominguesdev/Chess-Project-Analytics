@@ -61,6 +61,21 @@ export const THEMES_BY_CATEGORY = (Object.entries(BOARD_THEMES) as [BoardThemeNa
     return acc
   }, {} as Record<string, Array<{ key: BoardThemeName } & BoardThemeDef>>)
 
+// Lista curada pro seletor de Configurações (pedido direto do usuário: "volte os outros
+// tabuleiros... deixe apenas os coloridos normais e Wood 4, o resto de madeira tire"). As
+// texturas de madeira/mármore/couro continuam definidas em BOARD_THEMES — só não aparecem
+// mais no seletor, exceto a Wood 4.
+export const CURATED_BOARD_THEMES: BoardThemeName[] = [
+  'graphite-amber', 'chesscom-green', 'chesscom-walnut', 'chesscom-blue', 'chesscom-tournament',
+  'lichess-brown', 'midnight', 'emerald', 'coral', 'wood4',
+]
+export const CURATED_THEMES_BY_CATEGORY = (Object.entries(THEMES_BY_CATEGORY) as [string, Array<{ key: BoardThemeName } & BoardThemeDef>][])
+  .reduce((acc, [category, themes]) => {
+    const kept = themes.filter((t) => CURATED_BOARD_THEMES.includes(t.key))
+    if (kept.length > 0) acc[category] = kept
+    return acc
+  }, {} as Record<string, Array<{ key: BoardThemeName } & BoardThemeDef>>)
+
 export const PIECE_SETS: Record<PieceSetName, PieceSet> = {
   cburnett:   { label: 'CBurnett',   src: 'cburnett' },
   merida:     { label: 'Merida',     src: 'merida' },
@@ -108,6 +123,13 @@ export const PIECE_SETS: Record<PieceSetName, PieceSet> = {
   // (pedido do usuário: "quero o dubrovny só que as pretas pretas... altera pra ambos").
   'dubrovny-noir': { label: 'Dubrovny Noir', src: 'dubrovny' },
 }
+
+// Lista curada pro seletor de Configurações (pedido direto do usuário: "apenas as peças
+// clássicas bonitas e a Staunty, que é mais bonita"). Os outros 27 conjuntos continuam
+// definidos em PIECE_SETS — só não aparecem mais no seletor.
+export const CURATED_PIECE_SETS: PieceSetName[] = [
+  'dubrovny-noir', 'staunty', 'cburnett', 'merida', 'alpha', 'cardinal', 'companion', 'leipzig', 'maestro', 'tatiana',
+]
 
 // Filtro CSS aplicado em TODAS as peças (brancas e pretas) de conjuntos cuja cor original não
 // bate com o que pedimos — evita precisar hospedar uma cópia modificada do SVG. `grayscale(1)`

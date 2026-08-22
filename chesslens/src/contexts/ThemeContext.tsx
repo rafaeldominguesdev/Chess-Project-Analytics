@@ -4,9 +4,9 @@ import { UI_THEMES, BOARD_THEMES } from '../utils/boardThemes'
 
 const STORAGE_KEY = 'chesslens-theme'
 
-// Tabuleiro/peça fixados a pedido explícito do usuário (não mudam mais por Configurações — ver
-// SettingsPanel.tsx, que só mostra esse par, sem seletor). Os outros 18 tabuleiros e 36 conjuntos
-// de peças continuam definidos em boardThemes.ts, só não ficam mais expostos na UI do site.
+// Green + Dubrovny Noir é só o PADRÃO de fábrica — trocável de novo em Configurações (ver
+// SettingsPanel.tsx e CURATED_BOARD_THEMES/CURATED_PIECE_SETS em boardThemes.ts, a lista curada
+// que aparece no seletor). Todos os tabuleiros/peças continuam definidos em boardThemes.ts.
 const DEFAULT_THEME: ThemeConfig = {
   boardTheme: 'chesscom-green',
   pieceSet: 'dubrovny-noir',
@@ -20,12 +20,15 @@ const DEFAULT_THEME: ThemeConfig = {
   soundEnabled: true,
 }
 
-// Defaults antigos — quem tinha isso salvo nunca escolheu um tema de propósito,
-// então migra pro novo default também.
-const OLD_DEFAULT_BOARD_THEMES = new Set(['chesscom-walnut', 'obsidian-gold', 'brasil', 'graphite-amber'])
+// Defaults antigos — quem tinha isso salvo nunca escolheu um tema de propósito, então migra pro
+// novo default também. IMPORTANTE: só entra aqui quem NÃO é mais uma opção válida no seletor
+// curado (CURATED_BOARD_THEMES/CURATED_PIECE_SETS) — 'chesscom-walnut'/'graphite-amber' e
+// 'cburnett' voltaram a ser escolhas legítimas, então saíram dessas listas pra não sobrescrever
+// uma escolha deliberada da pessoa no próximo carregamento.
+const OLD_DEFAULT_BOARD_THEMES = new Set(['obsidian-gold', 'brasil'])
 const OLD_DEFAULT_UI_THEMES = new Set(['obsidian-gold', 'brasil', 'chesscom-dark', 'arcade-mostarda'])
-// 'governor' e 'cburnett' foram defaults antigos de peça — volta pro par fixo atual.
-const OLD_DEFAULT_PIECE_SETS = new Set(['governor', 'cburnett'])
+// 'governor' foi default antigo de peça — 'cburnett' voltou a ser opção legítima no seletor.
+const OLD_DEFAULT_PIECE_SETS = new Set(['governor'])
 
 interface ThemeContextValue {
   theme: ThemeConfig
