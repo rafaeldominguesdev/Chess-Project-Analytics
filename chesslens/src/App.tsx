@@ -45,7 +45,7 @@ function AppInner() {
 
   const {
     currentFen, currentMoveIndex, moves, fens, gameInfo, isLoaded,
-    goToMove, goFirst, goPrev, goNext, goLast, loadPgn, lastMove,
+    goToMove, goFirst, goPrev, goNext, goLast, loadPgn, unloadGame, lastMove,
     updateMoveClassification,
   } = useChessGame()
 
@@ -144,8 +144,8 @@ function AppInner() {
         onSettings={() => setSettingsOpen(true)}
         onToggleTraining={() => { setTrainingMode((v) => !v); setBoardMode(false); setPositionEditorMode(false) }}
         onToggleBoard={() => { setBoardMode((v) => !v); setTrainingMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined) }}
-        onGoHome={() => { setTrainingMode(false); setBoardMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined) }}
-        onAnalyzeClick={() => { setTrainingMode(false); setBoardMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined) }}
+        onGoHome={() => { setTrainingMode(false); setBoardMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); unloadGame() }}
+        onAnalyzeClick={() => { setTrainingMode(false); setBoardMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); unloadGame() }}
         onMaintenanceClick={setMaintenanceFeature}
         onTogglePositionEditor={() => { setPositionEditorMode((v) => !v); setTrainingMode(false); setBoardMode(false) }}
         trainingActive={trainingMode}

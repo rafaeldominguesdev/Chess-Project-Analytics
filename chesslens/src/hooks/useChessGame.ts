@@ -17,6 +17,7 @@ interface UseChessGameReturn {
   goNext: () => void
   goLast: () => void
   loadPgn: (pgn: string) => void
+  unloadGame: () => void
   lastMove: { from: string; to: string } | null
   updateMoveClassification: (index: number, classification: MoveQuality, evalBefore: number | null, evalAfter: number | null, bestMove: string | null) => void
 }
@@ -89,6 +90,16 @@ export function useChessGame(): UseChessGameReturn {
     }
   }, [])
 
+  // Volta pro estado "nenhuma partida carregada" (tela de Analisar/busca) sem precisar recarregar
+  // a página — usado pelo botão "Analisar" da sidebar e pelo logo, mesmo com uma partida aberta.
+  const unloadGame = useCallback(() => {
+    setFens([INITIAL_FEN])
+    setMoves([])
+    setGameInfo(null)
+    setCurrentMoveIndex(-1)
+    setIsLoaded(false)
+  }, [])
+
   const updateMoveClassification = useCallback((
     index: number,
     classification: MoveQuality,
@@ -112,7 +123,7 @@ export function useChessGame(): UseChessGameReturn {
 
   return {
     currentFen, currentMoveIndex, moves, fens, gameInfo, isLoaded,
-    goToMove, goFirst, goPrev, goNext, goLast, loadPgn, lastMove,
+    goToMove, goFirst, goPrev, goNext, goLast, loadPgn, unloadGame, lastMove,
     updateMoveClassification,
   }
 }
