@@ -5,7 +5,7 @@ import type { Square } from 'chess.js'
 import { EvalBar } from './EvalBar'
 import { SquareQualityMarker } from './MoveQualityBadge'
 import { useTheme } from '../../contexts/ThemeContext'
-import { BOARD_THEMES } from '../../utils/boardThemes'
+import { BOARD_THEMES, PIECE_SETS, PIECE_COLOR_FILTER } from '../../utils/boardThemes'
 import { buildCustomPieces } from '../../utils/pieceLoader'
 import { qualityAlphaColor, QUALITY_CONFIG } from '../../utils/moveClassifier'
 import type { StockfishEval } from '../../hooks/useStockfish'
@@ -474,7 +474,8 @@ export function ChessBoard({
                     }}
                   >
                     <img
-                      src={`https://lichess1.org/assets/piece/${theme.pieceSet}/${code}.svg`}
+                      src={`https://lichess1.org/assets/piece/${PIECE_SETS[theme.pieceSet]?.src ?? theme.pieceSet}/${code}.svg`}
+                      style={PIECE_COLOR_FILTER[theme.pieceSet] ? { filter: PIECE_COLOR_FILTER[theme.pieceSet] } : undefined}
                       width="82%" height="82%" draggable={false} alt=""
                     />
                   </button>
