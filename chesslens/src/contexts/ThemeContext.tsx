@@ -6,7 +6,7 @@ const STORAGE_KEY = 'chesslens-theme'
 
 const DEFAULT_THEME: ThemeConfig = {
   boardTheme: 'graphite-amber',
-  pieceSet: 'governor',
+  pieceSet: 'cburnett',
   uiTheme: 'amber-noir',
   showCoordinates: true,
   showLegalMoves: true,
@@ -21,7 +21,9 @@ const DEFAULT_THEME: ThemeConfig = {
 // então migra pro novo default (tabuleiro/peça/UI assinatura do ChessLens) também.
 const OLD_DEFAULT_BOARD_THEMES = new Set(['chesscom-walnut', 'obsidian-gold', 'brasil', 'chesscom-green'])
 const OLD_DEFAULT_UI_THEMES = new Set(['obsidian-gold', 'brasil', 'chesscom-dark', 'arcade-mostarda'])
-const OLD_DEFAULT_PIECE_SETS = new Set(['cburnett'])
+// 'governor' foi o default antigo (peças com pouco detalhe, reportado como "feio") — volta pro
+// clássico 'cburnett' (o mesmo conjunto que o Lichess usa como padrão, bem mais nítido/detalhado).
+const OLD_DEFAULT_PIECE_SETS = new Set(['governor'])
 
 interface ThemeContextValue {
   theme: ThemeConfig
