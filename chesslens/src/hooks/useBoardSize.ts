@@ -48,9 +48,18 @@ export function useBoardSize(preset: BoardSize = 'auto', options: BoardSizeOptio
 
   const calcFromWidth = useCallback((containerWidth: number) => {
     const availableH = window.innerHeight - heightReserve
-    const target = containerWidth > 0 ? (containerWidth - chromeWidth) * widthFactor : 480
+    const availableW = containerWidth > 0 ? containerWidth - chromeWidth : 0
+    const target = containerWidth > 0 ? availableW * widthFactor : 480
     const size = Math.min(target, availableH, maxSize)
-    setBoardWidth(Math.max(MIN_AUTO, Math.round(size)))
+    const withFloor = Math.max(MIN_AUTO, Math.round(size))
+    // Em telas de celular bem estreitas (largura útil abaixo do piso de MIN_AUTO — não
+    // reproduzível redimensionando uma janela de desktop, só calculando: sidebar colapsada
+    // (60px) + padding do <main> (20px) + EvalBar (32px) já passam de 112px, sobrando menos
+    // de 320px de largura útil em qualquer tela com menos de ~430px de largura real), respeitar
+    // o piso forçaria o tabuleiro a vazar horizontalmente pra fora do container. Melhor deixar
+    // ele um pouco menor que MIN_AUTO nesse caso raro do que estourar a tela.
+    const final = availableW > 0 ? Math.min(withFloor, Math.round(availableW)) : withFloor
+    setBoardWidth(final)
   }, [widthFactor, maxSize, heightReserve, chromeWidth])
 
   useEffect(() => {
