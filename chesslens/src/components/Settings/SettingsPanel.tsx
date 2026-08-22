@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
-import { THEMES_BY_CATEGORY, PIECE_SETS } from '../../utils/boardThemes'
+import { THEMES_BY_CATEGORY, PIECE_SETS, PIECE_BLACK_FILTER } from '../../utils/boardThemes'
 import type { BoardThemeName, PieceSetName, BoardSize, AnimationSpeed } from '../../types/theme.types'
 import { BoardIcon, AppearanceIcon, MotionIcon, SoundIcon, SearchIcon } from './icons'
 
@@ -405,7 +405,8 @@ function PieceSetButton({ label, pieceSetKey, isSelected, onClick }: { label: st
       }}
     >
       <img
-        src={`https://lichess1.org/assets/piece/${pieceSetKey}/bQ.svg`}
+        src={`https://lichess1.org/assets/piece/${PIECE_SETS[pieceSetKey]?.src ?? pieceSetKey}/bQ.svg`}
+        style={PIECE_BLACK_FILTER[pieceSetKey] ? { filter: PIECE_BLACK_FILTER[pieceSetKey] } : undefined}
         width={32} height={32} alt={label}
         onError={(e) => { (e.target as HTMLImageElement).style.visibility = 'hidden' }}
       />

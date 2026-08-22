@@ -1,21 +1,28 @@
 import React from 'react'
+import { PIECE_SETS, PIECE_BLACK_FILTER } from './boardThemes'
+import type { PieceSetName } from '../types/theme.types'
 
 const PIECE_CODES = ['wK','wQ','wR','wB','wN','wP','bK','bQ','bR','bB','bN','bP'] as const
 
 type PieceProps = { fill?: string; square?: string; svgStyle?: React.CSSProperties }
 
-export function buildCustomPieces(pieceSet: string): Record<string, (props?: PieceProps) => React.ReactElement> {
+export function buildCustomPieces(pieceSet: PieceSetName): Record<string, (props?: PieceProps) => React.ReactElement> {
+  const src = PIECE_SETS[pieceSet]?.src ?? pieceSet
+  const blackFilter = PIECE_BLACK_FILTER[pieceSet]
   return Object.fromEntries(
     PIECE_CODES.map((p) => [
       p,
       (_props?: PieceProps) =>
         React.createElement('img', {
-          src: `https://lichess1.org/assets/piece/${pieceSet}/${p}.svg`,
+          src: `https://lichess1.org/assets/piece/${src}/${p}.svg`,
           width: '100%',
           height: '100%',
           alt: p,
           draggable: false,
-          style: { display: 'block' },
+          style: {
+            display: 'block',
+            ...(blackFilter && p[0] === 'b' ? { filter: blackFilter } : {}),
+          },
         }),
     ])
   )

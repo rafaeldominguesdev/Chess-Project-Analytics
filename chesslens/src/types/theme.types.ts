@@ -10,6 +10,7 @@ export type PieceSetName =
   | 'staunty' | 'tatiana'
   | 'anarcandy' | 'caliente' | 'celtic' | 'chess7' | 'cooke' | 'firi'
   | 'mpchess' | 'reillycraig' | 'riohacha' | 'xkcd' | 'kiwen-suwi'
+  | 'dubrovny-noir'
 
 export type UIThemeName =
   | 'amber-noir'
