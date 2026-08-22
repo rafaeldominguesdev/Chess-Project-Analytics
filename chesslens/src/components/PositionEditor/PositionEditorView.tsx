@@ -2,12 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { RefObject, SVGProps } from 'react'
 import { Chess } from 'chess.js'
 import { useTheme } from '../../contexts/ThemeContext'
-import { BOARD_THEMES } from '../../utils/boardThemes'
+import { BOARD_THEMES, PIECE_SETS, PIECE_COLOR_FILTER } from '../../utils/boardThemes'
 import {
   FILES, START_PLACEMENT, ALL_CASTLING, NO_CASTLING,
   parsePlacement, buildFen, parseFenState,
 } from './fenBoard'
 import type { BoardMap, CastlingRights } from './fenBoard'
+import type { PieceSetName } from '../../types/theme.types'
 
 interface PositionEditorViewProps {
   boardWidth: number
@@ -22,8 +23,18 @@ interface PositionEditorViewProps {
 const PALETTE_TYPES = ['K', 'Q', 'R', 'B', 'N', 'P'] as const
 const PIECE_LABELS: Record<string, string> = { K: 'Rei', Q: 'Dama', R: 'Torre', B: 'Bispo', N: 'Cavalo', P: 'Peão' }
 
-function pieceUrl(code: string, pieceSet: string) {
-  return `https://lichess1.org/assets/piece/${pieceSet}/${code}.svg`
+// Alguns conjuntos (ex: `dubrovny-noir`) não têm SVG próprio na CDN do Lichess — reaproveitam o
+// desenho de outro conjunto (`src`) e aplicam um filtro CSS de cor por cima (mesmo mecanismo já
+// usado em `pieceLoader.ts` e no preview de `SettingsPanel.tsx`). Sem resolver o `src`, a URL
+// batia direto (`piece/dubrovny-noir/...`), que não existe (404) — bug real: com `dubrovny-noir`
+// como default do site, o editor de posição (tabuleiro E paleta) ficava sem nenhuma peça visível.
+function pieceUrl(code: string, pieceSet: PieceSetName) {
+  const src = PIECE_SETS[pieceSet]?.src ?? pieceSet
+  return `https://lichess1.org/assets/piece/${src}/${code}.svg`
+}
+
+function pieceFilter(pieceSet: PieceSetName): string | undefined {
+  return PIECE_COLOR_FILTER[pieceSet]
 }
 
 const PIECE_COLOR_LABEL: Record<string, string> = { w: 'branca', b: 'preta' }
@@ -236,7 +247,7 @@ export function PositionEditorView({ boardWidth, containerRef, onAnalyze }: Posi
                       src={pieceUrl(code, theme.pieceSet)}
                       alt={code}
                       draggable={false}
-                      style={{ width: '82%', height: '82%', pointerEvents: 'none' }}
+                      style={{ width: '82%', height: '82%', pointerEvents: 'none', filter: pieceFilter(theme.pieceSet) }}
                     />
                   )}
                   {isLeftCol && (
@@ -370,7 +381,7 @@ export function PositionEditorView({ boardWidth, containerRef, onAnalyze }: Posi
 
 function PaletteRow({ color, pieceSet, armed, onToggle, squareSize }: {
   color: 'w' | 'b'
-  pieceSet: string
+  pieceSet: PieceSetName
   armed: string | null
   onToggle: (code: string) => void
   squareSize: number
@@ -389,7 +400,7 @@ function PaletteRow({ color, pieceSet, armed, onToggle, squareSize }: {
             className={`cl-btn cl-btn-sm${armed === code ? ' cl-btn-selected' : ''}`}
             style={{ width: squareSize, height: squareSize }}
           >
-            <img src={pieceUrl(code, pieceSet)} alt="" draggable={false} style={{ width: '80%', height: '80%', pointerEvents: 'none' }} />
+            <img src={pieceUrl(code, pieceSet)} alt="" draggable={false} style={{ width: '80%', height: '80%', pointerEvents: 'none', filter: pieceFilter(pieceSet) }} />
           </button>
         )
       })}
