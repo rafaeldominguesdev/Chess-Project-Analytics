@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
-import type { RefObject } from 'react'
+import type { RefCallback } from 'react'
 import { Chess } from 'chess.js'
 import { useAnalysisBoard } from '../../hooks/useAnalysisBoard'
 import type { PlayedMove } from '../../hooks/useAnalysisBoard'
@@ -14,7 +14,7 @@ import type { MoveQuality } from '../../utils/moveClassifier'
 
 interface AnalysisBoardViewProps {
   boardWidth: number
-  containerRef: RefObject<HTMLDivElement | null>
+  containerRef: RefCallback<HTMLDivElement>
   /** Posição de partida (ex: vinda de "Definir Posição") — padrão é o início do xadrez. */
   initialFen?: string
 }
@@ -191,7 +191,7 @@ export function AnalysisBoardView({ boardWidth, containerRef, initialFen }: Anal
   return (
     <>
       {/* Center — mesma coluna do tabuleiro de análise/treino */}
-      <div ref={containerRef} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, paddingTop: 8 }}>
+      <div ref={containerRef} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, paddingTop: 8 }}>
         <div style={{ width: cardWidth }}>
           <TurnCard turn={turn} isCheck={/\+|#$/.test(moves[currentMoveIndex]?.san ?? '')} />
         </div>

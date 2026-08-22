@@ -281,11 +281,15 @@ body {
 }
 
 /* ══════════════════════════════════════════════
-   Casco principal (Sidebar + <main>) — o board (via useBoardSize, ResizeObserver) já encolhe
-   sozinho até MIN_AUTO=320px, mas o painel lateral fixo de 360px (Tabuleiro, Definir Posição,
-   Revisão de partida, Puzzles) não encolhia nem empilhava: numa tela estreita, sidebar +
-   board mínimo + painel de 360px não cabem lado a lado. Abaixo de 860px o painel some da
-   linha e desce pra baixo do board (coluna única), cada um ocupando a largura toda.
+   Casco principal (Sidebar + <main>) — o board (via useBoardSize, ResizeObserver) encolhe
+   sozinho, mas nunca abaixo de MIN_AUTO=320px (useBoardSize.ts): é um piso deliberado, não
+   um alvo de compressão. Isso significa que sidebar expandida (254px) + padding do <main>
+   (10px de cada lado) + board no piso (320px) + gap (10px) + painel lateral fixo de 360px
+   (Tabuleiro, Definir Posição, Revisão de partida, Puzzles) precisam de 964px pra caber lado
+   a lado sem sobrepor nada — 254+10+320+10+360+10=964. Abaixo desse ponto o painel desce pra
+   baixo do board (coluna única, cada um ocupando a largura toda) em vez de tentar espremer os
+   dois na mesma linha (o que forçava o board — que não cede abaixo do próprio piso — a
+   desenhar por cima do painel, achado ao testar breakpoints intermediários 700-900px).
    `.cl-main-shell` é o `<main>` de App.tsx; `.cl-tool-aside` é usado pelas 4 telas com painel
    lateral (AnalysisBoardView, PositionEditorView, ReviewPanel, TrainingView).
    ══════════════════════════════════════════════ */
@@ -302,16 +306,16 @@ body {
   flex-direction: column;
 }
 /* Conteúdo de dentro do `.cl-tool-aside` — em tela larga tem scroll próprio (a página em si não
-   precisa rolar, só esse painel). Empilhado (abaixo de 860px, achado da Fase 2/auditoria), esse
+   precisa rolar, só esse painel). Empilhado (abaixo de 980px, achado da Fase 2/auditoria), esse
    scroll interno virava uma armadilha: a pessoa rola o painel até o fim DELE, ele para, e o
    resto da página (com o board acima) continua sem aparecer — porque é um scroll aninhado
-   independente do scroll da página. Sem largura própria pra briga, embaixo de 860px é melhor a
+   independente do scroll da página. Sem largura própria pra briga, embaixo de 980px é melhor a
    página inteira rolar como um fluxo só. */
 .cl-tool-aside-scroll {
   overflow-y: auto;
   max-height: calc(100vh - 20px);
 }
-@media (max-width: 860px) {
+@media (max-width: 980px) {
   .cl-main-shell { flex-direction: column; }
   .cl-tool-aside { width: 100%; }
   .cl-tool-aside-scroll { overflow-y: visible; max-height: none; }

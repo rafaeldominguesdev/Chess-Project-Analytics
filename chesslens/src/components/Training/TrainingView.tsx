@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { RefObject, SVGProps } from 'react'
+import type { RefCallback, SVGProps } from 'react'
 import { usePuzzleTrainer } from '../../hooks/usePuzzleTrainer'
 import { ChessBoard, BOARD_ROW_CHROME_WIDTH } from '../Board/ChessBoard'
 import { PUZZLE_RATING_MAX, PUZZLE_RATING_MIN } from '../../utils/puzzles'
@@ -7,7 +7,7 @@ import { TargetIcon } from '../Layout/icons'
 
 interface TrainingViewProps {
   boardWidth: number
-  containerRef: RefObject<HTMLDivElement | null>
+  containerRef: RefCallback<HTMLDivElement>
 }
 
 interface Difficulty {
@@ -106,7 +106,7 @@ export function TrainingView({ boardWidth, containerRef }: TrainingViewProps) {
   return (
     <>
       {/* Center — mesma coluna do tabuleiro de análise */}
-      <div ref={containerRef} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, paddingTop: 8 }}>
+      <div ref={containerRef} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, paddingTop: 8 }}>
         {/* Engrenagem de dificuldade fica ao lado do card de rating (não mais sobre o tabuleiro —
             nessa posição antiga, o botão de 40x40 cobria o canto superior direito do tabuleiro
             inteiro em telas estreitas, escondendo a casa ali embaixo; achado da Fase 8/11). */}

@@ -204,7 +204,7 @@ function AppInner() {
         ) : (
           <>
             {/* Center */}
-            <div ref={containerRef} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, paddingTop: 8 }}>
+            <div ref={containerRef} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, paddingTop: 8 }}>
               {/* Card de cima é sempre o lado "distante" — troca de posição junto com o flip do tabuleiro. */}
               <div style={{ width: boardWidth + BOARD_ROW_CHROME_WIDTH }}>
                 {boardOrientation === 'white' ? (

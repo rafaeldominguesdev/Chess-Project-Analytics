@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { RefObject, SVGProps } from 'react'
+import type { RefCallback, SVGProps } from 'react'
 import { Chess } from 'chess.js'
 import { useTheme } from '../../contexts/ThemeContext'
 import { BOARD_THEMES, PIECE_SETS, PIECE_COLOR_FILTER } from '../../utils/boardThemes'
@@ -12,7 +12,7 @@ import type { PieceSetName } from '../../types/theme.types'
 
 interface PositionEditorViewProps {
   boardWidth: number
-  containerRef: RefObject<HTMLDivElement | null>
+  containerRef: RefCallback<HTMLDivElement>
   /** Chamado com o FEN validado quando o usuário confirma — quem usa troca pro Tabuleiro
    *  (AnalysisBoardView) já carregado nessa posição. */
   onAnalyze: (fen: string) => void
@@ -209,7 +209,7 @@ export function PositionEditorView({ boardWidth, containerRef, onAnalyze }: Posi
   return (
     <>
       {/* Center — tabuleiro do editor + paleta de peças logo abaixo */}
-      <div ref={containerRef} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, paddingTop: 8 }}>
+      <div ref={containerRef} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, paddingTop: 8 }}>
         <div
           className="cl-card"
           style={{ width: boardWidth, height: boardWidth, overflow: 'hidden', display: 'grid', gridTemplateColumns: `repeat(8, ${squareSize}px)`, gridTemplateRows: `repeat(8, ${squareSize}px)` }}
