@@ -314,6 +314,18 @@ body {
   .cl-hero-bg { background-position: 42% var(--hero-bg-pos-y, 20%), center; }
 }
 
+/* Respiração sutil da capivara — todo o plano de fundo (mascote + tabuleiro) sobe e desce
+   ~5px num ciclo bem lento (8s), só pra dar sensação de vida sem virar espetáculo. A borda que
+   isso revela nas pontas é preta pura (--color-bg-main), igual ao fundo da própria arte, então
+   fica invisível. Desligado por completo se o usuário preferir menos movimento. */
+@keyframes cl-hero-breathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cl-hero-bg { animation: cl-hero-breathe 8s ease-in-out infinite; }
+}
+
 /* Fumaça do rodapé — névoa âmbar subindo do fim da página (atrás dos cards de Recurso), reforça
    o clima "spotlight" perto do rodapé sem competir com a fumaça de fundo do hero (mais acima). */
 .cl-footer-fog {
