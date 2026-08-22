@@ -190,7 +190,7 @@ export function TrainingView({ boardWidth, containerRef }: TrainingViewProps) {
 
       {/* Right — mesma posição/largura do painel de análise */}
       <aside className="cl-tool-aside">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto', maxHeight: 'calc(100vh - 20px)', paddingRight: 2 }}>
+        <div className="cl-tool-aside-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingRight: 2 }}>
           {puzzle && (
             <div className="cl-card" style={{
               display: 'flex', flexDirection: 'column', gap: 10, padding: 14,

@@ -193,6 +193,8 @@ function NavItem({ icon, label, active = false, collapsed, soon = false, onClick
     <button
       onClick={onClick}
       title={collapsed ? label + (soon ? ' (em breve)' : '') : undefined}
+      aria-label={collapsed ? label + (soon ? ' (em breve)' : '') : undefined}
+      aria-current={active ? 'page' : undefined}
       className={`cl-btn${active ? ' cl-btn-selected' : ''}`}
       style={{
         justifyContent: collapsed ? 'center' : 'flex-start', gap: 9, width: '100%',

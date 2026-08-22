@@ -277,7 +277,7 @@ export function PositionEditorView({ boardWidth, containerRef, onAnalyze }: Posi
 
       {/* Right — mesma posição/largura do painel de análise/treino */}
       <aside className="cl-tool-aside">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto', maxHeight: 'calc(100vh - 20px)', paddingRight: 2 }}>
+        <div className="cl-tool-aside-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingRight: 2 }}>
 
           <div className="cl-card" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>

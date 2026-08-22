@@ -81,7 +81,7 @@ export function RecentGames({ games, loading, onAnalyze }: RecentGamesProps) {
 
             <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-on-dark)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span title={g.opponent} style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-on-dark)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   vs {g.opponent}
                 </span>
                 {g.opponentRating !== null && (
@@ -100,6 +100,7 @@ export function RecentGames({ games, loading, onAnalyze }: RecentGamesProps) {
               target="_blank"
               rel="noreferrer"
               title="Ver partida original"
+              aria-label="Ver partida original (abre em nova aba)"
               style={{ color: 'var(--color-gray-muted)', display: 'flex', flexShrink: 0 }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -110,7 +111,7 @@ export function RecentGames({ games, loading, onAnalyze }: RecentGamesProps) {
               onClick={() => onAnalyze(g.pgn)}
               title="Analisar esta partida"
               className="cl-btn cl-btn-accent cl-btn-sm"
-              style={{ gap: 5, flexShrink: 0, padding: '6px 10px', fontSize: 11.5 }}
+              style={{ gap: 5, flexShrink: 0, width: 'auto', height: 'auto', padding: '6px 12px', fontSize: 11.5, whiteSpace: 'nowrap' }}
             >
               <AnalyzeIcon width={13} height={13} />
               Analisar

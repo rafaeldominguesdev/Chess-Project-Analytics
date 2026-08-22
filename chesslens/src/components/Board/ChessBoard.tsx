@@ -10,6 +10,7 @@ import { buildCustomPieces } from '../../utils/pieceLoader'
 import { qualityAlphaColor, QUALITY_CONFIG } from '../../utils/moveClassifier'
 import type { StockfishEval } from '../../hooks/useStockfish'
 import type { MoveQuality } from '../../utils/moveClassifier'
+import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion'
 
 const EVAL_BAR_WIDTH = 24
 const ROW_GAP = 8
@@ -96,6 +97,7 @@ export function ChessBoard({
 }: ChessBoardProps) {
   const { theme } = useTheme()
   const bt = BOARD_THEMES[theme.boardTheme]
+  const reducedMotion = usePrefersReducedMotion()
 
   // Seleção de peça pra mostrar pra onde ela pode jogar (igual lichess/chess.com): clica numa
   // peça (ou começa a arrastar) e as casas de destino legal ganham uma bolinha — ou um anel,
@@ -106,6 +108,13 @@ export function ChessBoard({
   // Peão chegando na última fileira: pergunta qual peça promover em vez de virar dama sozinho.
   const [pendingPromotion, setPendingPromotion] = useState<{ from: string; to: string; color: 'w' | 'b' } | null>(null)
   useEffect(() => setPendingPromotion(null), [fen])
+
+  // Foca a primeira opção (Dama) assim que o seletor de promoção abre, pra quem usa teclado não
+  // precisar adivinhar onde o foco foi parar — e Esc cancela o lance, igual clicar fora.
+  const firstPromotionBtnRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (pendingPromotion) firstPromotionBtnRef.current?.focus()
+  }, [pendingPromotion])
 
   function tryDrop(sourceSquare: string, targetSquare: string): boolean {
     if (isPromotionMove(fen, sourceSquare, targetSquare)) {
@@ -202,7 +211,10 @@ export function ChessBoard({
       styles[hintSquare] = {
         ...styles[hintSquare],
         boxShadow: 'inset 0 0 0 3px var(--color-blue-bright)',
-        animation: 'cl-hint-pulse 1.1s ease-in-out infinite',
+        // Anel pisca pra chamar atenção — mas só se o usuário não pediu menos movimento; sem
+        // isso, fica só o anel sólido (não é uma opção, é o mínimo, o resto do app já tinha
+        // ganchos de CSS pra isso, esse aqui não porque a lib só aceita style inline por square).
+        ...(reducedMotion ? {} : { animation: 'cl-hint-pulse 1.1s ease-in-out infinite' }),
       }
     }
 
@@ -216,7 +228,7 @@ export function ChessBoard({
     }
 
     return styles
-  }, [lastMove, theme.showLastMove, bt, currentQuality, hintSquare, selectedSquare, legalTargets, checkInfo])
+  }, [lastMove, theme.showLastMove, bt, currentQuality, hintSquare, selectedSquare, legalTargets, checkInfo, reducedMotion])
 
   const customPieces = useMemo(() => buildCustomPieces(theme.pieceSet), [theme.pieceSet])
 
@@ -413,37 +425,46 @@ export function ChessBoard({
           }}
         />
 
-        {/* Seletor de peça de promoção — some ao escolher ou ao clicar fora (cancela o lance). */}
+        {/* Seletor de peça de promoção — some ao escolher, ao clicar fora ou com Esc (cancela o
+            lance nos três casos). Foco vai pra 1ª opção ao abrir (ver efeito acima) e Tab circula
+            só entre as 4 opções, já que são as únicas coisas interativas dentro do diálogo. */}
         {pendingPromotion && (() => {
           const origin = squareOrigin(pendingPromotion.to, boardOrientation, squareSize)
           const goingDown = origin.top === 0
           return (
             <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Escolher peça de promoção"
               onClick={() => setPendingPromotion(null)}
+              onKeyDown={(e) => { if (e.key === 'Escape') setPendingPromotion(null) }}
               style={{ position: 'absolute', inset: 0, zIndex: 20, background: 'rgba(10,9,6,0.6)', cursor: 'pointer' }}
             >
               {PROMOTION_PIECES.map((piece, i) => {
                 const top = goingDown ? origin.top + i * squareSize : origin.top - i * squareSize
                 const code = `${pendingPromotion.color}${piece.toUpperCase()}`
                 return (
-                  <div
+                  <button
                     key={piece}
+                    ref={i === 0 ? firstPromotionBtnRef : undefined}
                     onClick={(e) => { e.stopPropagation(); handlePromotionPick(piece) }}
                     title={PROMOTION_LABELS[piece]}
+                    aria-label={`Promover para ${PROMOTION_LABELS[piece]}`}
                     style={{
                       position: 'absolute', left: origin.left, top,
                       width: squareSize, height: squareSize,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       background: 'var(--color-bg-panel)',
+                      border: 'none',
                       boxShadow: i === 0 ? '0 4px 16px rgba(0,0,0,0.7)' : 'inset 0 1px 0 0 rgba(255,255,255,0.05)',
                       cursor: 'pointer',
                     }}
                   >
                     <img
                       src={`https://lichess1.org/assets/piece/${theme.pieceSet}/${code}.svg`}
-                      width="82%" height="82%" draggable={false} alt={PROMOTION_LABELS[piece]}
+                      width="82%" height="82%" draggable={false} alt=""
                     />
-                  </div>
+                  </button>
                 )
               })}
             </div>

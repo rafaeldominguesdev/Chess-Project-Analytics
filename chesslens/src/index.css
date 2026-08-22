@@ -115,11 +115,16 @@ body {
   100% { transform: translateX(0); opacity: 1; }
 }
 
-/* Entradas: curva "snap" (início rápido, assentamento suave), ~200ms */
-.cl-modal-in { animation: cl-modal-in var(--dur-enter) var(--ease-hinge) both; }
-.cl-fade-in { animation: cl-fade-in var(--dur-enter) var(--ease-snap) both; }
-.cl-stat-pop { animation: cl-stat-pop var(--dur-enter) var(--ease-snap) both; }
-.cl-row-in { animation: cl-row-in var(--dur-enter) var(--ease-snap) both; }
+/* Entradas: curva "snap" (início rápido, assentamento suave), ~200ms. Só rodam se o usuário não
+   pediu menos movimento (achado da auditoria da Fase 2) — sem a guarda, o elemento aparece direto
+   no estado final (opacity/transform normais), sem o `both` puxando ele pra um estado inicial
+   invisível/deslocado que nunca seria desfeito. */
+@media (prefers-reduced-motion: no-preference) {
+  .cl-modal-in { animation: cl-modal-in var(--dur-enter) var(--ease-hinge) both; }
+  .cl-fade-in { animation: cl-fade-in var(--dur-enter) var(--ease-snap) both; }
+  .cl-stat-pop { animation: cl-stat-pop var(--dur-enter) var(--ease-snap) both; }
+  .cl-row-in { animation: cl-row-in var(--dur-enter) var(--ease-snap) both; }
+}
 
 .cl-game-row { transition: border-color var(--dur-tap) var(--ease-tap), transform var(--dur-tap) var(--ease-tap); }
 .cl-game-row:hover { border-color: var(--color-blue-bright); transform: translateX(2px); }
@@ -296,9 +301,20 @@ body {
   display: flex;
   flex-direction: column;
 }
+/* Conteúdo de dentro do `.cl-tool-aside` — em tela larga tem scroll próprio (a página em si não
+   precisa rolar, só esse painel). Empilhado (abaixo de 860px, achado da Fase 2/auditoria), esse
+   scroll interno virava uma armadilha: a pessoa rola o painel até o fim DELE, ele para, e o
+   resto da página (com o board acima) continua sem aparecer — porque é um scroll aninhado
+   independente do scroll da página. Sem largura própria pra briga, embaixo de 860px é melhor a
+   página inteira rolar como um fluxo só. */
+.cl-tool-aside-scroll {
+  overflow-y: auto;
+  max-height: calc(100vh - 20px);
+}
 @media (max-width: 860px) {
   .cl-main-shell { flex-direction: column; }
   .cl-tool-aside { width: 100%; }
+  .cl-tool-aside-scroll { overflow-y: visible; max-height: none; }
 }
 
 /* ══════════════════════════════════════════════

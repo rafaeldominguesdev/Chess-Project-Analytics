@@ -55,16 +55,16 @@ export function BoardControls({
         background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)',
       }}
     >
-      <button className={NAV_BTN} onClick={onFlip} title="Inverter tabuleiro">
+      <button className={NAV_BTN} onClick={onFlip} title="Inverter tabuleiro" aria-label="Inverter tabuleiro">
         <FlipBoardIcon width={15} height={15} />
       </button>
 
       <div style={{ width: 1, height: 22, background: 'var(--color-gray-border)', margin: '0 2px', flexShrink: 0 }} />
 
-      <button className={NAV_BTN} onClick={withPauseAutoplay(onFirst)} disabled={atStart || !isLoaded} title="Início">
+      <button className={NAV_BTN} onClick={withPauseAutoplay(onFirst)} disabled={atStart || !isLoaded} title="Início" aria-label="Ir para o início">
         <FirstMoveIcon width={15} height={15} />
       </button>
-      <button className={NAV_BTN} onClick={withPauseAutoplay(onPrev)} disabled={atStart || !isLoaded} title="Anterior">
+      <button className={NAV_BTN} onClick={withPauseAutoplay(onPrev)} disabled={atStart || !isLoaded} title="Anterior" aria-label="Lance anterior">
         <PrevMoveIcon width={15} height={15} />
       </button>
       <button
@@ -72,13 +72,15 @@ export function BoardControls({
         onClick={() => setIsPlaying((p) => !p)}
         disabled={!isLoaded || (atEnd && !isPlaying)}
         title={isPlaying ? 'Pausar' : 'Reproduzir automaticamente'}
+        aria-label={isPlaying ? 'Pausar reprodução automática' : 'Reproduzir automaticamente'}
+        aria-pressed={isPlaying}
       >
         {isPlaying ? <PauseMoveIcon width={15} height={15} /> : <PlayMoveIcon width={15} height={15} />}
       </button>
-      <button className={NAV_BTN} onClick={withPauseAutoplay(onNext)} disabled={atEnd || !isLoaded} title="Próximo">
+      <button className={NAV_BTN} onClick={withPauseAutoplay(onNext)} disabled={atEnd || !isLoaded} title="Próximo" aria-label="Próximo lance">
         <NextMoveIcon width={15} height={15} />
       </button>
-      <button className={NAV_BTN} onClick={withPauseAutoplay(onLast)} disabled={atEnd || !isLoaded} title="Último">
+      <button className={NAV_BTN} onClick={withPauseAutoplay(onLast)} disabled={atEnd || !isLoaded} title="Último" aria-label="Ir para o último lance">
         <LastMoveIcon width={15} height={15} />
       </button>
 
