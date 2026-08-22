@@ -16,6 +16,8 @@ import { PlayerCard } from './components/Theater/PlayerCard'
 import { Sidebar } from './components/Layout/Sidebar'
 import { MaintenanceNotice } from './components/Layout/MaintenanceNotice'
 import { HomePage } from './components/Home/HomePage'
+import { SearchView } from './components/PlayerSearch/SearchView'
+import type { Platform } from './components/PlayerSearch/SearchView'
 import { usePlayerProfiles } from './hooks/useChesscomApi'
 import { useMoveSound } from './hooks/useMoveSound'
 import { classifyMove, toWhiteCp, materialForSide } from './utils/moveClassifier'
@@ -36,6 +38,13 @@ function AppInner() {
   const [pendingBoardFen, setPendingBoardFen] = useState<string | undefined>(undefined)
   // Nome da função clicada num item de menu "em manutenção" (ver Sidebar) — null = fechado.
   const [maintenanceFeature, setMaintenanceFeature] = useState<string | null>(null)
+  // Tela de "Analisar" (busca de jogador) — página própria, separada da Home, com prioridade
+  // sobre ela: fica visível mesmo com uma partida carregada (isLoaded), pra dar sempre um
+  // caminho de volta pra busca sem precisar descarregar a partida antes.
+  const [searchMode, setSearchMode] = useState(false)
+  // Plataforma pedida explicitamente (ex: clicou no card "Lichess" da Home) — override de
+  // uma única vez; sem isso, a SearchView usa a última plataforma buscada (localStorage).
+  const [searchPlatform, setSearchPlatform] = useState<Platform | undefined>(undefined)
   const [positionEvals, setPositionEvals] = useState<number[]>([])
   const [boardOrientation, setBoardOrientation] = useState<'white' | 'black'>('white')
   // Controla qual "tela" o painel de revisão mostra: resumo (fotos + precisão + White vs Black,
@@ -120,10 +129,20 @@ function AppInner() {
   const handleAnalyzeGame = useCallback((pgn: string) => {
     try {
       loadPgn(pgn)
+      setSearchMode(false)
     } catch {
       // PGN inválido vindo da API do chess.com/Lichess — ignora silenciosamente.
     }
   }, [loadPgn])
+
+  const openSearch = useCallback((platform?: Platform) => {
+    setTrainingMode(false)
+    setBoardMode(false)
+    setPositionEditorMode(false)
+    setPendingBoardFen(undefined)
+    setSearchPlatform(platform)
+    setSearchMode(true)
+  }, [])
 
   const handleStartReview = useCallback(() => {
     setReviewStarted(true)
@@ -142,15 +161,16 @@ function AppInner() {
     <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: 'var(--color-bg-main)', color: 'var(--color-text-on-dark)' }}>
       <Sidebar
         onSettings={() => setSettingsOpen(true)}
-        onToggleTraining={() => { setTrainingMode((v) => !v); setBoardMode(false); setPositionEditorMode(false) }}
-        onToggleBoard={() => { setBoardMode((v) => !v); setTrainingMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined) }}
-        onGoHome={() => { setTrainingMode(false); setBoardMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); unloadGame() }}
-        onAnalyzeClick={() => { setTrainingMode(false); setBoardMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); unloadGame() }}
+        onToggleTraining={() => { setTrainingMode((v) => !v); setBoardMode(false); setPositionEditorMode(false); setSearchMode(false) }}
+        onToggleBoard={() => { setBoardMode((v) => !v); setTrainingMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setSearchMode(false) }}
+        onGoHome={() => { setTrainingMode(false); setBoardMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setSearchMode(false); unloadGame() }}
+        onAnalyzeClick={() => { unloadGame(); openSearch() }}
         onMaintenanceClick={setMaintenanceFeature}
-        onTogglePositionEditor={() => { setPositionEditorMode((v) => !v); setTrainingMode(false); setBoardMode(false) }}
+        onTogglePositionEditor={() => { setPositionEditorMode((v) => !v); setTrainingMode(false); setBoardMode(false); setSearchMode(false) }}
         trainingActive={trainingMode}
         boardActive={boardMode}
         positionEditorActive={positionEditorMode}
+        searchActive={searchMode}
       />
 
       {/* Main */}
@@ -165,8 +185,10 @@ function AppInner() {
           />
         ) : boardMode ? (
           <AnalysisBoardView boardWidth={boardWidth} containerRef={containerRef} initialFen={pendingBoardFen} />
+        ) : searchMode ? (
+          <SearchView initialPlatform={searchPlatform} onAnalyzeGame={handleAnalyzeGame} />
         ) : !isLoaded ? (
-          <HomePage onAnalyzeGame={handleAnalyzeGame} />
+          <HomePage onOpenSearch={openSearch} />
         ) : (
           <>
             {/* Center */}
