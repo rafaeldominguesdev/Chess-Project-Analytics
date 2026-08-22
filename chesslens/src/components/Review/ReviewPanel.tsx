@@ -75,7 +75,7 @@ export function ReviewPanel({
   const blackName = gameInfo?.black ?? 'Pretas'
 
   return (
-    <aside style={{ width: 360, flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+    <aside className="cl-tool-aside">
       <div
         style={{
           display: 'flex', flexDirection: 'column', gap: 10,

@@ -36,7 +36,12 @@ const TRAIN_PLACEHOLDERS = ['Treino de Erros', 'Treino de Aberturas']
  *  persistem entre sessões (localStorage), já que são preferência de layout, não algo que muda
  *  por partida. Rola internamente (overflowY) porque com tudo expandido não cabe numa tela baixa. */
 export function Sidebar({ onSettings, onToggleTraining, onToggleBoard, onGoHome, onAnalyzeClick, onMaintenanceClick, onTogglePositionEditor, trainingActive, boardActive, positionEditorActive, searchActive }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSED_KEY) === '1')
+  const [collapsed, setCollapsed] = useState(() => {
+    const saved = localStorage.getItem(COLLAPSED_KEY)
+    // Sem preferência salva ainda: começa colapsada (só ícones) em telas estreitas, senão a
+    // sidebar expandida sozinha já ocupa a maior parte de uma tela de celular.
+    return saved !== null ? saved === '1' : window.innerWidth < 640
+  })
   const [toolsOpen, setToolsOpen] = useState(() => {
     const saved = localStorage.getItem(TOOLS_OPEN_KEY)
     // Sem preferência salva ainda: começa aberto se alguma ferramenta de dentro já tá ativa

@@ -174,7 +174,7 @@ function AppInner() {
       />
 
       {/* Main */}
-      <main style={{ flex: 1, minWidth: 0, display: 'flex', gap: 10, padding: 10, minHeight: '100vh' }}>
+      <main className="cl-main-shell" style={{ flex: 1, minWidth: 0 }}>
         {trainingMode ? (
           <TrainingView boardWidth={boardWidth} containerRef={containerRef} />
         ) : positionEditorMode ? (

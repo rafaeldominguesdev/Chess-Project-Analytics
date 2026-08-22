@@ -223,7 +223,7 @@ export function AnalysisBoardView({ boardWidth, containerRef, initialFen }: Anal
       </div>
 
       {/* Right — mesma posição/largura do painel de análise/treino */}
-      <aside style={{ width: 360, flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+      <aside className="cl-tool-aside">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto', maxHeight: 'calc(100vh - 20px)', paddingRight: 2 }}>
           <button
             onClick={reset}
