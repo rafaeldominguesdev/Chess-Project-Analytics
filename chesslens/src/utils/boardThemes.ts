@@ -9,27 +9,45 @@ export const BOARD_THEMES = {
   // clássico), tom casado com o fundo carvão + destaque âmbar do resto da UI. Marcação
   // de lance em âmbar translúcido em vez de amarelo/verde padrão.
   // ══════════════════════════════════════════════
-  'graphite-amber': { label: 'ChessLens Signature', category: 'ChessLens', light: '#DAD3C6', dark: '#4A443C', highlight: '#E8A93C', highlightDark: '#C68A22', moveFrom: 'rgba(232,169,60,0.5)', moveTo: 'rgba(232,169,60,0.62)' },
+  'graphite-amber': { label: 'ChessLens Signature', category: 'ChessLens', light: '#DAD3C6', dark: '#4A443C', highlight: '#E8A93C', highlightDark: '#C68A22', moveFrom: 'rgba(232,169,60,0.5)', moveTo: 'rgba(232,169,60,0.62)', image: undefined },
 
   // ══════════════════════════════════════════════
   // CHESS.COM — TEMAS OFICIAIS
   // ══════════════════════════════════════════════
-  'chesscom-green':      { label: 'Green',      category: 'Chess.com', light: '#EEEED2', dark: '#769656', highlight: '#F6F669', highlightDark: '#BACA2B', moveFrom: 'rgba(20,85,30,0.5)',   moveTo: 'rgba(20,85,30,0.5)' },
-  'chesscom-walnut':     { label: 'Walnut',     category: 'Chess.com', light: '#F0D9B5', dark: '#B58863', highlight: '#CDD26A', highlightDark: '#AABE53', moveFrom: 'rgba(155,100,0,0.5)', moveTo: 'rgba(155,100,0,0.5)' },
-  'chesscom-blue':       { label: 'Blue',       category: 'Chess.com', light: '#DEE3E6', dark: '#8CA2AD', highlight: '#F6F669', highlightDark: '#BACA2B', moveFrom: 'rgba(0,80,140,0.5)',  moveTo: 'rgba(0,80,140,0.5)' },
-  'chesscom-tournament': { label: 'Tournament', category: 'Chess.com', light: '#F5F5DC', dark: '#4B7399', highlight: '#F6F669', highlightDark: '#BACA2B', moveFrom: 'rgba(0,60,120,0.5)',  moveTo: 'rgba(0,60,120,0.5)' },
+  'chesscom-green':      { label: 'Green',      category: 'Chess.com', light: '#EEEED2', dark: '#769656', highlight: '#F6F669', highlightDark: '#BACA2B', moveFrom: 'rgba(20,85,30,0.5)',   moveTo: 'rgba(20,85,30,0.5)', image: undefined },
+  'chesscom-walnut':     { label: 'Walnut',     category: 'Chess.com', light: '#F0D9B5', dark: '#B58863', highlight: '#CDD26A', highlightDark: '#AABE53', moveFrom: 'rgba(155,100,0,0.5)', moveTo: 'rgba(155,100,0,0.5)', image: undefined },
+  'chesscom-blue':       { label: 'Blue',       category: 'Chess.com', light: '#DEE3E6', dark: '#8CA2AD', highlight: '#F6F669', highlightDark: '#BACA2B', moveFrom: 'rgba(0,80,140,0.5)',  moveTo: 'rgba(0,80,140,0.5)', image: undefined },
+  'chesscom-tournament': { label: 'Tournament', category: 'Chess.com', light: '#F5F5DC', dark: '#4B7399', highlight: '#F6F669', highlightDark: '#BACA2B', moveFrom: 'rgba(0,60,120,0.5)',  moveTo: 'rgba(0,60,120,0.5)', image: undefined },
 
   // ══════════════════════════════════════════════
   // LICHESS
   // ══════════════════════════════════════════════
-  'lichess-brown': { label: 'Brown', category: 'Lichess', light: '#F0D9B5', dark: '#B58863', highlight: '#CDD26A', highlightDark: '#AABE53', moveFrom: 'rgba(155,100,0,0.5)', moveTo: 'rgba(155,100,0,0.5)' },
+  'lichess-brown': { label: 'Brown', category: 'Lichess', light: '#F0D9B5', dark: '#B58863', highlight: '#CDD26A', highlightDark: '#AABE53', moveFrom: 'rgba(155,100,0,0.5)', moveTo: 'rgba(155,100,0,0.5)', image: undefined },
 
   // ══════════════════════════════════════════════
   // TEMAS EXCLUSIVOS
   // ══════════════════════════════════════════════
-  'midnight': { label: 'Midnight', category: 'Exclusivo', light: '#1E2A3A', dark: '#0D1B2A', highlight: '#3D5A80', highlightDark: '#2C4057', moveFrom: 'rgba(50,100,180,0.5)', moveTo: 'rgba(50,100,180,0.5)' },
-  'emerald':  { label: 'Emerald',  category: 'Exclusivo', light: '#E8F5E9', dark: '#2E7D32', highlight: '#FFF176', highlightDark: '#F9A825', moveFrom: 'rgba(30,120,40,0.5)',  moveTo: 'rgba(30,120,40,0.5)' },
-  'coral':    { label: 'Coral',    category: 'Exclusivo', light: '#FFF0EB', dark: '#D05A3A', highlight: '#FFD700', highlightDark: '#FFC200', moveFrom: 'rgba(200,60,20,0.5)',  moveTo: 'rgba(200,60,20,0.5)' },
+  'midnight': { label: 'Midnight', category: 'Exclusivo', light: '#1E2A3A', dark: '#0D1B2A', highlight: '#3D5A80', highlightDark: '#2C4057', moveFrom: 'rgba(50,100,180,0.5)', moveTo: 'rgba(50,100,180,0.5)', image: undefined },
+  'emerald':  { label: 'Emerald',  category: 'Exclusivo', light: '#E8F5E9', dark: '#2E7D32', highlight: '#FFF176', highlightDark: '#F9A825', moveFrom: 'rgba(30,120,40,0.5)',  moveTo: 'rgba(30,120,40,0.5)', image: undefined },
+  'coral':    { label: 'Coral',    category: 'Exclusivo', light: '#FFF0EB', dark: '#D05A3A', highlight: '#FFD700', highlightDark: '#FFC200', moveFrom: 'rgba(200,60,20,0.5)',  moveTo: 'rgba(200,60,20,0.5)', image: undefined },
+
+  // ══════════════════════════════════════════════
+  // MADEIRA E TEXTURAS — tabuleiros com foto real (madeira/mármore/couro/metal), não cor
+  // lisa. Mesmo acervo público que o Lichess usa (`lichess1.org/assets/images/board/`),
+  // já é a mesma fonte confiável de onde os 26 conjuntos de peças do app já vêm.
+  // `light`/`dark` aqui são só uma cor aproximada pra notação/contraste — quem manda no
+  // visual é a foto (`image`).
+  // ══════════════════════════════════════════════
+  'wood':    { label: 'Wood',      category: 'Madeira', image: 'https://lichess1.org/assets/images/board/wood.jpg',    light: '#E8C88E', dark: '#A5682E', highlight: '#E8A93C', highlightDark: '#C68A22', moveFrom: 'rgba(232,169,60,0.45)', moveTo: 'rgba(232,169,60,0.58)' },
+  'wood2':   { label: 'Wood 2',    category: 'Madeira', image: 'https://lichess1.org/assets/images/board/wood2.jpg',   light: '#D8CBA0', dark: '#8C7C4E', highlight: '#E8A93C', highlightDark: '#C68A22', moveFrom: 'rgba(232,169,60,0.45)', moveTo: 'rgba(232,169,60,0.58)' },
+  'wood3':   { label: 'Wood 3',    category: 'Madeira', image: 'https://lichess1.org/assets/images/board/wood3.jpg',   light: '#DEC894', dark: '#96703E', highlight: '#E8A93C', highlightDark: '#C68A22', moveFrom: 'rgba(232,169,60,0.45)', moveTo: 'rgba(232,169,60,0.58)' },
+  'wood4':   { label: 'Wood 4',    category: 'Madeira', image: 'https://lichess1.org/assets/images/board/wood4.jpg',   light: '#E4CDA0', dark: '#9C7442', highlight: '#E8A93C', highlightDark: '#C68A22', moveFrom: 'rgba(232,169,60,0.45)', moveTo: 'rgba(232,169,60,0.58)' },
+  'maple':   { label: 'Maple',     category: 'Madeira', image: 'https://lichess1.org/assets/images/board/maple.jpg',   light: '#E8C99B', dark: '#C6863E', highlight: '#E8A93C', highlightDark: '#C68A22', moveFrom: 'rgba(232,169,60,0.45)', moveTo: 'rgba(232,169,60,0.58)' },
+  'maple2':  { label: 'Maple 2',   category: 'Madeira', image: 'https://lichess1.org/assets/images/board/maple2.jpg',  light: '#E2CBA4', dark: '#B4885A', highlight: '#E8A93C', highlightDark: '#C68A22', moveFrom: 'rgba(232,169,60,0.45)', moveTo: 'rgba(232,169,60,0.58)' },
+  'leather': { label: 'Leather',   category: 'Madeira', image: 'https://lichess1.org/assets/images/board/leather.jpg', light: '#F0EDE5', dark: '#E8A93C', highlight: '#E8A93C', highlightDark: '#C68A22', moveFrom: 'rgba(232,169,60,0.45)', moveTo: 'rgba(232,169,60,0.58)' },
+  'marble':  { label: 'Marble',    category: 'Madeira', image: 'https://lichess1.org/assets/images/board/marble.jpg',  light: '#B8C7B0', dark: '#7E8F76', highlight: '#8FAE84', highlightDark: '#6E8C64', moveFrom: 'rgba(143,174,132,0.45)', moveTo: 'rgba(143,174,132,0.58)' },
+  'metal':   { label: 'Metal',     category: 'Madeira', image: 'https://lichess1.org/assets/images/board/metal.jpg',   light: '#C8CDD2', dark: '#8A9099', highlight: '#9FB2C6', highlightDark: '#7C93A8', moveFrom: 'rgba(159,178,198,0.45)', moveTo: 'rgba(159,178,198,0.58)' },
+  'olive':   { label: 'Olive',     category: 'Madeira', image: 'https://lichess1.org/assets/images/board/olive.jpg',   light: '#C3C2A0', dark: '#8A8968', highlight: '#B5B37E', highlightDark: '#96945F', moveFrom: 'rgba(181,179,126,0.45)', moveTo: 'rgba(181,179,126,0.58)' },
 
 } as const
 

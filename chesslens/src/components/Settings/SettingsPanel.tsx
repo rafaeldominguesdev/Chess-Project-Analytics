@@ -43,11 +43,11 @@ function normalize(s: string) {
 }
 
 // ── Mini-preview do tabuleiro: grid 2x2 com as cores exatas do tema ──
-function BoardPreview({ light, dark, isSelected }: { light: string; dark: string; isSelected: boolean }) {
+function BoardPreview({ light, dark, image, isSelected }: { light: string; dark: string; image?: string; isSelected: boolean }) {
   return (
     <div style={{
       width: 40, height: 40,
-      display: 'grid',
+      display: image ? 'block' : 'grid',
       gridTemplateColumns: '1fr 1fr',
       gridTemplateRows: '1fr 1fr',
       borderRadius: 'var(--radius-sm)',
@@ -58,11 +58,18 @@ function BoardPreview({ light, dark, isSelected }: { light: string; dark: string
       boxShadow: isSelected ? '0 2px 8px -1px color-mix(in srgb, var(--color-blue-bright) 45%, transparent)' : 'none',
       flexShrink: 0,
       transition: 'outline-color var(--dur-tap) var(--ease-tap), box-shadow var(--dur-tap) var(--ease-tap)',
+      // Tabuleiros com foto (madeira/mármore/etc) mostram a textura real em miniatura, em vez
+      // do grid 2x2 de cor lisa — ajuda a escolher olhando o resultado de verdade.
+      ...(image ? { backgroundImage: `url(${image})`, backgroundSize: '100% 100%' } : {}),
     }}>
-      <div style={{ background: light }} />
-      <div style={{ background: dark }} />
-      <div style={{ background: dark }} />
-      <div style={{ background: light }} />
+      {!image && (
+        <>
+          <div style={{ background: light }} />
+          <div style={{ background: dark }} />
+          <div style={{ background: dark }} />
+          <div style={{ background: light }} />
+        </>
+      )}
     </div>
   )
 }
@@ -217,7 +224,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
                             isSelected={theme.boardTheme === t.key}
                             onClick={() => setBoardTheme(t.key as BoardThemeName)}
                           >
-                            <BoardPreview light={t.light} dark={t.dark} isSelected={theme.boardTheme === t.key} />
+                            <BoardPreview light={t.light} dark={t.dark} image={t.image} isSelected={theme.boardTheme === t.key} />
                           </ThemeRow>
                         ))}
                       </div>

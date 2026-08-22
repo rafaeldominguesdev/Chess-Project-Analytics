@@ -37,6 +37,11 @@ export interface BoardTheme {
   dark: string
   highlight: string
   highlightDark: string
+  /** URL de uma textura (madeira/mármore/etc) cobrindo o tabuleiro inteiro (8x8, imagem
+   *  quadrada) — quando presente, as casas ficam transparentes e essa imagem aparece por
+   *  trás, em vez das cores lisas de `light`/`dark`. `light`/`dark` continuam usados como
+   *  cor aproximada (contraste da notação, e o editor de posição, que não é texturizado). */
+  image?: string
 }
 
 export interface PieceSet {

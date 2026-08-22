@@ -388,6 +388,19 @@ export function ChessBoard({
       {showEvalBar && <EvalBar evaluation={evalCp} isMate={evalMate} orientation={boardOrientation} />}
 
       <div style={{ width: boardWidth, height: boardWidth, flexShrink: 0, position: 'relative' }}>
+        {/* Tabuleiros com foto (madeira/mármore/etc) — a imagem cobre o tabuleiro inteiro por
+            trás; as casas da lib ficam transparentes (abaixo) pra ela aparecer. Os overlays de
+            realce (última jogada, lances legais, dica, xeque) continuam por cima normalmente,
+            já que são pintados via `squareStyles`, independente da cor/imagem de fundo. */}
+        {bt.image && (
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute', inset: 0, borderRadius: '4px', overflow: 'hidden',
+              backgroundImage: `url(${bt.image})`, backgroundSize: '100% 100%',
+            }}
+          />
+        )}
         <Chessboard
           options={{
             position: fen,
@@ -402,8 +415,8 @@ export function ChessBoard({
               width: boardWidth,
               height: boardWidth,
             },
-            darkSquareStyle: { backgroundColor: bt.dark },
-            lightSquareStyle: { backgroundColor: bt.light },
+            darkSquareStyle: { backgroundColor: bt.image ? 'transparent' : bt.dark },
+            lightSquareStyle: { backgroundColor: bt.image ? 'transparent' : bt.light },
             darkSquareNotationStyle: notationStyles.dark,
             lightSquareNotationStyle: notationStyles.light,
             alphaNotationStyle: notationStyles.alpha,
