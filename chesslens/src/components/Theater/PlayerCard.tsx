@@ -178,8 +178,8 @@ export function PlayerCard({
             title="Relógio nesse ponto da partida"
             style={{
               marginLeft: 'auto', flexShrink: 0,
-              fontSize: size === 'lg' ? 13 : 12, fontWeight: 800, letterSpacing: -0.2,
-              padding: '3px 9px', borderRadius: 'var(--radius-sm)',
+              fontSize: size === 'lg' ? 20 : 19, fontWeight: 800, letterSpacing: -0.2,
+              padding: '5px 12px', borderRadius: 'var(--radius-sm)',
               background: lowTime ? 'color-mix(in srgb, var(--color-error) 30%, var(--color-bg-panel))' : 'var(--color-bg-panel)',
               color: lowTime ? 'color-mix(in srgb, var(--color-error) 60%, white)' : 'var(--color-text-on-dark)',
               border: '1px solid var(--color-gray-border)',
