@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
-import { THEMES_BY_CATEGORY, PIECE_SETS, PIECE_COLOR_FILTER } from '../../utils/boardThemes'
-import type { BoardThemeName, PieceSetName, BoardSize, AnimationSpeed } from '../../types/theme.types'
+import { BOARD_THEMES, PIECE_SETS, PIECE_COLOR_FILTER } from '../../utils/boardThemes'
+import type { BoardSize, AnimationSpeed } from '../../types/theme.types'
 import { BoardIcon, AppearanceIcon, MotionIcon, SoundIcon, SearchIcon } from './icons'
 
 type CategoryId = 'board' | 'appearance' | 'animation' | 'sound'
@@ -17,7 +17,7 @@ interface Category {
 
 const CATEGORIES: Category[] = [
   {
-    id: 'board', label: 'Tabuleiro e Peças', description: 'Cores do tabuleiro, conjunto de peças e tamanho.',
+    id: 'board', label: 'Tabuleiro e Peças', description: 'Tamanho do tabuleiro — cor e peças são fixas nesta versão.',
     icon: ({ size }) => <BoardIcon width={size} height={size} />,
     keywords: ['tema', 'cores', 'madeira', 'peças', 'tamanho', 'grande', 'pequeno'],
   },
@@ -77,7 +77,6 @@ function BoardPreview({ light, dark, image, isSelected }: { light: string; dark:
 export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
   const {
     theme,
-    setBoardTheme, setPieceSet,
     setShowCoordinates, setShowArrows, setShowLegalMoves, setShowLastMove,
     setBoardSize, setAnimationSpeed, setSoundEnabled,
   } = useTheme()
@@ -92,40 +91,49 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
 
   const active = visibleCategories.find((c) => c.id === category) ?? visibleCategories[0]
 
+  if (!open) return null
+
   return (
     <>
       {/* Overlay */}
-      {open && (
-        <div
-          onClick={onClose}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(5,4,12,0.6)', backdropFilter: 'blur(8px)', zIndex: 49 }}
-        />
-      )}
+      <div
+        onClick={onClose}
+        style={{ position: 'fixed', inset: 0, background: 'rgba(5,4,12,0.65)', backdropFilter: 'blur(8px)', zIndex: 49 }}
+      />
 
-      {/* Drawer */}
-      <div style={{
-        position: 'fixed', top: 0, right: 0, bottom: 0,
-        width: 720,
-        maxWidth: '94vw',
-        background: 'var(--color-bg-panel)',
-        borderLeft: '3px solid var(--color-gray-border)',
-        zIndex: 50,
-        transform: open ? 'translateX(0)' : 'translateX(100%)',
-        transition: 'transform 240ms var(--ease-hinge)',
-        display: 'flex', flexDirection: 'column',
-        overflow: 'hidden',
-      }}>
+      {/* Modal centralizado — antes era uma gaveta encostada na borda direita da tela.
+          A centralização (translate -50%/-50%) fica num wrapper separado da animação de
+          entrada: a keyframe de cl-modal-in também anima "transform" e, no mesmo elemento,
+          sobrescreveria o translate de centralização assim que a animação terminasse. */}
+      <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 50 }}>
+        <div
+          className="cl-modal-in"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Configurações"
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            width: 760, maxWidth: '94vw', height: 'min(660px, 88vh)',
+            background: 'var(--color-bg-panel)',
+            border: '1px solid var(--color-gray-border)',
+            borderRadius: 'var(--radius-lg)',
+            display: 'flex', flexDirection: 'column',
+            overflow: 'hidden',
+            boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.05), 0 1px 0 0 rgba(0,0,0,0.5), 0 32px 64px -16px rgba(0,0,0,0.75)',
+          }}
+        >
         {/* Header */}
         <div style={{
-          padding: '20px 22px 16px',
+          padding: '20px 24px 16px',
           borderBottom: '2px solid var(--color-gray-border)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           flexShrink: 0,
         }}>
-          <h2 className="cl-display" style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-on-dark)', letterSpacing: '-0.01em' }}>Configurações</h2>
+          <h2 className="cl-display" style={{ fontSize: 19, fontWeight: 800, color: 'var(--color-text-on-dark)', letterSpacing: '-0.01em' }}>Configurações</h2>
           <button
             onClick={onClose}
             className="cl-btn cl-btn-sm"
+            aria-label="Fechar configurações"
             style={{ color: 'var(--color-text-on-dark)', fontSize: 18, lineHeight: 1, padding: '6px 10px' }}
           >
             ✕
@@ -155,7 +163,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
         {/* Corpo: navegação + conteúdo */}
         <div style={{ flex: 1, display: 'flex', minHeight: 0, marginTop: 14 }}>
           {/* Navegação por categoria */}
-          <nav style={{ width: 216, flexShrink: 0, borderRight: '2px solid var(--color-gray-border)', padding: '4px 12px 16px', overflowY: 'auto' }}>
+          <nav style={{ width: 224, flexShrink: 0, borderRight: '2px solid var(--color-gray-border)', padding: '4px 14px 16px', overflowY: 'auto' }}>
             {visibleCategories.length === 0 && (
               <div style={{ fontSize: 12, color: 'var(--color-gray-muted)', padding: '12px 8px' }}>Nada encontrado.</div>
             )}
@@ -167,21 +175,22 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
                   onClick={() => setCategory(c.id)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 10, width: '100%',
-                    padding: '9px 10px', marginBottom: 3, borderRadius: '0 var(--radius-sm) var(--radius-sm) 0',
-                    border: 'none', borderLeft: isActive ? '3px solid var(--color-blue-bright)' : '3px solid transparent',
+                    padding: '10px 11px', marginBottom: 4, borderRadius: 'var(--radius-sm)',
+                    border: isActive ? '1px solid var(--color-gray-border)' : '1px solid transparent',
                     cursor: 'pointer', textAlign: 'left',
-                    background: isActive ? 'var(--color-bg-panel)' : 'transparent',
+                    background: isActive ? 'var(--color-bg-main)' : 'transparent',
                     color: isActive ? 'var(--color-text-on-dark)' : 'var(--color-gray-muted)',
                     fontWeight: isActive ? 700 : 500,
+                    boxShadow: isActive ? 'inset 0 1px 0 0 rgba(255,255,255,0.03), 0 1px 0 0 rgba(0,0,0,0.4)' : 'none',
                     transition: `background var(--dur-tap) var(--ease-tap), border-color var(--dur-tap) var(--ease-tap)`,
                   }}
-                  onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'var(--color-bg-panel)' }}
+                  onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'color-mix(in srgb, var(--color-bg-main) 55%, transparent)' }}
                   onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
                 >
                   <span style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    width: 26, height: 26, borderRadius: 'var(--radius-sm)', flexShrink: 0,
-                    background: isActive ? 'var(--color-bg-main)' : 'transparent',
+                    width: 28, height: 28, borderRadius: 'var(--radius-sm)', flexShrink: 0,
+                    background: isActive ? 'color-mix(in srgb, var(--color-blue-bright) 16%, var(--color-bg-panel))' : 'transparent',
                     color: isActive ? 'var(--color-blue-bright)' : 'var(--color-gray-muted)',
                   }}>
                     {c.icon({ size: 16 })}
@@ -212,39 +221,31 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
 
             {active?.id === 'board' && (
               <>
-                <Section label="Tabuleiro">
-                  {Object.entries(THEMES_BY_CATEGORY).map(([cat, themes]) => (
-                    <div key={cat} style={{ marginBottom: 16 }}>
-                      <CategoryLabel>{cat}</CategoryLabel>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                        {themes.map((t) => (
-                          <ThemeRow
-                            key={t.key}
-                            label={t.label}
-                            isSelected={theme.boardTheme === t.key}
-                            onClick={() => setBoardTheme(t.key as BoardThemeName)}
-                          >
-                            <BoardPreview light={t.light} dark={t.dark} image={t.image} isSelected={theme.boardTheme === t.key} />
-                          </ThemeRow>
-                        ))}
+                <Section label="Tabuleiro e peças">
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 14,
+                    padding: '14px 16px', borderRadius: 'var(--radius-sm)',
+                    background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)',
+                  }}>
+                    <BoardPreview
+                      light={BOARD_THEMES[theme.boardTheme].light}
+                      dark={BOARD_THEMES[theme.boardTheme].dark}
+                      image={BOARD_THEMES[theme.boardTheme].image}
+                      isSelected={false}
+                    />
+                    <img
+                      src={`https://lichess1.org/assets/piece/${PIECE_SETS[theme.pieceSet]?.src ?? theme.pieceSet}/bN.svg`}
+                      style={PIECE_COLOR_FILTER[theme.pieceSet] ? { filter: PIECE_COLOR_FILTER[theme.pieceSet] } : undefined}
+                      width={40} height={40} alt=""
+                    />
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-on-dark)' }}>
+                        {BOARD_THEMES[theme.boardTheme].label} + {PIECE_SETS[theme.pieceSet]?.label}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--color-gray-muted)', marginTop: 2 }}>
+                        Visual padrão do ChessLens nesta versão — sem opção de troca por aqui.
                       </div>
                     </div>
-                  ))}
-                </Section>
-
-                <Divider />
-
-                <Section label="Conjunto de peças">
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
-                    {(Object.entries(PIECE_SETS) as [PieceSetName, { label: string; src: string }][]).map(([key, ps]) => (
-                      <PieceSetButton
-                        key={key}
-                        label={ps.label}
-                        pieceSetKey={key}
-                        isSelected={theme.pieceSet === key}
-                        onClick={() => setPieceSet(key)}
-                      />
-                    ))}
                   </div>
                 </Section>
 
@@ -296,6 +297,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
             )}
           </div>
         </div>
+        </div>
       </div>
     </>
   )
@@ -319,14 +321,6 @@ function Section({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
-function CategoryLabel({ children }: { children: ReactNode }) {
-  return (
-    <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-gray-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, paddingLeft: 2 }}>
-      {children}
-    </div>
-  )
-}
-
 function Divider() {
   return <div style={{ height: 2, background: 'var(--color-gray-border)', margin: '18px 0' }} />
 }
@@ -335,87 +329,7 @@ const KEYCAP_IDLE_SHADOW =
   'inset 0 1px 0 0 rgba(255,255,255,0.06), inset 0 -2px 0 0 rgba(0,0,0,0.3), 0 3px 0 0 var(--color-shadow-btn), 0 6px 10px -4px rgba(0,0,0,0.55)'
 const KEYCAP_HOVER_SHADOW =
   'inset 0 1px 0 0 rgba(255,255,255,0.08), inset 0 -2px 0 0 rgba(0,0,0,0.3), 0 4px 0 0 var(--color-shadow-btn), 0 8px 12px -4px rgba(0,0,0,0.6)'
-const KEYCAP_PRESSED_SHADOW = 'inset 0 2px 4px 0 rgba(0,0,0,0.35), 0 1px 0 0 var(--color-shadow-btn)'
 const KEYCAP_TRANSITION = 'transform var(--dur-tap) var(--ease-tap), box-shadow var(--dur-tap) var(--ease-tap), background var(--dur-tap) var(--ease-tap), border-color var(--dur-tap) var(--ease-tap)'
-
-function ThemeRow({ label, isSelected, onClick, children }: { label: string; isSelected: boolean; onClick: () => void; children: ReactNode }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 10,
-        padding: '7px 9px',
-        background: isSelected ? 'color-mix(in srgb, var(--color-blue-bright) 14%, var(--color-bg-panel))' : 'transparent',
-        border: isSelected ? '1.5px solid var(--color-blue-bright)' : '1.5px solid transparent',
-        borderRadius: 'var(--radius-sm)', cursor: 'pointer',
-        width: '100%', textAlign: 'left', transition: KEYCAP_TRANSITION,
-        transform: isSelected ? 'translateY(1px)' : 'translateY(0)',
-        boxShadow: isSelected ? KEYCAP_PRESSED_SHADOW : 'none',
-      }}
-      onMouseEnter={(e) => {
-        if (isSelected) return
-        const el = e.currentTarget as HTMLElement
-        el.style.background = 'var(--color-bg-panel)'
-        el.style.boxShadow = KEYCAP_HOVER_SHADOW
-        el.style.transform = 'translateY(-1px)'
-      }}
-      onMouseLeave={(e) => {
-        if (isSelected) return
-        const el = e.currentTarget as HTMLElement
-        el.style.background = 'transparent'
-        el.style.boxShadow = 'none'
-        el.style.transform = 'translateY(0)'
-      }}
-    >
-      {children}
-      <span style={{ fontSize: 13, color: isSelected ? 'var(--color-text-on-dark)' : 'var(--color-gray-muted)', fontWeight: isSelected ? 700 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-        {label}
-      </span>
-      {isSelected && <span style={{ marginLeft: 'auto', color: 'var(--color-blue-bright)', fontSize: 14, flexShrink: 0 }}>✓</span>}
-    </button>
-  )
-}
-
-function PieceSetButton({ label, pieceSetKey, isSelected, onClick }: { label: string; pieceSetKey: PieceSetName; isSelected: boolean; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-        padding: '9px 4px',
-        background: isSelected ? 'color-mix(in srgb, var(--color-blue-bright) 16%, var(--color-bg-panel))' : 'var(--color-bg-panel)',
-        border: isSelected ? '1.5px solid var(--color-blue-bright)' : '1px solid var(--color-gray-border)',
-        borderRadius: 'var(--radius-sm)', cursor: 'pointer', transition: KEYCAP_TRANSITION,
-        transform: isSelected ? 'translateY(2px)' : 'translateY(0)',
-        boxShadow: isSelected ? KEYCAP_PRESSED_SHADOW : KEYCAP_IDLE_SHADOW,
-      }}
-      onMouseEnter={(e) => {
-        if (isSelected) return
-        const el = e.currentTarget as HTMLElement
-        el.style.borderColor = 'var(--color-gray-muted)'
-        el.style.boxShadow = KEYCAP_HOVER_SHADOW
-        el.style.transform = 'translateY(-1px)'
-      }}
-      onMouseLeave={(e) => {
-        if (isSelected) return
-        const el = e.currentTarget as HTMLElement
-        el.style.borderColor = 'var(--color-gray-border)'
-        el.style.boxShadow = KEYCAP_IDLE_SHADOW
-        el.style.transform = 'translateY(0)'
-      }}
-    >
-      <img
-        src={`https://lichess1.org/assets/piece/${PIECE_SETS[pieceSetKey]?.src ?? pieceSetKey}/bQ.svg`}
-        style={PIECE_COLOR_FILTER[pieceSetKey] ? { filter: PIECE_COLOR_FILTER[pieceSetKey] } : undefined}
-        width={32} height={32} alt={label}
-        onError={(e) => { (e.target as HTMLImageElement).style.visibility = 'hidden' }}
-      />
-      <span style={{ fontSize: 10, color: isSelected ? 'var(--color-text-on-dark)' : 'var(--color-gray-muted)', fontWeight: isSelected ? 700 : 400, textAlign: 'center', lineHeight: 1.2 }}>
-        {label}
-      </span>
-    </button>
-  )
-}
 
 function SizeButton({ label, isSelected, onClick }: { label: string; isSelected: boolean; onClick: () => void }) {
   return (
