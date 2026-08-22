@@ -1,5 +1,5 @@
 import React from 'react'
-import { PIECE_SETS, PIECE_BLACK_FILTER } from './boardThemes'
+import { PIECE_SETS, PIECE_COLOR_FILTER } from './boardThemes'
 import type { PieceSetName } from '../types/theme.types'
 
 const PIECE_CODES = ['wK','wQ','wR','wB','wN','wP','bK','bQ','bR','bB','bN','bP'] as const
@@ -8,7 +8,7 @@ type PieceProps = { fill?: string; square?: string; svgStyle?: React.CSSProperti
 
 export function buildCustomPieces(pieceSet: PieceSetName): Record<string, (props?: PieceProps) => React.ReactElement> {
   const src = PIECE_SETS[pieceSet]?.src ?? pieceSet
-  const blackFilter = PIECE_BLACK_FILTER[pieceSet]
+  const colorFilter = PIECE_COLOR_FILTER[pieceSet]
   return Object.fromEntries(
     PIECE_CODES.map((p) => [
       p,
@@ -21,7 +21,7 @@ export function buildCustomPieces(pieceSet: PieceSetName): Record<string, (props
           draggable: false,
           style: {
             display: 'block',
-            ...(blackFilter && p[0] === 'b' ? { filter: blackFilter } : {}),
+            ...(colorFilter ? { filter: colorFilter } : {}),
           },
         }),
     ])

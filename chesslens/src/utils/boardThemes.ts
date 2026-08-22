@@ -102,16 +102,18 @@ export const PIECE_SETS: Record<PieceSetName, PieceSet> = {
   riohacha:    { label: 'Riohacha',    src: 'riohacha' },
   xkcd:        { label: 'XKCD',        src: 'xkcd' },
   'kiwen-suwi': { label: 'Kiwen-Suwi', src: 'kiwen-suwi' },
-  // Mesmo desenho do 'dubrovny' (`src` igual) — só as peças pretas ganham um filtro CSS
-  // (`PIECE_BLACK_FILTER` abaixo) porque no original elas são marrom-avermelhado, não preto de
-  // verdade (pedido do usuário: "quero o dubrovny só que as pretas pretas").
+  // Mesmo desenho do 'dubrovny' (`src` igual) — todas as peças ganham um filtro CSS
+  // (`PIECE_COLOR_FILTER` abaixo) porque no original o acervo inteiro (peças pretas E o
+  // detalhe/pontinha das peças brancas) usa um marrom-avermelhado, não preto de verdade
+  // (pedido do usuário: "quero o dubrovny só que as pretas pretas... altera pra ambos").
   'dubrovny-noir': { label: 'Dubrovny Noir', src: 'dubrovny' },
 }
 
-// Filtro CSS aplicado só nas peças PRETAS (prefixo 'b') de conjuntos cuja cor original não bate
-// com o que pedimos — evita precisar hospedar uma cópia modificada do SVG. `grayscale(1)` tira o
-// tom avermelhado do 'dubrovny' e mantém o brilho/sombreado 3D do desenho original.
-export const PIECE_BLACK_FILTER: Partial<Record<PieceSetName, string>> = {
+// Filtro CSS aplicado em TODAS as peças (brancas e pretas) de conjuntos cuja cor original não
+// bate com o que pedimos — evita precisar hospedar uma cópia modificada do SVG. `grayscale(1)`
+// tira o tom avermelhado do 'dubrovny' (inclusive o detalhe/pontinha das peças brancas, que usa
+// a mesma cor "preta" do conjunto como acento) e mantém o brilho/sombreado 3D do desenho original.
+export const PIECE_COLOR_FILTER: Partial<Record<PieceSetName, string>> = {
   'dubrovny-noir': 'grayscale(1)',
 }
 

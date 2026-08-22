@@ -190,7 +190,7 @@ export function PositionEditorView({ boardWidth, containerRef, onAnalyze }: Posi
   const squareSize = boardWidth / 8
   const displayRanks = orientation === 'white' ? [8, 7, 6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6, 7, 8]
   const displayFiles = orientation === 'white' ? FILES.split('') : FILES.split('').reverse()
-  const notationFontSize = Math.round(Math.min(15, Math.max(9, squareSize * 0.13)))
+  const notationFontSize = Math.round(Math.min(18, Math.max(11, squareSize * 0.15)))
   // Botão da paleta bem maior que o ícone genérico de 40px do resto do app — é a peça de mão do
   // editor, precisa se ler de longe e ser fácil de acertar com o mouse, não um ícone secundário.
   const paletteSize = Math.round(Math.max(48, Math.min(68, squareSize * 0.62)))

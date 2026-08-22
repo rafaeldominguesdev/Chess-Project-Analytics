@@ -268,7 +268,7 @@ export function ChessBoard({
   const squareSize = boardWidth / 8
   // Tamanho da fonte da notação (a-h/1-8) escala com a casa — o padrão da lib é um
   // 13px fixo, que fica minúsculo num tabuleiro grande.
-  const notationFontSize = Math.round(Math.min(22, Math.max(13, squareSize * 0.16)))
+  const notationFontSize = Math.round(Math.min(26, Math.max(15, squareSize * 0.19)))
   const notationStyles = useMemo(() => ({
     dark: { color: bt.light, fontWeight: 700 as const },
     light: { color: bt.dark, fontWeight: 700 as const },
