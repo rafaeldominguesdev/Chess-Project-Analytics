@@ -15,6 +15,7 @@ import { PositionEditorView } from './components/PositionEditor/PositionEditorVi
 import { PlayerCard } from './components/Theater/PlayerCard'
 import { Sidebar } from './components/Layout/Sidebar'
 import { MaintenanceNotice } from './components/Layout/MaintenanceNotice'
+import { UpdatesPanel } from './components/Layout/UpdatesPanel'
 import { HomePage } from './components/Home/HomePage'
 import { SearchView } from './components/PlayerSearch/SearchView'
 import type { Platform } from './components/PlayerSearch/SearchView'
@@ -25,6 +26,7 @@ import { isBookMove } from './utils/openingsDatabase'
 
 function AppInner() {
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [updatesOpen, setUpdatesOpen] = useState(false)
   // Modo de treino de táticas — não é um modal, substitui o conteúdo principal (igual à análise).
   const [trainingMode, setTrainingMode] = useState(false)
   // Tabuleiro de análise livre (posição inicial, joga dos dois lados) — mesmo esquema do treino:
@@ -74,11 +76,6 @@ function AppInner() {
     }
   }, [currentMoveIndex, isLoaded, moves, playForSan])
 
-  // Reseta o flag de revisão sempre que uma partida nova é carregada.
-  useEffect(() => {
-    setReviewStarted(false)
-  }, [gameInfo])
-
   // Avaliação ao vivo da posição atual
   useEffect(() => {
     if (isLoaded && isReady) analyze(currentFen)
@@ -123,12 +120,16 @@ function AppInner() {
     onPrev: goPrev, onNext: goNext, onFirst: goFirst, onLast: goLast,
     // Desligado no tabuleiro de análise livre também — lá as setas navegariam por engano o
     // histórico da revisão escondida atrás, em vez do próprio jogo livre (que não usa teclado).
-    enabled: !settingsOpen && !trainingMode && !boardMode && !positionEditorMode,
+    enabled: !settingsOpen && !updatesOpen && !trainingMode && !boardMode && !positionEditorMode,
   })
 
   const handleAnalyzeGame = useCallback((pgn: string) => {
     try {
       loadPgn(pgn)
+      // Só reseta a tela de resumo aqui, no carregamento explícito de uma partida NOVA — antes
+      // isso era um useEffect reagindo a qualquer troca de referência de `gameInfo`, o que podia
+      // devolver a pessoa pra tela de resumo (o "menu") no meio da revisão sem ela pedir.
+      setReviewStarted(false)
       setSearchMode(false)
     } catch {
       // PGN inválido vindo da API do chess.com/Lichess — ignora silenciosamente.
@@ -173,6 +174,7 @@ function AppInner() {
     <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: 'var(--color-bg-main)', color: 'var(--color-text-on-dark)' }}>
       <Sidebar
         onSettings={() => setSettingsOpen(true)}
+        onUpdates={() => setUpdatesOpen(true)}
         onToggleTraining={() => { setTrainingMode((v) => !v); setBoardMode(false); setPositionEditorMode(false); setSearchMode(false) }}
         onToggleBoard={() => { setBoardMode((v) => !v); setTrainingMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setSearchMode(false) }}
         onGoHome={() => { setTrainingMode(false); setBoardMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setSearchMode(false); unloadGame() }}
@@ -251,6 +253,7 @@ function AppInner() {
       </main>
 
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <UpdatesPanel open={updatesOpen} onClose={() => setUpdatesOpen(false)} />
       <MaintenanceNotice feature={maintenanceFeature} onClose={() => setMaintenanceFeature(null)} />
     </div>
   )

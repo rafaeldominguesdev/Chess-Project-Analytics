@@ -1,8 +1,9 @@
 import { useState, type ReactNode } from 'react'
-import { AnalyzeNavIcon, BoardNavIcon, BrandMarkIcon, ChevronIcon, GearIcon, PositionSetupIcon, TargetIcon, WrenchIcon } from './icons'
+import { AnalyzeNavIcon, BoardNavIcon, BrandMarkIcon, ChevronIcon, GearIcon, PositionSetupIcon, SunNavIcon, TargetIcon, WrenchIcon } from './icons'
 
 interface SidebarProps {
   onSettings: () => void
+  onUpdates: () => void
   onToggleTraining: () => void
   onToggleBoard: () => void
   onGoHome: () => void
@@ -35,7 +36,7 @@ const TRAIN_PLACEHOLDERS = ['Treino de Erros', 'Treino de Aberturas']
  *  fica colado no topo, ao lado da marca — e os dois estados (colapsada / ferramentas aberta)
  *  persistem entre sessões (localStorage), já que são preferência de layout, não algo que muda
  *  por partida. Rola internamente (overflowY) porque com tudo expandido não cabe numa tela baixa. */
-export function Sidebar({ onSettings, onToggleTraining, onToggleBoard, onGoHome, onAnalyzeClick, onMaintenanceClick, onTogglePositionEditor, trainingActive, boardActive, positionEditorActive, searchActive }: SidebarProps) {
+export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard, onGoHome, onAnalyzeClick, onMaintenanceClick, onTogglePositionEditor, trainingActive, boardActive, positionEditorActive, searchActive }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(() => {
     const saved = localStorage.getItem(COLLAPSED_KEY)
     // Sem preferência salva ainda: começa colapsada (só ícones) em telas estreitas, senão a
@@ -165,7 +166,10 @@ export function Sidebar({ onSettings, onToggleTraining, onToggleBoard, onGoHome,
 
       <div style={{ flex: 1, minHeight: 12 }} />
 
-      <NavItem icon={<GearIcon width={20} height={20} />} label="Configurações" onClick={onSettings} collapsed={collapsed} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <NavItem icon={<SunNavIcon width={20} height={20} />} label="Atualizações" onClick={onUpdates} collapsed={collapsed} />
+        <NavItem icon={<GearIcon width={20} height={20} />} label="Configurações" onClick={onSettings} collapsed={collapsed} />
+      </div>
     </nav>
   )
 }
