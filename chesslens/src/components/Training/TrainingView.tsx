@@ -107,49 +107,28 @@ export function TrainingView({ boardWidth, containerRef }: TrainingViewProps) {
     <>
       {/* Center — mesma coluna do tabuleiro de análise */}
       <div ref={containerRef} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, paddingTop: 8 }}>
-        <div style={{ width: cardWidth }}>
-          <RatingCard rating={puzzle?.rating} difficultyLabel={difficulty.label} />
-        </div>
-
-        {/* Tabuleiro — engrenagem de dificuldade fica ancorada no canto superior direito dele */}
-        <div style={{ position: 'relative' }}>
-          {status === 'empty' || !puzzle ? (
-            <div style={{
-              width: boardWidth, height: boardWidth, borderRadius: 4, border: '2px dashed var(--color-gray-border)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 24,
-            }}>
-              <span style={{ fontSize: 13.5, color: 'var(--color-gray-muted)' }}>{meta.text}</span>
-            </div>
-          ) : (
-            <ChessBoard
-              fen={fen}
-              lastMove={lastMove}
-              evaluation={null}
-              boardWidth={boardWidth}
-              showEvalBar={false}
-              interactive={status === 'solving'}
-              boardOrientation={solverColor}
-              hintSquare={hintSquare}
-              extraArrows={hintMove ? [{ startSquare: hintMove.from, endSquare: hintMove.to, color: '#E8A93C' }] : undefined}
-              onPieceDrop={({ sourceSquare, targetSquare, promotion }) => (targetSquare ? attemptMove(sourceSquare, targetSquare, promotion) : false)}
-            />
-          )}
-
-          <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <button
-              onClick={() => setDifficultyMenuOpen((v) => !v)}
-              className={`cl-btn cl-btn-sm${difficultyMenuOpen ? ' cl-btn-selected' : ''}`}
-              title="Trocar dificuldade"
-            >
-              <GearIcon width={17} height={17} />
-            </button>
+        {/* Engrenagem de dificuldade fica ao lado do card de rating (não mais sobre o tabuleiro —
+            nessa posição antiga, o botão de 40x40 cobria o canto superior direito do tabuleiro
+            inteiro em telas estreitas, escondendo a casa ali embaixo; achado da Fase 8/11). */}
+        <div style={{ width: cardWidth, position: 'relative', display: 'flex', gap: 8, alignItems: 'stretch' }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <RatingCard rating={puzzle?.rating} difficultyLabel={difficulty.label} />
           </div>
+          <button
+            onClick={() => setDifficultyMenuOpen((v) => !v)}
+            className={`cl-btn cl-btn-sm${difficultyMenuOpen ? ' cl-btn-selected' : ''}`}
+            title="Trocar dificuldade"
+            aria-label="Trocar dificuldade"
+            style={{ flexShrink: 0 }}
+          >
+            <GearIcon width={17} height={17} />
+          </button>
 
           {difficultyMenuOpen && (
             <div
               className="cl-modal-in"
               style={{
-                position: 'absolute', top: 52, right: 8, zIndex: 9,
+                position: 'absolute', top: '100%', right: 0, marginTop: 6, zIndex: 9,
                 display: 'flex', flexDirection: 'column', gap: 6, padding: 8,
                 background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)', borderRadius: 'var(--radius-sm)',
                 boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.04), 0 1px 0 0 rgba(0,0,0,0.5), 0 16px 36px -12px rgba(0,0,0,0.6)',
@@ -168,6 +147,28 @@ export function TrainingView({ boardWidth, containerRef }: TrainingViewProps) {
             </div>
           )}
         </div>
+
+        {status === 'empty' || !puzzle ? (
+          <div style={{
+            width: boardWidth, height: boardWidth, borderRadius: 4, border: '2px dashed var(--color-gray-border)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 24,
+          }}>
+            <span style={{ fontSize: 13.5, color: 'var(--color-gray-muted)' }}>{meta.text}</span>
+          </div>
+        ) : (
+          <ChessBoard
+            fen={fen}
+            lastMove={lastMove}
+            evaluation={null}
+            boardWidth={boardWidth}
+            showEvalBar={false}
+            interactive={status === 'solving'}
+            boardOrientation={solverColor}
+            hintSquare={hintSquare}
+            extraArrows={hintMove ? [{ startSquare: hintMove.from, endSquare: hintMove.to, color: '#E8A93C' }] : undefined}
+            onPieceDrop={({ sourceSquare, targetSquare, promotion }) => (targetSquare ? attemptMove(sourceSquare, targetSquare, promotion) : false)}
+          />
+        )}
 
         <div style={{
           width: cardWidth, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
