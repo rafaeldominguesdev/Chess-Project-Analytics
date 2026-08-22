@@ -157,6 +157,18 @@ function AppInner() {
   const turn = currentFen.split(' ')[1] === 'b' ? 'black' : 'white'
   const currentQuality = currentMoveIndex >= 0 ? moves[currentMoveIndex]?.classification ?? null : null
 
+  // Relógio de cada lado na posição atual da revisão — o último lance DESSA cor até aqui, direto
+  // do PGN (`{[%clk ...]}`). `null` antes do primeiro lance daquela cor, ou se o PGN não tinha
+  // esse dado (partida sem controle de tempo, ou fonte que não anota relógio).
+  function lastClock(color: 'w' | 'b'): string | null {
+    for (let i = currentMoveIndex; i >= 0; i--) {
+      if (moves[i]?.color === color) return moves[i].clock
+    }
+    return null
+  }
+  const whiteClock = lastClock('w')
+  const blackClock = lastClock('b')
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: 'var(--color-bg-main)', color: 'var(--color-text-on-dark)' }}>
       <Sidebar
@@ -196,9 +208,9 @@ function AppInner() {
               {/* Card de cima é sempre o lado "distante" — troca de posição junto com o flip do tabuleiro. */}
               <div style={{ width: boardWidth + BOARD_ROW_CHROME_WIDTH }}>
                 {boardOrientation === 'white' ? (
-                  <PlayerCard username={gameInfo?.black ?? 'Pretas'} rating={gameInfo?.blackElo ?? '?'} color="black" avatarUrl={profiles.black.avatar} title={profiles.black.title} countryCode={profiles.black.countryCode} status={profiles.black.status} isActive={isLoaded && turn === 'black'} />
+                  <PlayerCard username={gameInfo?.black ?? 'Pretas'} rating={gameInfo?.blackElo ?? '?'} color="black" avatarUrl={profiles.black.avatar} title={profiles.black.title} countryCode={profiles.black.countryCode} status={profiles.black.status} isActive={isLoaded && turn === 'black'} clock={blackClock} />
                 ) : (
-                  <PlayerCard username={gameInfo?.white ?? 'Brancas'} rating={gameInfo?.whiteElo ?? '?'} color="white" avatarUrl={profiles.white.avatar} title={profiles.white.title} countryCode={profiles.white.countryCode} status={profiles.white.status} isActive={isLoaded && turn === 'white'} />
+                  <PlayerCard username={gameInfo?.white ?? 'Brancas'} rating={gameInfo?.whiteElo ?? '?'} color="white" avatarUrl={profiles.white.avatar} title={profiles.white.title} countryCode={profiles.white.countryCode} status={profiles.white.status} isActive={isLoaded && turn === 'white'} clock={whiteClock} />
                 )}
               </div>
               <ChessBoard
@@ -208,9 +220,9 @@ function AppInner() {
               />
               <div style={{ width: boardWidth + BOARD_ROW_CHROME_WIDTH }}>
                 {boardOrientation === 'white' ? (
-                  <PlayerCard username={gameInfo?.white ?? 'Brancas'} rating={gameInfo?.whiteElo ?? '?'} color="white" avatarUrl={profiles.white.avatar} title={profiles.white.title} countryCode={profiles.white.countryCode} status={profiles.white.status} isActive={isLoaded && turn === 'white'} />
+                  <PlayerCard username={gameInfo?.white ?? 'Brancas'} rating={gameInfo?.whiteElo ?? '?'} color="white" avatarUrl={profiles.white.avatar} title={profiles.white.title} countryCode={profiles.white.countryCode} status={profiles.white.status} isActive={isLoaded && turn === 'white'} clock={whiteClock} />
                 ) : (
-                  <PlayerCard username={gameInfo?.black ?? 'Pretas'} rating={gameInfo?.blackElo ?? '?'} color="black" avatarUrl={profiles.black.avatar} title={profiles.black.title} countryCode={profiles.black.countryCode} status={profiles.black.status} isActive={isLoaded && turn === 'black'} />
+                  <PlayerCard username={gameInfo?.black ?? 'Pretas'} rating={gameInfo?.blackElo ?? '?'} color="black" avatarUrl={profiles.black.avatar} title={profiles.black.title} countryCode={profiles.black.countryCode} status={profiles.black.status} isActive={isLoaded && turn === 'black'} clock={blackClock} />
                 )}
               </div>
             </div>

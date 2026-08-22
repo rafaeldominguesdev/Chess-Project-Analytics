@@ -14,6 +14,21 @@ interface PlayerCardProps {
   size?: 'md' | 'lg'
   /** Precisão (%) calculada da partida até o momento — opcional, mostra um badge quando presente. */
   accuracy?: number
+  /** Relógio (`H:MM:SS` cru do PGN) na posição atual da revisão — opcional, mostra um badge tipo
+   *  chess.com quando presente. `null`/ausente quando a partida não tem esse dado. */
+  clock?: string | null
+}
+
+/** "0:02:59.9" → "2:59" (ou "1:02:59" se passar de 1h) — sem casas decimais, igual chess.com. */
+function formatClock(raw: string): string {
+  const parts = raw.split(':').map(Number)
+  const [h, m, s] = parts.length === 3 ? parts : [0, parts[0] ?? 0, parts[1] ?? 0]
+  const totalSeconds = Math.max(0, Math.floor(h * 3600 + m * 60 + s))
+  const hh = Math.floor(totalSeconds / 3600)
+  const mm = Math.floor((totalSeconds % 3600) / 60)
+  const ss = totalSeconds % 60
+  const ssStr = String(ss).padStart(2, '0')
+  return hh > 0 ? `${hh}:${String(mm).padStart(2, '0')}:${ssStr}` : `${mm}:${ssStr}`
 }
 
 function hashColor(str: string): string {
@@ -32,7 +47,7 @@ function accuracyStyle(value: number): { bg: string; color: string } {
 
 export function PlayerCard({
   username, rating, color, avatarUrl, title, countryCode, status,
-  isActive = false, size = 'lg', accuracy,
+  isActive = false, size = 'lg', accuracy, clock,
 }: PlayerCardProps) {
   const initials = username.slice(0, 2).toUpperCase()
   const bg = useMemo(() => hashColor(username), [username])
@@ -151,6 +166,29 @@ export function PlayerCard({
           />
         )}
       </div>
+
+      {/* Relógio — encostado na ponta direita da linha (igual chess.com), separado do grupo de
+          nome/rating que pode quebrar linha em telas estreitas. */}
+      {clock && (() => {
+        const label = formatClock(clock)
+        const lowTime = label.length <= 4 && Number(label.split(':')[0]) === 0 && Number(label.split(':')[1]) < 30
+        return (
+          <span
+            className="cl-mono"
+            title="Relógio nesse ponto da partida"
+            style={{
+              marginLeft: 'auto', flexShrink: 0,
+              fontSize: size === 'lg' ? 13 : 12, fontWeight: 800, letterSpacing: -0.2,
+              padding: '3px 9px', borderRadius: 'var(--radius-sm)',
+              background: lowTime ? 'color-mix(in srgb, var(--color-error) 30%, var(--color-bg-panel))' : 'var(--color-bg-panel)',
+              color: lowTime ? 'color-mix(in srgb, var(--color-error) 60%, white)' : 'var(--color-text-on-dark)',
+              border: '1px solid var(--color-gray-border)',
+            }}
+          >
+            {label}
+          </span>
+        )
+      })()}
     </div>
   )
 }
