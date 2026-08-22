@@ -88,6 +88,20 @@ export const PIECE_SETS: Record<PieceSetName, PieceSet> = {
   spatial:    { label: 'Spatial',    src: 'spatial' },
   staunty:    { label: 'Staunty',    src: 'staunty' },
   tatiana:    { label: 'Tatiana',    src: 'tatiana' },
+  // Conferidos nesta sessão (existem de verdade no acervo do Lichess, testados um por um) —
+  // "disguised" (peças viram bolinhas idênticas, pra treino às cegas) ficou de fora de propósito,
+  // não serve como conjunto pra jogar/analisar de olho aberto.
+  anarcandy:   { label: 'Anarcandy',   src: 'anarcandy' },
+  caliente:    { label: 'Caliente',    src: 'caliente' },
+  celtic:      { label: 'Celtic',      src: 'celtic' },
+  chess7:      { label: 'Chess7',      src: 'chess7' },
+  cooke:       { label: 'Cooke',       src: 'cooke' },
+  firi:        { label: 'Firi',        src: 'firi' },
+  mpchess:     { label: 'MPChess',     src: 'mpchess' },
+  reillycraig: { label: 'Reillycraig', src: 'reillycraig' },
+  riohacha:    { label: 'Riohacha',    src: 'riohacha' },
+  xkcd:        { label: 'XKCD',        src: 'xkcd' },
+  'kiwen-suwi': { label: 'Kiwen-Suwi', src: 'kiwen-suwi' },
 }
 
 export const UI_THEMES: Record<UIThemeName, UITheme> = {

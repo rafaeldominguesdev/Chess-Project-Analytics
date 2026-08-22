@@ -8,6 +8,8 @@ export type PieceSetName =
   | 'horsey' | 'icpieces' | 'kosal' | 'leipzig' | 'letter' | 'maestro'
   | 'mono' | 'pirouetti' | 'pixel' | 'rhosgfx' | 'shapes' | 'spatial'
   | 'staunty' | 'tatiana'
+  | 'anarcandy' | 'caliente' | 'celtic' | 'chess7' | 'cooke' | 'firi'
+  | 'mpchess' | 'reillycraig' | 'riohacha' | 'xkcd' | 'kiwen-suwi'
 
 export type UIThemeName =
   | 'amber-noir'
