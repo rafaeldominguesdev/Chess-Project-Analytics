@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { getCachedPosition, putCachedPosition } from '../persistence/positionsRepo'
 
 export interface PositionEval {
   cp: number | null
@@ -92,14 +93,18 @@ export function useGameAnalysis(depth = 18) {
 
     setProgress({ done: 0, total: fens.length })
     for (let i = 0; i < fens.length; i++) {
-      const e = await evalPosition(fens[i])
+      // Cache cruzado entre partidas: a mesma posição (mesma profundidade) já avaliada numa
+      // partida anterior — comum em aberturas repetidas — não precisa passar pelo motor de novo.
+      const cached = await getCachedPosition(fens[i], depth)
+      const e = cached ?? await evalPosition(fens[i])
       if (myRun !== runId.current) return false // cancelada por nova partida
+      if (!cached) await putCachedPosition(fens[i], depth, e)
       onEval(i, e)
       setProgress({ done: i + 1, total: fens.length })
     }
     setProgress(null)
     return true
-  }, [evalPosition])
+  }, [evalPosition, depth])
 
   const cancel = useCallback(() => {
     runId.current++
