@@ -368,38 +368,66 @@ body {
   }
 }
 
-/* Plano de fundo do hero — tamanho FIXO por largura (100%, não mais `cover`, sem zoom). Com
-   `cover`, o tamanho da imagem dependia do FORMATO da caixa (largura x altura) — e como a caixa
-   cobre a tela toda, empurrar a imagem pra cima/baixo mudava esse formato e podia fazer o corte
-   pular da lateral (inofensivo) pra cima/baixo da própria arte (corta tabuleiro/patas sem
-   avisar). Com tamanho fixo em 100%, a imagem nunca é ampliada — escala só o suficiente pra
-   cobrir a LARGURA da caixa, sem cortar tabuleiro/capivara nem dar efeito de zoom. Empurrar pra
-   cima/baixo é só `--hero-bg-pos-y` (via HERO_BG_POSITION_Y no componente). Como a cor de fundo
-   (--color-bg-main) já bate quase exatamente com o preto da própria arte, qualquer corte fica
-   invisível. A "fumaça" (segunda camada) fica no rodapé — ver `.cl-footer-fog`.
+/* Plano de fundo do hero — `cover` numa caixa presa à proporção 16:9 da própria arte, não mais
+   esticada pela altura do wrapper inteiro (hero + cards + rodapé, que pode ficar bem mais "alto
+   e estreito" que 16:9 em janelas mais estreitas/baixas). Duas tentativas anteriores, as duas
+   com o mesmo problema de fundo (caixa com proporção livre, bem diferente de 16:9):
+     1. `background-size: 100% auto` (tamanho fixo pela largura, sem cortar) — deixava um vão
+        embaixo/em cima sempre que a caixa ficasse mais ALTA que a imagem escalada pela largura.
+        Ficava invisível só enquanto --color-bg-main era quase preto igual ao fundo da própria
+        arte; virou uma "prateleira" cinza visível depois do repaint pra cinza-chumbo.
+     2. `background-size: cover` sozinho, sem limitar a proporção da caixa — resolve o vão (cover
+        sempre preenche), mas como a caixa cobria o wrapper inteiro (podendo ficar bem mais alta
+        e estreita que 16:9 em janelas ~1024-1280px), o corte necessário virava grande demais pra
+        caber tanto a capivara (metade esquerda da arte) quanto o tabuleiro+rei (metade direita)
+        ao mesmo tempo — sempre um dos dois saía cortado.
+   A correção: `.cl-home-hero-wrap` (o wrapper, em HomePage.tsx) virou um container de consulta
+   CSS (`container-type: inline-size`), e a altura desta caixa passou a vir de `cqw` (unidade
+   relativa à LARGURA do container) em vez de esticar pela altura do wrapper — `height: calc(
+   56.25cqw + 12px)`, ou seja: largura × 9/16 (a proporção nativa da arte) + uma folga pequena de
+   respiração. Com a caixa já quase 16:9 sempre, `cover` não precisa cortar quase nada — capivara
+   E tabuleiro cabem inteiros em qualquer largura de janela testada. O `background-position`
+   abaixo é só ajuste fino pro pouco corte residual (a caixa não é EXATAMENTE 16:9 por causa da
+   folga de respiração, então ainda sobra um resíduo mínimo de corte):
+     - Horizontal: a arte tem folga à esquerda (fundo vazio antes da capivara) e quase nenhuma
+       folga à direita (o tabuleiro quase encosta na borda direita da imagem) — por isso a
+       posição-X fica baixa (perto da capivara), cortando o resíduo do lado direito (vazio atrás
+       do tabuleiro), não do tabuleiro em si.
+     - Vertical: a arte tem folga generosa acima da cabeça da capivara e quase nenhuma folga
+       abaixo do tabuleiro — por isso `--hero-bg-pos-y` fica ALTO (perto de 100%, via
+       HERO_BG_POSITION_Y no componente), ancorando a imagem pela base, então o resíduo de corte
+       vertical sai de cima (vazio), nunca de baixo (tabuleiro).
+   Abaixo da altura desta caixa, o resto do wrapper (cards de Recurso, rodapé) fica sobre a cor
+   de fundo normal (--color-bg-main) — não precisa de imagem atrás, então não há mais vão visível
+   em lugar nenhum. A "fumaça" (segunda camada) fica no rodapé — ver `.cl-footer-fog`.
    ══════════════════════════════════════════════ */
+.cl-home-hero-wrap {
+  container-type: inline-size;
+}
 .cl-hero-bg {
+  height: calc(56.25cqw + 12px);
   background-image:
     url(/hero-bg.png?v=2),
     radial-gradient(ellipse 55% 65% at 30% 55%, color-mix(in srgb, var(--color-blue-bright) 14%, transparent), transparent 70%);
-  background-size: 100% auto, 100% 100%;
+  background-size: cover, 100% 100%;
   background-repeat: no-repeat, no-repeat;
-  background-position: 18% var(--hero-bg-pos-y, 20%), center;
+  background-position: 18% var(--hero-bg-pos-y, 90%), center;
 }
 @media (max-width: 1200px) {
-  .cl-hero-bg { background-position: 28% var(--hero-bg-pos-y, 20%), center; }
+  .cl-hero-bg { background-position: 28% var(--hero-bg-pos-y, 90%), center; }
 }
 @media (max-width: 900px) {
-  .cl-hero-bg { background-position: 36% var(--hero-bg-pos-y, 20%), center; }
+  .cl-hero-bg { background-position: 36% var(--hero-bg-pos-y, 90%), center; }
 }
 @media (max-width: 760px) {
-  .cl-hero-bg { background-position: 42% var(--hero-bg-pos-y, 20%), center; }
+  .cl-hero-bg { background-position: 42% var(--hero-bg-pos-y, 90%), center; }
 }
 
 /* Respiração sutil da capivara — todo o plano de fundo (mascote + tabuleiro) sobe e desce
-   ~5px num ciclo bem lento (8s), só pra dar sensação de vida sem virar espetáculo. A borda que
-   isso revela nas pontas é preta pura (--color-bg-main), igual ao fundo da própria arte, então
-   fica invisível. Desligado por completo se o usuário preferir menos movimento. */
+   ~5px num ciclo bem lento (8s), só pra dar sensação de vida sem virar espetáculo. A caixa em
+   si já é 12px mais alta que a proporção 16:9 pura (ver `height` acima) e é reposicionada 6px
+   pra cima (ver `top` inline em HomePage.tsx), então esse deslocamento nunca revela o fundo da
+   página no topo da página. Desligado por completo se o usuário preferir menos movimento. */
 @keyframes cl-hero-breathe {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-5px); }

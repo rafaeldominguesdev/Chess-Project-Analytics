@@ -8,12 +8,15 @@ interface HomePageProps {
 
 // ── PRA DESCER/SUBIR A IMAGEM DE FUNDO: mexe só nesse número aqui. ──────────────────────────
 //    A janela de fundo (`.cl-hero-bg` em index.css) cobre a altura inteira da página com
-//    `background-size: 100% auto` — a arte tem tamanho FIXO (escala só pela largura, sem zoom,
-//    sem cortar tabuleiro/capivara). HERO_BG_POSITION_Y decide o quanto ela desce:
-//      0   → imagem colada no TOPO da janela (capivara sobe na tela)
-//      100 → imagem colada no FUNDO da janela (capivara desce ao máximo)
-//    Valor atual = 80. Pra descer mais, aumente (até 100). Pra subir, diminua.
-const HERO_BG_POSITION_Y = 80
+//    `background-size: cover` — a arte preenche a caixa nos 4 lados sempre, sem vão. Quando a
+//    caixa é mais alta que a proporção 16:9 da arte, sobra corte vertical; HERO_BG_POSITION_Y
+//    decide de qual lado esse corte sai:
+//      0   → corta embaixo (risco: tabuleiro, que quase encosta na borda inferior da arte)
+//      100 → corta em cima (seguro: só a faixa preta vazia acima da cabeça da capivara)
+//    Valor atual = 90 → âncora quase no fundo, corte sai quase todo de cima. Não baixar muito
+//    (a folga acima da cabeça acaba perto de ~85-90; abaixo disso o corte pode chegar nas
+//    orelhas). Pra descer a imagem mais, aumente (até 100). Pra subir, diminua com cautela.
+const HERO_BG_POSITION_Y = 90
 
 function base(props: SVGProps<SVGSVGElement>): SVGProps<SVGSVGElement> {
   return { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', ...props }
@@ -74,22 +77,31 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
           não têm mais fundo opaco: ficam "flutuando" com vidro fosco (fundo translúcido + blur
           só onde o card ocupa), então a imagem de fundo continua visível por baixo deles em vez
           de sumir atrás de um retângulo sólido. Reenquadramento da imagem: ver as constantes
-          HERO_BG_* logo acima do componente e as regras de `.cl-hero-bg` em index.css. */}
-      <div style={{ position: 'relative', minHeight: 'calc(100vh - 110px)', display: 'flex', flexDirection: 'column' }}>
+          HERO_BG_* logo acima do componente e as regras de `.cl-hero-bg` em index.css.
+          `containerType: 'inline-size'` transforma este wrapper num container de consulta CSS —
+          é o que permite `.cl-hero-bg` (abaixo) medir a própria LARGURA via `cqw` e calcular a
+          própria altura na proporção 16:9 da arte, em vez de esticar pela altura do wrapper
+          (que pode ser bem mais alta que 16:9 — conteúdo empilhado: hero + cards + rodapé). */}
+      <div className="cl-home-hero-wrap" style={{ position: 'relative', minHeight: 'calc(100vh - 110px)', display: 'flex', flexDirection: 'column' }}>
         <div
           aria-hidden
           className="cl-hero-bg"
           style={{
-            // Cobre a tela toda: o wrapper acima tem minHeight quase igual à altura visível, e
-            // essa camada preenche esse wrapper de ponta a ponta (inset:0, sem hack de `top` em
-            // pixel — empurrar com `top` encolhe a altura da caixa e muda a proporção dela, o
-            // que faz o `cover` (em index.css) trocar de eixo de corte e cortar a PRÓPRIA arte
-            // (tabuleiro/patas) em vez de só a lateral. Em vez disso, o tamanho da imagem agora é
-            // fixo (`background-size: 100% auto` no CSS), então empurrar pra baixo/cima é só
-            // HERO_BG_POSITION_Y, sem risco de cortar a cena). Como a Home nunca cresce além da
-            // tela (não tem mais resultado de busca aqui dentro), essa camada não corre risco de
-            // "esticar" e desalinhar com o conteúdo — ver SearchView pra isso.
-            position: 'absolute', inset: 0,
+            // Faixa do topo do wrapper, não o wrapper inteiro: `top`/`left`/`right` fixam a
+            // largura (100% do container), e a ALTURA vem de `.cl-hero-bg` em index.css
+            // (`height: calc(56.25cqw + 12px)`, ou seja: largura × 9/16, a proporção nativa da
+            // arte, mais uma folga de respiração). Isso mantém essa caixa sempre PRÓXIMA da
+            // proporção 16:9 da própria imagem, não importa o quão alto o wrapper fique (o
+            // conteúdo abaixo — cards de Recurso, rodapé — continua sobre a cor de fundo normal,
+            // não precisa de imagem atrás). Com a caixa já quase 16:9, `background-size: cover`
+            // (index.css) não precisa cortar quase nada — é o que garante capivara E tabuleiro
+            // sempre visíveis inteiros, em qualquer largura de janela. `top: -6px` (a caixa é
+            // 12px mais alta que a largura×9/16 pura) dá folga pra `cl-hero-breathe` (respiração,
+            // translateY ±5px em index.css) sem revelar a cor de fundo por trás no topo da
+            // página. `background-position` (18%/... x, HERO_BG_POSITION_Y y, em index.css) ainda
+            // existe como ajuste fino pro pouco corte residual, mas não é mais o que evita cortar
+            // capivara/tabuleiro — isso agora é a proporção da caixa em si.
+            position: 'absolute', top: -6, right: 0, left: 0,
             ...({ '--hero-bg-pos-y': `${HERO_BG_POSITION_Y}%` } as React.CSSProperties),
           }}
         />
