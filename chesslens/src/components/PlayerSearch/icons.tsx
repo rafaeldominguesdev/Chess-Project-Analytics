@@ -35,16 +35,13 @@ export function RapidTimeIcon(props: IconProps) {
   )
 }
 
-/** Diária: página de calendário reduzida a três marcadores — mais discreto que o emoji 📅. */
+/** Diária: ícone oficial do chess.com (glyph "game-time-daily") — antes era um calendário
+ *  desenhado do zero; trocado pelo glyph real a pedido direto do usuário, mesmo padrão de
+ *  Bullet/Blitz/Rápida acima (fill sólido, não contorno). */
 export function DailyTimeIcon(props: IconProps) {
   return (
-    <svg {...base(props)}>
-      <rect x="3.5" y="5" width="17" height="16" rx="3" />
-      <path d="M3.5 10h17" />
-      <path d="M8 3v4M16 3v4" />
-      <circle cx="8" cy="15" r="1.1" fill="currentColor" stroke="none" />
-      <circle cx="12" cy="15" r="1.1" fill="currentColor" stroke="none" />
-      <circle cx="16" cy="15" r="1.1" fill="currentColor" stroke="none" />
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="m.93 11.63c3.3-1.33 3.77-2.83 1.77-5.77l-.93-1.33 1.63.5c3.4 1 4.6.1 4.63-3.43l.03-1.6 1 1.27c2.17 2.8 3.7 2.8 5.87 0l1-1.27.03 1.6c.03 3.53 1.23 4.43 4.63 3.43l1.63-.5-.93 1.33c-2 2.93-1.53 4.43 1.77 5.77l.93.37-.93.37c-3.3 1.33-3.77 2.83-1.77 5.77l.93 1.33-1.63-.5c-3.4-1-4.6-.1-4.63 3.43l-.03 1.6-1-1.27c-2.17-2.8-3.7-2.8-5.87 0l-1 1.27-.03-1.6c-.03-3.53-1.23-4.43-4.63-3.43l-1.63.5.93-1.33c2-2.93 1.53-4.43-1.77-5.77l-.93-.37zm5.07.37c0 3.19 2.86 6 6 6 3.18 0 6-2.82 6-6 0-3.14-2.81-6-6-6-3.15 0-6 2.85-6 6zm2 0c0-2.32 1.68-4 4-4 2.35 0 4 1.68 4 4 0 2.35-1.65 4-4 4-2.32 0-4-1.65-4-4zm0 0" />
     </svg>
   )
 }
