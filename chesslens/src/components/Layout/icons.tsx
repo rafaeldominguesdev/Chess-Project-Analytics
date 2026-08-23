@@ -88,6 +88,15 @@ export function WrenchIcon(props: IconProps) {
   )
 }
 
+/** Livro aberto — Treino de Aberturas. */
+export function BookNavIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M12 6.5c-1.6-1.2-3.6-1.8-6-1.8v13c2.4 0 4.4.6 6 1.8M12 6.5c1.6-1.2 3.6-1.8 6-1.8v13c-2.4 0-4.4.6-6 1.8M12 6.5v13" />
+    </svg>
+  )
+}
+
 /** Seta simples — usada no botão de encolher/expandir a sidebar, gira via CSS conforme o estado. */
 export function ChevronIcon(props: IconProps) {
   return (

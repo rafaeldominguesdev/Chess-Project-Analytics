@@ -10,6 +10,7 @@ import { ChessBoard, BOARD_ROW_CHROME_WIDTH } from './components/Board/ChessBoar
 import { ReviewPanel } from './components/Review/ReviewPanel'
 import { SettingsPanel } from './components/Settings/SettingsPanel'
 import { TrainingView } from './components/Training/TrainingView'
+import { OpeningTrainerView } from './components/Training/OpeningTrainerView'
 import { AnalysisBoardView } from './components/Analysis/AnalysisBoardView'
 import { PositionEditorView } from './components/PositionEditor/PositionEditorView'
 import { PlayerCard } from './components/Theater/PlayerCard'
@@ -29,6 +30,8 @@ function AppInner() {
   const [updatesOpen, setUpdatesOpen] = useState(false)
   // Modo de treino de táticas — não é um modal, substitui o conteúdo principal (igual à análise).
   const [trainingMode, setTrainingMode] = useState(false)
+  // Treino de Aberturas — mesmo esquema, mutuamente exclusivo com os outros modos.
+  const [openingTrainingMode, setOpeningTrainingMode] = useState(false)
   // Tabuleiro de análise livre (posição inicial, joga dos dois lados) — mesmo esquema do treino:
   // substitui o conteúdo principal, mutuamente exclusivo com ele e com a revisão de partida.
   const [boardMode, setBoardMode] = useState(false)
@@ -129,7 +132,7 @@ function AppInner() {
     onPrev: goPrev, onNext: goNext, onFirst: goFirst, onLast: goLast,
     // Desligado no tabuleiro de análise livre também — lá as setas navegariam por engano o
     // histórico da revisão escondida atrás, em vez do próprio jogo livre (que não usa teclado).
-    enabled: !settingsOpen && !updatesOpen && !trainingMode && !boardMode && !positionEditorMode,
+    enabled: !settingsOpen && !updatesOpen && !trainingMode && !boardMode && !openingTrainingMode && !positionEditorMode,
   })
 
   const handleAnalyzeGame = useCallback((pgn: string) => {
@@ -148,6 +151,7 @@ function AppInner() {
   const openSearch = useCallback((platform?: Platform) => {
     setTrainingMode(false)
     setBoardMode(false)
+    setOpeningTrainingMode(false)
     setPositionEditorMode(false)
     setPendingBoardFen(undefined)
     setSearchPlatform(platform)
@@ -184,14 +188,16 @@ function AppInner() {
       <Sidebar
         onSettings={() => setSettingsOpen(true)}
         onUpdates={() => setUpdatesOpen(true)}
-        onToggleTraining={() => { setTrainingMode((v) => !v); setBoardMode(false); setPositionEditorMode(false); setSearchMode(false) }}
-        onToggleBoard={() => { setBoardMode((v) => !v); setTrainingMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setSearchMode(false) }}
-        onGoHome={() => { setTrainingMode(false); setBoardMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setSearchMode(false); unloadGame() }}
+        onToggleTraining={() => { setTrainingMode((v) => !v); setBoardMode(false); setOpeningTrainingMode(false); setPositionEditorMode(false); setSearchMode(false) }}
+        onToggleBoard={() => { setBoardMode((v) => !v); setTrainingMode(false); setOpeningTrainingMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setSearchMode(false) }}
+        onToggleOpeningTraining={() => { setOpeningTrainingMode((v) => !v); setTrainingMode(false); setBoardMode(false); setPositionEditorMode(false); setSearchMode(false) }}
+        onGoHome={() => { setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setSearchMode(false); unloadGame() }}
         onAnalyzeClick={() => { unloadGame(); openSearch() }}
         onMaintenanceClick={setMaintenanceFeature}
-        onTogglePositionEditor={() => { setPositionEditorMode((v) => !v); setTrainingMode(false); setBoardMode(false); setSearchMode(false) }}
+        onTogglePositionEditor={() => { setPositionEditorMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setSearchMode(false) }}
         trainingActive={trainingMode}
         boardActive={boardMode}
+        openingTrainingActive={openingTrainingMode}
         positionEditorActive={positionEditorMode}
         searchActive={searchMode}
       />
@@ -200,6 +206,8 @@ function AppInner() {
       <main className="cl-main-shell" style={{ flex: 1, minWidth: 0 }}>
         {trainingMode ? (
           <TrainingView boardWidth={boardWidth} containerRef={containerRef} />
+        ) : openingTrainingMode ? (
+          <OpeningTrainerView boardWidth={boardWidth} containerRef={containerRef} />
         ) : positionEditorMode ? (
           <PositionEditorView
             boardWidth={boardWidth}
