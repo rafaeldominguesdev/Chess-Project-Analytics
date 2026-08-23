@@ -48,11 +48,15 @@ function ArrowRightIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
-// Card "Stockfish completo" usa o logo oficial do site (`public/logo.png`) no lugar de um ícone
-// genérico de CPU — pedido direto do usuário. É o único card com `image` em vez de `Icon` (os
-// outros dois continuam com SVG próprio); o card renderiza um dos dois, nunca os dois juntos.
+// Card "Stockfish completo" usa o logo OFICIAL do próprio motor Stockfish (não o logo do site —
+// pedido direto do usuário depois de corrigir minha primeira tentativa, que tinha colocado o logo
+// do ChessLens ali por engano). Baixado direto de stockfishchess.org/images/logo/icon_512x512.png
+// (o link oficial referenciado no próprio README do projeto no GitHub, official-stockfish/
+// Stockfish) — peixe sobre tabuleiro quadriculado, a mascote/marca real do motor. É o único card
+// com `image` em vez de `Icon` (os outros dois continuam com SVG próprio); o card renderiza um
+// dos dois, nunca os dois juntos.
 const FEATURES: { Icon?: typeof RibbonIcon; image?: string; label: string; description: string }[] = [
-  { image: '/logo.png', label: 'Stockfish completo', description: 'Motor rodando 100% no seu navegador, sem servidor.' },
+  { image: '/stockfish-logo.png', label: 'Stockfish completo', description: 'Motor rodando 100% no seu navegador, sem servidor.' },
   { Icon: RibbonIcon, label: 'Classificação lance a lance', description: 'Brilhante, erro, imprecisão — pra cada jogada, igual chess.com.' },
   { Icon: BookIcon, label: 'Repertório de abertura', description: 'Nome real da abertura, linhas que você mais joga e onde foge da teoria.' },
 ]
