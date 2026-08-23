@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { QUALITY_CONFIG } from '../../utils/moveClassifier'
+import { QUALITY_CONFIG, winningChances } from '../../utils/moveClassifier'
 
 interface EvalGraphProps {
   evals: number[]              // perspectiva das brancas, centipawns (-2000..2000)
@@ -11,10 +11,17 @@ const W = 252
 const H = 90
 const CLAMP = 800 // cp para o topo/base do gráfico
 
-// Mesmos limiares de queda de avaliação usados em classifyMove — reaproveitados aqui pra
-// marcar "momentos críticos" direto a partir do array de evals, sem precisar da lista de lances.
-const MISTAKE_DROP = 90
-const BLUNDER_DROP = 200
+// Mesmos limiares de queda de % de chance de vitória usados em classifyMove (mistake/blunder do
+// Lichess, 20/30) — reaproveitados aqui pra marcar "momentos críticos" direto a partir do array
+// de evals, sem precisar da lista de lances. Em % em vez de centipawns brutos pelo mesmo motivo
+// de moveClassifier.ts: uma queda de 90cp já ganho de +8 não é crítica de verdade, uma de 90cp
+// perto do equilíbrio é.
+const MISTAKE_DROP = 20
+const BLUNDER_DROP = 30
+
+function winPercent(cp: number): number {
+  return 50 + 50 * winningChances(cp)
+}
 
 type Severity = 'mistake' | 'blunder'
 
@@ -90,8 +97,9 @@ export function EvalGraph({ evals, currentPosition, onSeek }: EvalGraphProps) {
   const criticalMoments: { index: number; severity: Severity }[] = []
   for (let i = 1; i < n; i++) {
     const isWhiteMove = i % 2 === 1
-    const delta = evals[i] - evals[i - 1]
-    const drop = isWhiteMove ? Math.max(0, -delta) : Math.max(0, delta)
+    const before = isWhiteMove ? evals[i - 1] : -evals[i - 1]
+    const after = isWhiteMove ? evals[i] : -evals[i]
+    const drop = Math.max(0, winPercent(before) - winPercent(after))
     if (drop >= BLUNDER_DROP) criticalMoments.push({ index: i, severity: 'blunder' })
     else if (drop >= MISTAKE_DROP) criticalMoments.push({ index: i, severity: 'mistake' })
   }

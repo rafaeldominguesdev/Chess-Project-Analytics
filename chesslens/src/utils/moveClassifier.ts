@@ -50,14 +50,38 @@ export function materialForSide(fen: string, color: 'w' | 'b'): number {
   return total
 }
 
+// Mesma curva de "chance de vitória" que o Lichess usa pra converter centipawns numa escala que
+// achata perto dos extremos (`EvalBar.tsx` importa daqui em vez de ter sua própria cópia — fonte
+// única). Isso é o que faltava aqui: classificar por CENTIPAWNS BRUTOS (como este arquivo fazia
+// antes) faz uma queda de 50cp parecer igual de grave numa posição equilibrada e numa posição já
+// ganha de +8 — na prática, marcava "Excelente"/"Ótimo" demais em partidas de nível muito alto,
+// porque com o motor em profundidade 18 boa parte dos lances tem queda bruta pequena mesmo sem
+// ser literalmente o lance nº1. Convertendo pra "% de chance de vitória" antes de medir a queda
+// (mesma técnica que o chess.com/Lichess usam de verdade) resolve isso nos dois sentidos: fica
+// mais tolerante em posições já decididas (onde nada realmente muda a chance de vencer) e mais
+// rigoroso perto do equilíbrio (onde poucos centipawns já mudam bastante a chance de vitória).
+export function winningChances(cp: number): number {
+  const MULTIPLIER = -0.00368208
+  return 2 / (1 + Math.exp(MULTIPLIER * cp)) - 1 // -1..1
+}
+
+/** `cp` na perspectiva de quem jogou → % de chance de vitória (0-100) desse lado. */
+function winPercent(cp: number): number {
+  return 50 + 50 * winningChances(cp)
+}
+
 /**
- * Classifica um lance comparando a avaliação (perspectiva das brancas, em centipawns)
- * antes e depois do lance. `drop` = quanto a posição piorou para quem jogou.
+ * Classifica um lance comparando a % de chance de vitória (perspectiva de quem jogou) antes e
+ * depois do lance. `winDrop` = quantos pontos percentuais de chance de vitória o lance custou.
+ *
+ * Limiares de inaccuracy/mistake/blunder (10/20/30 de queda) são os mesmos publicados pelo
+ * Lichess (`lila`/scalachess, código aberto, feito de propósito pra ficar parecido com o
+ * chess.com) — os de excellent/great/good não são públicos em nenhum dos dois sites, então
+ * continuam uma aproximação (mais estreita que a versão anterior baseada em cp bruto).
  *
  * `materialDelta` = material próprio perdido pelo lance (positivo = sacrificou material).
- * Este app só tem análise single-PV (sem multi-PV nem curva de probabilidade de vitória
- * como o algoritmo real do chess.com), então esta é uma aproximação honesta baseada só
- * na queda de avaliação e em heurísticas simples de material/lance-melhor.
+ * Este app só tem análise single-PV (sem multi-PV como o algoritmo real do chess.com), então
+ * esta é uma aproximação honesta, não uma cópia exata.
  */
 export function classifyMove(
   evalBefore: number,
@@ -71,20 +95,20 @@ export function classifyMove(
   // Normaliza para a perspectiva de quem jogou
   const before = color === 'w' ? evalBefore : -evalBefore
   const after = color === 'w' ? evalAfter : -evalAfter
-  const drop = Math.max(0, before - after)
+  const winDrop = Math.max(0, winPercent(before) - winPercent(after))
 
   if (isBestMove) {
     // Lance melhor que sacrifica material numa posição aproximadamente equilibrada
     if (materialDelta > 0 && Math.abs(before) < 400) return 'brilliant'
     return 'best'
   }
-  if (drop < 10) return 'excellent'
-  if (drop < 30) return 'great'
-  if (drop < 50) return 'good'
-  if (drop < 90) return 'inaccuracy'
-  // Estava claramente ganhando e jogou fora boa parte da vantagem
-  if (before >= 200 && drop >= 90 && drop < 250) return 'miss'
-  if (drop < 200) return 'mistake'
+  if (winDrop < 2) return 'excellent'
+  if (winDrop < 5) return 'great'
+  if (winDrop < 10) return 'good'
+  if (winDrop < 20) return 'inaccuracy'
+  // Estava claramente ganhando (cp bruto, não %) e jogou fora boa parte da vantagem
+  if (before >= 200 && winDrop >= 20 && winDrop < 30) return 'miss'
+  if (winDrop < 30) return 'mistake'
   return 'blunder'
 }
 
@@ -98,14 +122,43 @@ export function toWhiteCp(cp: number | null, mate: number | null, sideToMove: 'w
   return Math.max(-2000, Math.min(2000, white))
 }
 
-export function calcAccuracy(moves: { classification: MoveQuality | null; color: 'w' | 'b' }[], color: 'w' | 'b'): number {
-  const own = moves.filter((m) => m.color === color && m.classification)
+// Fórmula publicada (usada pelo Lichess como equivalente ao "accuracy" do chess.com) que converte
+// a queda de % de chance de vitória de UM lance num "quão preciso foi esse lance", de 0 a 100.
+function moveAccuracy(winDrop: number): number {
+  const raw = 103.1668 * Math.exp(-0.04354 * winDrop) - 3.1669
+  return Math.max(0, Math.min(100, raw))
+}
+
+/**
+ * Precisão da partida pra um lado. Não é mais uma média de "pesos fixos por categoria" (ex: todo
+ * lance "Excelente" valia 100, todo "Erro" valia 40, sem distinguir um erro de 25 de chance de
+ * vitória de um de 45) — motivado por calibração real do usuário: uma partida do Magnus Carlsen
+ * deu 90% aqui contra 84% no chess.com com o esquema antigo.
+ *
+ * Trocar só pela média aritmética das precisões por lance (fórmula acima) melhora mas ainda não
+ * basta: numa partida longa, um punhado de erros graves afunda pouco a média simples porque fica
+ * diluído entre dezenas de lances bons — na prática o chess.com pesa erros muito mais que isso
+ * (uma partida perdida por 2-3 capivaradas não fica com precisão "quase perfeita" só porque o
+ * resto foi ok). O Lichess documenta que reproduz o "accuracy" do chess.com combinando a média
+ * aritmética com a média HARMÔNICA das precisões por lance — a harmônica é dominada pelos valores
+ * baixos (um único lance de precisão ~5 pesa muito mais nela do que na média simples), então o
+ * resultado final = média das duas puxa pra baixo exatamente quando existem poucos erros graves
+ * escondidos em meio a muitos lances ok, sem precisar reclassificar nada.
+ */
+export function calcAccuracy(
+  moves: { color: 'w' | 'b'; evalBefore: number | null; evalAfter: number | null }[],
+  color: 'w' | 'b',
+): number {
+  const own = moves.filter((m) => m.color === color && m.evalBefore !== null && m.evalAfter !== null)
   if (own.length === 0) return 100
-  const weights: Record<MoveQuality, number> = {
-    brilliant: 100, best: 100, excellent: 100, book: 100,
-    great: 95, good: 90,
-    inaccuracy: 70, mistake: 40, miss: 20, blunder: 0,
-  }
-  const sum = own.reduce((acc, m) => acc + (weights[m.classification!] ?? 0), 0)
-  return Math.round(sum / own.length)
+  const perMove = own.map((m) => {
+    const before = color === 'w' ? m.evalBefore! : -m.evalBefore!
+    const after = color === 'w' ? m.evalAfter! : -m.evalAfter!
+    const winDrop = Math.max(0, winPercent(before) - winPercent(after))
+    return moveAccuracy(winDrop)
+  })
+  const arithmeticMean = perMove.reduce((a, b) => a + b, 0) / perMove.length
+  // Math.max(1, a) no denominador só evita divisão por zero num lance de precisão exatamente 0.
+  const harmonicMean = perMove.length / perMove.reduce((acc, a) => acc + 1 / Math.max(1, a), 0)
+  return Math.round((arithmeticMean + harmonicMean) / 2)
 }

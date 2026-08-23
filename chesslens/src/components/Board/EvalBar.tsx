@@ -1,3 +1,5 @@
+import { winningChances } from '../../utils/moveClassifier'
+
 interface EvalBarProps {
   evaluation: number
   orientation?: 'white' | 'black'
@@ -10,14 +12,8 @@ const WHITE_FILL_DEEP = '#C9C3B2'
 const BLACK_FILL = '#221F1A'
 const BLACK_FILL_DEEP = '#0A0907'
 
-// Mesma curva de "chance de vitória" que o Lichess usa pra converter centipawns em % da barra
-// (lila/ui/chess/src/winningChances.ts) — achata bem mais rápido que uma sigmoide genérica,
-// batendo com a sensação de barra a que quem joga lá está acostumado: uma vantagem de ~3 peões
-// já lê como "quase ganho", não uma inclinação suave até muito além disso.
-function winningChances(cp: number): number {
-  const MULTIPLIER = -0.00368208
-  return 2 / (1 + Math.exp(MULTIPLIER * cp)) - 1 // -1..1
-}
+// `winningChances` (curva do Lichess, achata perto dos extremos) vem de moveClassifier.ts —
+// mesma fonte usada pra classificar lance e calcular precisão, fonte única pra não divergir.
 
 export function EvalBar({ evaluation, orientation = 'white', isMate }: EvalBarProps) {
   let whitePercent: number
