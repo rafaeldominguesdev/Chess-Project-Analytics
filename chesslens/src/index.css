@@ -4,30 +4,33 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  /* Identidade visual "ChessLens Âmbar": fundo quase preto, painéis carvão,
-     destaque em âmbar/dourado. Elementos interativos (botões, cards, toggles)
-     têm visual "físico"/skeumórfico — parecem teclas encaixadas num soquete,
-     com sombra dupla (corte claro em cima, assento escuro embaixo) e cantos
-     bem arredondados. --color-bg-main/--color-bg-panel/--color-blue-bright/
-     --color-text-on-dark/--color-gray-muted/--color-gray-border trocam de
-     valor conforme o tema de UI escolhido (ver ThemeContext/UI_THEMES) — os
-     daqui são o fallback antes do primeiro render. As outras (blue-primary,
-     blue-light, blue-ice, bg-surface, shadow-btn, text-on-light, cores de
-     resultado, tokens de raio/animação) são fixas, não trocam por tema.
+  /* Identidade visual "ChessLens Cinza Azulado": fundo cinza-chumbo neutro (não mais preto
+     puro, pedido direto do usuário — "muito preto, deixa cinza igual do chess.com"), painéis
+     num cinza um degrau mais claro, destaque em azul bebê (era âmbar/dourado — trocado a pedido
+     direto do usuário, "quero a cor secundária azul meio bebê"). Elementos interativos (botões,
+     cards, toggles) continuam com visual "físico"/skeumórfico — parecem teclas encaixadas num
+     soquete, com sombra dupla (corte claro em cima, assento escuro embaixo) e cantos bem
+     arredondados; só a paleta de cor mudou, não o estilo. --color-bg-main/--color-bg-panel/
+     --color-blue-bright/--color-text-on-dark/--color-gray-muted/--color-gray-border trocam de
+     valor conforme o tema de UI escolhido (ver ThemeContext/UI_THEMES) — os daqui são o
+     fallback antes do primeiro render. As outras (blue-primary, blue-light, blue-ice,
+     bg-surface, shadow-btn, text-on-light, cores de resultado, tokens de raio/animação) são
+     fixas, não trocam por tema. Os nomes das variáveis ("blue-*") já eram esses desde antes do
+     app virar âmbar — voltaram a fazer sentido literal agora.
   */
-  --color-bg-main: #000000;
-  --color-bg-panel: #1A1A1D;
-  --color-bg-raised: #202024;
+  --color-bg-main: #1A1B1F;
+  --color-bg-panel: #24262C;
+  --color-bg-raised: #2E3038;
   --color-bg-surface: #EDE8E0;
-  --color-blue-primary: #C68A22;
-  --color-blue-bright: #E8A93C;
-  --color-blue-light: #F2C368;
-  --color-blue-ice: #FBE7BE;
-  --color-gray-border: #2C2C30;
-  --color-gray-muted: #8C8A85;
+  --color-blue-primary: #3E93BF;
+  --color-blue-bright: #74C6EA;
+  --color-blue-light: #A3DCF3;
+  --color-blue-ice: #DDF2FB;
+  --color-gray-border: #3A3C44;
+  --color-gray-muted: #94969F;
   --color-shadow-btn: #000000;
-  --color-text-on-dark: #ECEAE6;
-  --color-text-on-light: #1C1916;
+  --color-text-on-dark: #ECEDF0;
+  --color-text-on-light: #10171C;
 
   /* Semânticas de resultado — vitória/derrota/empate (usar em vez de hex fixo) */
   --color-success: #4CAF6E;

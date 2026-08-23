@@ -165,7 +165,7 @@ export function TrainingView({ boardWidth, containerRef }: TrainingViewProps) {
             interactive={status === 'solving'}
             boardOrientation={solverColor}
             hintSquare={hintSquare}
-            extraArrows={hintMove ? [{ startSquare: hintMove.from, endSquare: hintMove.to, color: '#E8A93C' }] : undefined}
+            extraArrows={hintMove ? [{ startSquare: hintMove.from, endSquare: hintMove.to, color: 'var(--color-blue-bright)' }] : undefined}
             onPieceDrop={({ sourceSquare, targetSquare, promotion }) => (targetSquare ? attemptMove(sourceSquare, targetSquare, promotion) : false)}
           />
         )}
