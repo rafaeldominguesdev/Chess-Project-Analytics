@@ -7,6 +7,7 @@ import { MoveList } from '../Analysis/MoveList'
 import { Panel } from '../Panel'
 import { CoachComment } from './CoachComment'
 import { BoardControls } from '../Board/BoardControls'
+import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion'
 
 // Quantos lances de cada linha do motor mostrar como texto no painel "Motor" (prévia curta, não
 // a variante inteira) — mesma constante/princípio do painel equivalente do Tabuleiro de análise
@@ -112,6 +113,7 @@ function EnginePanel({
 function AnalysisProgress({ progress }: { progress: { done: number; total: number } }) {
   const pct = progress.total > 0 ? Math.min(100, Math.round((progress.done / progress.total) * 100)) : 0
   const finished = pct >= 100
+  const reducedMotion = usePrefersReducedMotion()
 
   return (
     <div className="cl-fade-in" style={{ marginBottom: 10 }}>
@@ -121,7 +123,7 @@ function AnalysisProgress({ progress }: { progress: { done: number; total: numbe
             style={{
               width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
               background: finished ? 'var(--color-success)' : 'var(--color-blue-bright)',
-              animation: finished ? 'none' : 'cl-pulse-dot 1.1s ease-in-out infinite',
+              animation: (finished || reducedMotion) ? 'none' : 'cl-pulse-dot 1.1s ease-in-out infinite',
             }}
           />
           <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
