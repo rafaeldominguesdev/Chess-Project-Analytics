@@ -24,6 +24,13 @@ import { usePlayerProfiles } from './hooks/useChesscomApi'
 import { useMoveSound } from './hooks/useMoveSound'
 import { classifyMove, toWhiteCp, materialForSide } from './analysis/moveClassifier'
 import { isBookMove } from './analysis/openingsDatabase'
+import { saveGame } from './persistence/gamesRepo'
+import { saveAnalysis, loadAnalysis, isAnalysisValid } from './persistence/analysesRepo'
+
+// Mesma profundidade passada pra `useGameAnalysis` — extraída pra uma constante única, em vez de
+// dois "18" literais soltos (aqui e na checagem de validade do cache), pra não correr o risco de
+// um dia só um dos dois mudar sem querer.
+const ANALYSIS_DEPTH = 18
 
 function AppInner() {
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -75,7 +82,15 @@ function AppInner() {
   const { evaluation, lines: engineLines, isReady, isAnalyzing: engineIsAnalyzing, analyze } = useStockfish(18, 3)
   // Profundidade 18 (era 12, pedido direto do usuário — mesma justificativa do useStockfish
   // acima: motor mais forte, mesmo com a partida inteira demorando mais pra classificar).
-  const { analyzeGame, progress } = useGameAnalysis(18)
+  const { analyzeGame, cancel: cancelAnalysis, progress } = useGameAnalysis(ANALYSIS_DEPTH)
+  // URL de origem (chess.com/Lichess) da partida carregada — chave de cache em `persistence/`.
+  // `null` quando não há partida carregada, ou (por ora) quando ela não veio de uma dessas duas
+  // fontes (não existe hoje caminho de colar PGN cru na UI — só partidas com URL chegam aqui).
+  const [gameUrl, setGameUrl] = useState<string | null>(null)
+  // Texto cru do PGN da partida atual — `useChessGame` guarda só a versão já parseada (moves/
+  // fens/gameInfo), não o texto original, então precisa ser guardado aqui pra poder salvar no
+  // cache junto com o resultado da análise.
+  const pgnRef = useRef('')
   const { playForSan } = useMoveSound()
 
   // Som de lance ao navegar entre posições (review).
@@ -99,34 +114,76 @@ function AppInner() {
   const updateRef = useRef(updateMoveClassification)
   updateRef.current = updateMoveClassification
 
-  // Análise da partida inteira: classifica cada lance (roda em segundo plano assim que a partida carrega)
+  // Análise da partida inteira: classifica cada lance (roda em segundo plano assim que a partida
+  // carrega). Antes de rodar o motor, checa se já existe uma análise salva (mesma partida, mesma
+  // profundidade) pra essa `gameUrl` — se sim, reconstrói tudo a partir dos números crus salvos
+  // (só `whiteEvals`/`bestMoves`, nunca a classificação em si: ela é recalculada aqui do zero com
+  // a lógica ATUAL de `classifyMove`/`isBookMove`, então um cache salvo há tempos nunca fica preso
+  // a uma regra de classificação já ultrapassada) e nem chega a chamar `analyzeGame` — reabrir uma
+  // partida já analisada fica instantâneo, sem tocar o Stockfish.
   useEffect(() => {
     if (!isLoaded || fens.length < 2) { setPositionEvals([]); return }
+    // Cancela qualquer análise em andamento de uma partida ANTERIOR antes de decidir o que fazer
+    // com esta. Necessário mesmo quando esta partida vai dar cache HIT (e `analyzeGame` nem vai
+    // ser chamado de novo): sem isso, o loop antigo continuaria rodando e seus `onEval` cairiam
+    // nos `movesRef`/`fens` já trocados pra partida nova (closures reatribuídas a cada render),
+    // contaminando a classificação dela. Uma nova chamada de `analyzeGame` já cancelaria sozinha
+    // (via `runId`), mas isso só cobre o caso de cache MISS — por isso o cancel explícito aqui.
+    cancelAnalysis()
+    let cancelled = false
     const whiteEvals: number[] = []
     const bestMoves: (string | null)[] = []
     setPositionEvals([])
 
-    analyzeGame(fens, (i, e) => {
-      const stm = fens[i].split(' ')[1] === 'b' ? 'b' : 'w'
-      whiteEvals[i] = toWhiteCp(e.cp, e.mate, stm)
-      bestMoves[i] = e.bestMove ?? null
-      setPositionEvals([...whiteEvals])
-
+    function applyClassification(i: number) {
       const m = i - 1
-      if (m >= 0 && whiteEvals[m] !== undefined) {
-        const mv = movesRef.current[m]
-        if (!mv) return
-        const before = whiteEvals[m]
-        const after = whiteEvals[i]
-        const bm = bestMoves[m]
-        const isBest = !!bm && mv.from + mv.to === bm.slice(0, 4)
-        const materialDelta = materialForSide(fens[m], mv.color) - materialForSide(fens[i], mv.color)
-        const isBook = isBookMove(movesRef.current.slice(0, m + 1).map((cm) => cm.san))
-        const cls = classifyMove(before, after, mv.color, isBest, isBook, materialDelta)
-        updateRef.current(m, cls, before, after, bm)
+      if (m < 0 || whiteEvals[m] === undefined) return
+      const mv = movesRef.current[m]
+      if (!mv) return
+      const before = whiteEvals[m]
+      const after = whiteEvals[i]
+      const bm = bestMoves[m]
+      const isBest = !!bm && mv.from + mv.to === bm.slice(0, 4)
+      const materialDelta = materialForSide(fens[m], mv.color) - materialForSide(fens[i], mv.color)
+      const isBook = isBookMove(movesRef.current.slice(0, m + 1).map((cm) => cm.san))
+      const cls = classifyMove(before, after, mv.color, isBest, isBook, materialDelta)
+      updateRef.current(m, cls, before, after, bm)
+    }
+
+    void (async () => {
+      if (gameUrl) {
+        const cached = await loadAnalysis(gameUrl)
+        if (cancelled) return
+        if (cached && isAnalysisValid(cached, fens, ANALYSIS_DEPTH)) {
+          for (let i = 0; i < cached.whiteEvals.length; i++) {
+            whiteEvals[i] = cached.whiteEvals[i]
+            bestMoves[i] = cached.bestMoves[i]
+          }
+          setPositionEvals([...whiteEvals])
+          for (let i = 1; i < whiteEvals.length; i++) applyClassification(i)
+          return
+        }
       }
-    })
-  }, [fens, isLoaded, analyzeGame])
+
+      await analyzeGame(fens, (i, e) => {
+        if (cancelled) return
+        const stm = fens[i].split(' ')[1] === 'b' ? 'b' : 'w'
+        whiteEvals[i] = toWhiteCp(e.cp, e.mate, stm)
+        bestMoves[i] = e.bestMove ?? null
+        setPositionEvals([...whiteEvals])
+        applyClassification(i)
+      })
+      if (cancelled) return
+      // Só salva quando a análise terminou de verdade (não foi cancelada por outra partida
+      // carregando no meio do caminho) — `whiteEvals.length` bate com `fens.length` nesse caso.
+      if (gameUrl && gameInfo && whiteEvals.length === fens.length) {
+        await saveGame(gameUrl, pgnRef.current, gameInfo)
+        await saveAnalysis(gameUrl, ANALYSIS_DEPTH, whiteEvals, bestMoves)
+      }
+    })()
+
+    return () => { cancelled = true }
+  }, [fens, isLoaded, analyzeGame, cancelAnalysis, gameUrl, gameInfo])
 
   useKeyboard({
     onPrev: goPrev, onNext: goNext, onFirst: goFirst, onLast: goLast,
@@ -135,9 +192,11 @@ function AppInner() {
     enabled: !settingsOpen && !updatesOpen && !trainingMode && !boardMode && !openingTrainingMode && !positionEditorMode,
   })
 
-  const handleAnalyzeGame = useCallback((pgn: string) => {
+  const handleAnalyzeGame = useCallback((pgn: string, url: string) => {
     try {
       loadPgn(pgn)
+      pgnRef.current = pgn
+      setGameUrl(url)
       // Só reseta a tela de resumo aqui, no carregamento explícito de uma partida NOVA — antes
       // isso era um useEffect reagindo a qualquer troca de referência de `gameInfo`, o que podia
       // devolver a pessoa pra tela de resumo (o "menu") no meio da revisão sem ela pedir.
@@ -191,8 +250,8 @@ function AppInner() {
         onToggleTraining={() => { setTrainingMode((v) => !v); setBoardMode(false); setOpeningTrainingMode(false); setPositionEditorMode(false); setSearchMode(false) }}
         onToggleBoard={() => { setBoardMode((v) => !v); setTrainingMode(false); setOpeningTrainingMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setSearchMode(false) }}
         onToggleOpeningTraining={() => { setOpeningTrainingMode((v) => !v); setTrainingMode(false); setBoardMode(false); setPositionEditorMode(false); setSearchMode(false) }}
-        onGoHome={() => { setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setSearchMode(false); unloadGame() }}
-        onAnalyzeClick={() => { unloadGame(); openSearch() }}
+        onGoHome={() => { setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setSearchMode(false); unloadGame(); setGameUrl(null) }}
+        onAnalyzeClick={() => { unloadGame(); setGameUrl(null); openSearch() }}
         onMaintenanceClick={setMaintenanceFeature}
         onTogglePositionEditor={() => { setPositionEditorMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setSearchMode(false) }}
         trainingActive={trainingMode}
