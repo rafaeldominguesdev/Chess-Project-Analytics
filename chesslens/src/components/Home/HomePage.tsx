@@ -72,7 +72,13 @@ const FEATURES = [
  */
 export function HomePage({ onOpenSearch }: HomePageProps) {
   return (
-    <div style={{ flex: 1, minWidth: 0, overflowX: 'hidden', overflowY: 'auto', maxHeight: 'calc(100vh - 20px)' }}>
+    // `background:'#000'` aqui, não só em `.cl-home-hero-wrap` logo abaixo: esse `<div>` é o
+    // container de ROLAGEM da Home inteira (`maxHeight: calc(100vh - 20px)`), e `.cl-home-hero-
+    // wrap` só tem uma altura MÍNIMA (`minHeight`, um piso, não um "esticar até preencher") — em
+    // telas altas o conteúdo (hero + cards) pode ficar mais curto que o espaço disponível aqui,
+    // sobrando uma faixa cinza (herdada de `body`/--color-bg-main) embaixo do wrap preto. Achado
+    // pelo usuário direto no DOM depois do fix anterior (que só cobriu o wrap, não este pai).
+    <div style={{ flex: 1, minWidth: 0, overflowX: 'hidden', overflowY: 'auto', maxHeight: 'calc(100vh - 20px)', background: '#000000' }}>
       {/* Wrapper com altura = altura do conteúdo (hero + recursos + rodapé). Os cards de Recurso
           não têm mais fundo opaco: ficam "flutuando" com vidro fosco (fundo translúcido + blur
           só onde o card ocupa), então a imagem de fundo continua visível por baixo deles em vez
