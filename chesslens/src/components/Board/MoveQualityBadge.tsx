@@ -10,9 +10,12 @@ interface MoveQualityBadgeProps {
 // Ícone sempre 2px maior que o texto em todos os tamanhos — mantém o mesmo peso visual relativo
 // entre categorias com ícone vetorial (brilhante, livro, melhor, ótimo, bom, chance perdida) e as
 // que ainda usam símbolo de texto (excelente !, imprecisão ?!, erro ?, capivarada ??).
+// "md" é usado só pela lista de lances da Revisão de partida (`MoveList.tsx`) — aumentado a
+// pedido direto do usuário ("aumenta ícones... deixe mais compreensível"), sem afetar "sm"
+// (tabuleiro/coach, ícones bem pequenos de propósito) nem "lg" (já era o maior).
 const SIZES = {
   sm: { fontSize: 12, icon: 14 },
-  md: { fontSize: 15, icon: 17 },
+  md: { fontSize: 19, icon: 21 },
   lg: { fontSize: 20, icon: 22 },
 } as const
 

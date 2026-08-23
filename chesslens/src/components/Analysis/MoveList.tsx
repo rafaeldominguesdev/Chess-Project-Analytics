@@ -36,21 +36,21 @@ export function MoveList({ moves, currentMoveIndex, onGoTo }: MoveListProps) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div
         style={{
-          display: 'grid', gridTemplateColumns: '34px 1fr 1fr', alignItems: 'center', gap: 6,
-          padding: '0 4px 6px', borderBottom: '1px solid var(--color-gray-border)',
+          display: 'grid', gridTemplateColumns: '38px 1fr 1fr', alignItems: 'center', gap: 8,
+          padding: '0 6px 8px', borderBottom: '1px solid var(--color-gray-border)',
         }}
       >
         <span />
-        <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--color-gray-muted)', fontWeight: 700 }}>
+        <span style={{ fontSize: 12.5, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--color-gray-muted)', fontWeight: 700 }}>
           Brancas
         </span>
-        <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--color-gray-muted)', fontWeight: 700 }}>
+        <span style={{ fontSize: 12.5, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--color-gray-muted)', fontWeight: 700 }}>
           Pretas
         </span>
       </div>
 
-      <div className="overflow-y-auto" style={{ maxHeight: 400 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+      <div className="overflow-y-auto" style={{ maxHeight: 440 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {Array.from({ length: rows }, (_, i) => {
             const wIdx = i * 2
             const bIdx = i * 2 + 1
@@ -61,12 +61,12 @@ export function MoveList({ moves, currentMoveIndex, onGoTo }: MoveListProps) {
               <div
                 key={i}
                 style={{
-                  display: 'grid', gridTemplateColumns: '34px 1fr 1fr', alignItems: 'center', gap: 6,
-                  padding: '6px 4px', borderRadius: 'var(--radius-sm)',
+                  display: 'grid', gridTemplateColumns: '38px 1fr 1fr', alignItems: 'center', gap: 8,
+                  padding: '4px 6px',
                   background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.025)',
                 }}
               >
-                <span className="cl-mono" style={{ fontSize: 13, textAlign: 'center', color: 'var(--color-gray-muted)', fontWeight: 700 }}>
+                <span className="cl-mono" style={{ fontSize: 14.5, textAlign: 'center', color: 'var(--color-gray-muted)', fontWeight: 700 }}>
                   {i + 1}
                 </span>
 
@@ -115,10 +115,15 @@ const MoveBtn = forwardRef<HTMLButtonElement, {
     <button
       ref={ref}
       onClick={onClick}
-      className={`cl-move-btn flex items-center gap-2 px-2.5 py-2 text-sm text-left w-full ${active ? 'cl-move-active' : ''}`}
+      className={`cl-move-btn flex items-center gap-2.5 text-left w-full ${active ? 'cl-move-active' : ''}`}
       style={{
         fontWeight: active || move.classification ? 700 : 400,
-        borderRadius: 'var(--radius-sm)',
+        fontSize: 16,
+        padding: '9px 11px',
+        // Menos arredondado que o resto do app (--radius-sm é 6px) — pedido direto do usuário
+        // pra essa lista especificamente ("deixe menos redondo"); exceção deliberada, não
+        // reaproveitar esse valor em outro componente sem pedido equivalente.
+        borderRadius: 4,
         transition: `background-color var(--dur-tap) var(--ease-tap), color var(--dur-tap) var(--ease-tap)`,
       }}
     >
