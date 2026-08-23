@@ -1,8 +1,9 @@
 import { useRef, useEffect, forwardRef, useMemo } from 'react'
 import { Chess } from 'chess.js'
 import { MoveQualityBadge } from '../Board/MoveQualityBadge'
-import { QUALITY_CONFIG } from '../../utils/moveClassifier'
-import type { ClassifiedMove, MoveClassification } from '../../types/chess.types'
+import { QUALITY_CONFIG } from '../../analysis/moveClassifier'
+import type { MoveQuality } from '../../analysis/moveClassifier'
+import type { ClassifiedMove } from '../../analysis/types'
 
 interface MoveListProps {
   moves: ClassifiedMove[]
@@ -12,7 +13,7 @@ interface MoveListProps {
 
 // Classificações em que vale a pena mostrar "o que era melhor jogar" — erros de fato,
 // não meras imprecisões (essas já ficam óbvias só pela cor/ícone do lance na lista).
-const COACHABLE: MoveClassification[] = ['mistake', 'miss', 'blunder']
+const COACHABLE: MoveQuality[] = ['mistake', 'miss', 'blunder']
 
 export function MoveList({ moves, currentMoveIndex, onGoTo }: MoveListProps) {
   const activeRef = useRef<HTMLButtonElement | null>(null)
@@ -139,7 +140,7 @@ MoveBtn.displayName = 'MoveBtn'
 interface CoachHint {
   playedSan: string
   bestSan: string
-  quality: MoveClassification
+  quality: MoveQuality
   drop: number | null
 }
 

@@ -4,7 +4,7 @@ Plano de evolução em sprints curtos, cada um entregando algo funcional. A orde
 dois primeiros sprints criam a base de dados que todo o resto consome — pular direto pro Treino
 de Erros significa refazer trabalho depois.
 
-> Movido de `CLAUDE.MD` pra `ROADMAP.md` (2026-08-24) — esse conteúdo é um plano/roteiro, não as
+> Movido de `CLAUDE.MD` pra `ROADMAP.md` (2026-08-23) — esse conteúdo é um plano/roteiro, não as
 > instruções operacionais do projeto. O `CLAUDE.md` de verdade (stack, estrutura, convenções,
 > regras invioláveis) foi escrito à parte, seguindo exatamente o que o Sprint 0 abaixo pede.
 
@@ -15,19 +15,24 @@ gerar depois.
 
 - [x] `CLAUDE.md` na raiz com: stack, estrutura de pastas, como rodar/testar, convenções
       (naming, estado, estilo), e uma seção "regras invioláveis" (capivara é identidade
-      protegida, não mexer no worker do Stockfish sem pedir, etc.) — **feito em 2026-08-24**.
-- [ ] Mapear o que já existe em mais detalhe: auditoria formal de onde mora a lógica de
-      classificação de lance, o wrapper do Stockfish, o parser de PGN, o banco ECO (auditoria
-      inicial já registrada no `CLAUDE.md`, mas vale revisitar antes do Sprint 1/2 se a base de
-      código tiver mudado muito).
-- [ ] Extrair o "core de análise" pra um módulo isolado (`analysis/`), sem dependência de UI.
-      Todas as features seguintes vão importar daqui. **Ainda não feito** — hoje a lógica
-      (`moveClassifier.ts`, `openingsDatabase.ts`, `useStockfish.ts`) já é razoavelmente isolada
-      de UI (fica em `utils/`/`hooks/`), mas não está consolidada num único módulo `analysis/`.
-- [ ] Testes no que é regra de negócio: classificação de lance e cálculo de precisão. São as
-      duas coisas que, se quebrarem silenciosamente, destroem a confiança no produto. **Ainda
-      não feito** — o projeto não tem framework de teste configurado (nem Vitest, nem Jest);
-      isso é pré-requisito antes deste item.
+      protegida, não mexer no worker do Stockfish sem pedir, etc.) — **feito em 2026-08-23**.
+- [x] Mapear o que já existe em mais detalhe: auditoria formal de onde mora a lógica de
+      classificação de lance, o wrapper do Stockfish, o parser de PGN, o banco ECO — **feito em
+      2026-08-23** (2 agentes Explore mapearam consumidores/imports arquivo por arquivo antes da
+      extração abaixo).
+- [x] Extrair o "core de análise" pra um módulo isolado (`src/analysis/`), sem dependência de UI
+      — **feito em 2026-08-23**. `moveClassifier.ts`, `openingsDatabase.ts`,
+      `openingRepertoire.ts`, `puzzles.ts`, `coachComments.ts` movidos de `utils/` pra
+      `analysis/` (confirmados sem import de React); `ClassifiedMove` movido de
+      `types/chess.types.ts` pra `analysis/types.ts`, eliminando um import circular
+      `utils/`↔`types/` que existia antes. `flags.ts`/`boardThemes.ts`/`pieceLoader.ts`/
+      `sounds.ts` ficaram em `utils/` (não são lógica de análise). `useStockfish.ts` e
+      `useGameAnalysis.ts` continuam em `hooks/` — são hooks React de verdade (estado + Worker),
+      não lógica pura, então não migraram. 17 arquivos consumidores tiveram o caminho de import
+      atualizado (sem shim de compatibilidade — decisão consciente, ver `CLAUDE.md`).
+- [x] Testes no que é regra de negócio: classificação de lance e cálculo de precisão — **feito
+      em 2026-08-23**. Adicionado Vitest (zero antes) + `src/analysis/moveClassifier.test.ts`
+      (27 testes: `classifyMove`, `calcAccuracy`, `winningChances`, `toWhiteCp`), todos verdes.
 
 > No Claude Code: `Audite este repositório e escreva um CLAUDE.md. Não altere nenhum outro
 > arquivo.` Depois revise à mão — esse arquivo é o que mais economiza tempo no resto do projeto.

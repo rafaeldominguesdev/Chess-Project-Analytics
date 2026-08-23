@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { Chess } from 'chess.js'
 import { useMoveSound } from './useMoveSound'
-import type { MoveQuality } from '../utils/moveClassifier'
+import type { MoveQuality } from '../analysis/moveClassifier'
 
 const STANDARD_START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 

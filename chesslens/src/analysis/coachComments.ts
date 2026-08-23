@@ -1,5 +1,5 @@
 import { Chess } from 'chess.js'
-import type { ClassifiedMove } from '../types/chess.types'
+import type { ClassifiedMove } from './types'
 import type { MoveQuality } from './moveClassifier'
 
 /** Converte o `bestMove` do Stockfish (UCI, ex: "e2e4") pra SAN legível (ex: "e4"), a partir

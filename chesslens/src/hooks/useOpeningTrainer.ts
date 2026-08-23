@@ -2,12 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Chess } from 'chess.js'
 import {
   getGlobalOpeningTree, getOpeningFamilies, pickBestChild, pickWeightedChild,
-} from '../utils/openingRepertoire'
-import type { OpeningNode } from '../utils/openingRepertoire'
+} from '../analysis/openingRepertoire'
+import type { OpeningNode } from '../analysis/openingRepertoire'
 import { useMoveSound } from './useMoveSound'
 import { useStockfish } from './useStockfish'
-import { classifyMove, toWhiteCp } from '../utils/moveClassifier'
-import type { ClassifiedMove } from '../types/chess.types'
+import { classifyMove, toWhiteCp } from '../analysis/moveClassifier'
+import type { ClassifiedMove } from '../analysis/types'
 
 export type Side = 'white' | 'black'
 

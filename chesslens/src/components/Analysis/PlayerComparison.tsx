@@ -1,5 +1,5 @@
-import type { ClassifiedMove } from '../../types/chess.types'
-import { calcAccuracy, QUALITY_CONFIG, QUALITY_ORDER } from '../../utils/moveClassifier'
+import type { ClassifiedMove } from '../../analysis/types'
+import { calcAccuracy, QUALITY_CONFIG, QUALITY_ORDER } from '../../analysis/moveClassifier'
 import { QUALITY_ICONS } from '../Board/QualityIcons'
 
 interface PlayerComparisonProps {

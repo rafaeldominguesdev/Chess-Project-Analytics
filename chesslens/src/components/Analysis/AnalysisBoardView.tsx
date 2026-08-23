@@ -8,9 +8,9 @@ import type { StockfishEval } from '../../hooks/useStockfish'
 import { ChessBoard, BOARD_ROW_CHROME_WIDTH } from '../Board/ChessBoard'
 import { BoardControls } from '../Board/BoardControls'
 import { MoveQualityBadge } from '../Board/MoveQualityBadge'
-import { identifyOpening, isBookMove } from '../../utils/openingsDatabase'
-import { classifyMove, materialForSide, toWhiteCp } from '../../utils/moveClassifier'
-import type { MoveQuality } from '../../utils/moveClassifier'
+import { identifyOpening, isBookMove } from '../../analysis/openingsDatabase'
+import { classifyMove, materialForSide, toWhiteCp } from '../../analysis/moveClassifier'
+import type { MoveQuality } from '../../analysis/moveClassifier'
 
 interface AnalysisBoardViewProps {
   boardWidth: number

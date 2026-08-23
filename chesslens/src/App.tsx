@@ -22,8 +22,8 @@ import { SearchView } from './components/PlayerSearch/SearchView'
 import type { Platform } from './components/PlayerSearch/SearchView'
 import { usePlayerProfiles } from './hooks/useChesscomApi'
 import { useMoveSound } from './hooks/useMoveSound'
-import { classifyMove, toWhiteCp, materialForSide } from './utils/moveClassifier'
-import { isBookMove } from './utils/openingsDatabase'
+import { classifyMove, toWhiteCp, materialForSide } from './analysis/moveClassifier'
+import { isBookMove } from './analysis/openingsDatabase'
 
 function AppInner() {
   const [settingsOpen, setSettingsOpen] = useState(false)

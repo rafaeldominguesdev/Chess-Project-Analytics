@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
-import type { ClassifiedMove } from '../../types/chess.types'
-import { coachComment } from '../../utils/coachComments'
+import type { ClassifiedMove } from '../../analysis/types'
+import { coachComment } from '../../analysis/coachComments'
 import { MoveQualityBadge } from '../Board/MoveQualityBadge'
 
 // Recorte do rosto da capivara a partir da hero image (2560×1440), sem precisar de um asset

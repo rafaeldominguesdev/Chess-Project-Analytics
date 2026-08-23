@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { CALIBRATION_MULTIPLIER, QUALITY_CONFIG, winningChances } from '../../utils/moveClassifier'
+import { CALIBRATION_MULTIPLIER, QUALITY_CONFIG, winningChances } from '../../analysis/moveClassifier'
 
 interface EvalGraphProps {
   evals: number[]              // perspectiva das brancas, centipawns (-2000..2000)

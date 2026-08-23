@@ -2,7 +2,7 @@
 // minúsculos e inconsistentes entre plataformas — ex: 📖 livro, 👍 ótimo). Os símbolos que já
 // são pontuação ASCII simples (!, ?!, ?, ??) continuam como texto — já renderizam nítidos.
 import type { ReactElement, SVGProps } from 'react'
-import type { MoveQuality } from '../../utils/moveClassifier'
+import type { MoveQuality } from '../../analysis/moveClassifier'
 
 type IconProps = SVGProps<SVGSVGElement>
 

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Chess } from 'chess.js'
-import { getRandomPuzzle } from '../utils/puzzles'
-import type { Puzzle } from '../utils/puzzles'
+import { getRandomPuzzle } from '../analysis/puzzles'
+import type { Puzzle } from '../analysis/puzzles'
 import { useMoveSound } from './useMoveSound'
 
 // 'solving' → tabuleiro visível e interativo, esperando o lance certo.

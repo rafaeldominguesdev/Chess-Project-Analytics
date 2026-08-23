@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Chess } from 'chess.js'
-import type { ClassifiedMove, GameInfo } from '../../types/chess.types'
+import type { ClassifiedMove } from '../../analysis/types'
+import type { GameInfo } from '../../types/chess.types'
 import type { StockfishEval } from '../../hooks/useStockfish'
 import { EvalGraph } from '../Analysis/EvalGraph'
 import { PlayerComparison } from '../Analysis/PlayerComparison'

@@ -1,4 +1,4 @@
-import { winningChances } from '../../utils/moveClassifier'
+import { winningChances } from '../../analysis/moveClassifier'
 
 interface EvalBarProps {
   evaluation: number

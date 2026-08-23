@@ -1,5 +1,5 @@
-import { QUALITY_CONFIG } from '../../utils/moveClassifier'
-import type { MoveQuality } from '../../utils/moveClassifier'
+import { QUALITY_CONFIG } from '../../analysis/moveClassifier'
+import type { MoveQuality } from '../../analysis/moveClassifier'
 import { QUALITY_ICONS } from './QualityIcons'
 
 interface MoveQualityBadgeProps {

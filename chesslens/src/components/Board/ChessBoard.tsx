@@ -7,9 +7,9 @@ import { SquareQualityMarker } from './MoveQualityBadge'
 import { useTheme } from '../../contexts/ThemeContext'
 import { BOARD_THEMES, PIECE_SETS, PIECE_COLOR_FILTER } from '../../utils/boardThemes'
 import { buildCustomPieces } from '../../utils/pieceLoader'
-import { qualityAlphaColor, QUALITY_CONFIG } from '../../utils/moveClassifier'
+import { qualityAlphaColor, QUALITY_CONFIG } from '../../analysis/moveClassifier'
 import type { StockfishEval } from '../../hooks/useStockfish'
-import type { MoveQuality } from '../../utils/moveClassifier'
+import type { MoveQuality } from '../../analysis/moveClassifier'
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion'
 
 const EVAL_BAR_WIDTH = 24

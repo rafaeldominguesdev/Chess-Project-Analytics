@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react'
 import { Chess } from 'chess.js'
-import type { ClassifiedMove, GameInfo } from '../types/chess.types'
-import type { MoveQuality } from '../utils/moveClassifier'
+import type { ClassifiedMove } from '../analysis/types'
+import type { GameInfo } from '../types/chess.types'
+import type { MoveQuality } from '../analysis/moveClassifier'
 // MoveQuality is used for updateMoveClassification
 
 interface UseChessGameReturn {

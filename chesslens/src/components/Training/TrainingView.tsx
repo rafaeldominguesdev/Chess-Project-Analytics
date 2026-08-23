@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { RefCallback, SVGProps } from 'react'
 import { usePuzzleTrainer } from '../../hooks/usePuzzleTrainer'
 import { ChessBoard, BOARD_ROW_CHROME_WIDTH } from '../Board/ChessBoard'
-import { PUZZLE_RATING_MAX, PUZZLE_RATING_MIN } from '../../utils/puzzles'
+import { PUZZLE_RATING_MAX, PUZZLE_RATING_MIN } from '../../analysis/puzzles'
 import { TargetIcon } from '../Layout/icons'
 
 interface TrainingViewProps {
@@ -17,7 +17,7 @@ interface Difficulty {
   max: number
 }
 
-// Faixas de 600 a 3100+ agora (banco cresceu de 1500 pra ~3700 puzzles, ver utils/puzzles.ts) —
+// Faixas de 600 a 3100+ agora (banco cresceu de 1500 pra ~3700 puzzles, ver analysis/puzzles.ts) —
 // "Iniciante" e "Mestre" são novas, as três do meio continuam do jeito que já estavam.
 const DIFFICULTIES: Difficulty[] = [
   { key: 'iniciante', label: 'Iniciante', min: 600, max: 800 },
