@@ -397,12 +397,19 @@ body {
        abaixo do tabuleiro — por isso `--hero-bg-pos-y` fica ALTO (perto de 100%, via
        HERO_BG_POSITION_Y no componente), ancorando a imagem pela base, então o resíduo de corte
        vertical sai de cima (vazio), nunca de baixo (tabuleiro).
-   Abaixo da altura desta caixa, o resto do wrapper (cards de Recurso, rodapé) fica sobre a cor
-   de fundo normal (--color-bg-main) — não precisa de imagem atrás, então não há mais vão visível
-   em lugar nenhum. A "fumaça" (segunda camada) fica no rodapé — ver `.cl-footer-fog`.
+   Abaixo da altura desta caixa, o resto do wrapper (cards de Recurso, rodapé) precisa continuar
+   preto — não cinza — porque o FUNDO DA PRÓPRIA ARTE já é preto (a foto desvanece pra preto perto
+   da base, não pára num corte limpo). Antes da troca de paleta desta sessão isso não precisava
+   de regra própria: --color-bg-main ERA preto, então herdava por acidente e a emenda ficava
+   invisível. Agora que --color-bg-main é cinza-chumbo (pedido do usuário, resto do app inteiro),
+   só a Home teria uma "barra" cinza visível bem onde a imagem termina — pedido direto do usuário:
+   "embaixo tá um cinza vazio, parece uma barra, deixa preto igual a cor da imagem, pra parecer
+   que está tudo preenchido". Por isso só este wrapper (não o token global) fica preto de propósito.
+   A "fumaça" (segunda camada) fica no rodapé — ver `.cl-footer-fog`.
    ══════════════════════════════════════════════ */
 .cl-home-hero-wrap {
   container-type: inline-size;
+  background: #000000;
 }
 .cl-hero-bg {
   height: calc(56.25cqw + 12px);
