@@ -120,7 +120,10 @@ export function classifyMove(
     if (materialDelta > 0 && Math.abs(before) < 400) return 'brilliant'
     return 'best'
   }
-  if (winDrop < 2) return 'excellent'
+  // "Excelente" bem mais raro que antes (era <2) — pedido direto do usuário: "lance bom é
+  // normal", quer a categoria reservada pra queda quase zero de verdade, não só "bem próximo do
+  // melhor". Continua existindo espaço pra "Ótimo" logo abaixo pegar o que sobrar.
+  if (winDrop < 0.8) return 'excellent'
   if (winDrop < 5) return 'great'
   if (winDrop < 10) return 'good'
   if (winDrop < 20) return 'inaccuracy'
