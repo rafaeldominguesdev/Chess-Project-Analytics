@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
-import { CURATED_THEMES_BY_CATEGORY, CURATED_PIECE_SETS, PIECE_SETS, PIECE_COLOR_FILTER } from '../../utils/boardThemes'
-import type { BoardThemeName, PieceSetName, BoardSize, AnimationSpeed } from '../../types/theme.types'
+import { BOARD_THEMES, CURATED_BOARD_THEMES, CURATED_PIECE_SETS, PIECE_SETS, PIECE_COLOR_FILTER } from '../../utils/boardThemes'
+import type { PieceSetName, BoardSize, AnimationSpeed } from '../../types/theme.types'
 import { BoardIcon, AppearanceIcon, MotionIcon, SoundIcon, SearchIcon } from './icons'
 
 type CategoryId = 'board' | 'appearance' | 'animation' | 'sound'
@@ -223,23 +223,21 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
             {active?.id === 'board' && (
               <>
                 <Section label="Tabuleiro">
-                  {Object.entries(CURATED_THEMES_BY_CATEGORY).map(([cat, themes]) => (
-                    <div key={cat} style={{ marginBottom: 16 }}>
-                      <CategoryLabel>{cat}</CategoryLabel>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                        {themes.map((t) => (
-                          <ThemeRow
-                            key={t.key}
-                            label={t.label}
-                            isSelected={theme.boardTheme === t.key}
-                            onClick={() => setBoardTheme(t.key as BoardThemeName)}
-                          >
-                            <BoardPreview light={t.light} dark={t.dark} image={t.image} isSelected={theme.boardTheme === t.key} />
-                          </ThemeRow>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                    {CURATED_BOARD_THEMES.map((key) => {
+                      const t = BOARD_THEMES[key]
+                      return (
+                        <ThemeRow
+                          key={key}
+                          label={t.label}
+                          isSelected={theme.boardTheme === key}
+                          onClick={() => setBoardTheme(key)}
+                        >
+                          <BoardPreview light={t.light} dark={t.dark} image={t.image} isSelected={theme.boardTheme === key} />
+                        </ThemeRow>
+                      )
+                    })}
+                  </div>
                 </Section>
 
                 <Divider />
@@ -330,13 +328,6 @@ function Section({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
-function CategoryLabel({ children }: { children: ReactNode }) {
-  return (
-    <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-gray-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, paddingLeft: 2 }}>
-      {children}
-    </div>
-  )
-}
 
 function Divider() {
   return <div style={{ height: 2, background: 'var(--color-gray-border)', margin: '18px 0' }} />

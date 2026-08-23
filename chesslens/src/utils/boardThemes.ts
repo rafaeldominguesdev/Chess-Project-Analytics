@@ -54,27 +54,15 @@ export const BOARD_THEMES = {
 export type BoardThemeName = keyof typeof BOARD_THEMES
 export type BoardThemeDef = (typeof BOARD_THEMES)[BoardThemeName]
 
-// Agrupa os temas por categoria preservando a ordem de inserção
-export const THEMES_BY_CATEGORY = (Object.entries(BOARD_THEMES) as [BoardThemeName, BoardThemeDef][])
-  .reduce((acc, [key, theme]) => {
-    ;(acc[theme.category] ??= []).push({ key, ...theme })
-    return acc
-  }, {} as Record<string, Array<{ key: BoardThemeName } & BoardThemeDef>>)
-
 // Lista curada pro seletor de Configurações (pedido direto do usuário: "volte os outros
-// tabuleiros... deixe apenas os coloridos normais e Wood 4, o resto de madeira tire"). As
-// texturas de madeira/mármore/couro continuam definidas em BOARD_THEMES — só não aparecem
-// mais no seletor, exceto a Wood 4.
+// tabuleiros... deixe apenas os coloridos normais e Wood 4, o resto de madeira tire" — depois
+// "tira aquele subtópico [categoria] no tabuleiro, deixa tudo junto", por isso é uma lista plana,
+// sem agrupar por categoria). As texturas de madeira/mármore/couro continuam definidas em
+// BOARD_THEMES — só não aparecem mais no seletor, exceto a Wood 4.
 export const CURATED_BOARD_THEMES: BoardThemeName[] = [
   'graphite-amber', 'chesscom-green', 'chesscom-walnut', 'chesscom-blue', 'chesscom-tournament',
   'lichess-brown', 'midnight', 'emerald', 'coral', 'wood4',
 ]
-export const CURATED_THEMES_BY_CATEGORY = (Object.entries(THEMES_BY_CATEGORY) as [string, Array<{ key: BoardThemeName } & BoardThemeDef>][])
-  .reduce((acc, [category, themes]) => {
-    const kept = themes.filter((t) => CURATED_BOARD_THEMES.includes(t.key))
-    if (kept.length > 0) acc[category] = kept
-    return acc
-  }, {} as Record<string, Array<{ key: BoardThemeName } & BoardThemeDef>>)
 
 export const PIECE_SETS: Record<PieceSetName, PieceSet> = {
   cburnett:   { label: 'CBurnett',   src: 'cburnett' },

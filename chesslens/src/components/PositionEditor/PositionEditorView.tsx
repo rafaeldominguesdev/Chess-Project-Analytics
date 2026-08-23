@@ -212,8 +212,21 @@ export function PositionEditorView({ boardWidth, containerRef, onAnalyze }: Posi
       <div ref={containerRef} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, paddingTop: 8 }}>
         <div
           className="cl-card"
-          style={{ width: boardWidth, height: boardWidth, overflow: 'hidden', display: 'grid', gridTemplateColumns: `repeat(8, ${squareSize}px)`, gridTemplateRows: `repeat(8, ${squareSize}px)` }}
+          style={{ width: boardWidth, height: boardWidth, overflow: 'hidden', position: 'relative', display: 'grid', gridTemplateColumns: `repeat(8, ${squareSize}px)`, gridTemplateRows: `repeat(8, ${squareSize}px)` }}
         >
+          {/* Tabuleiro com foto (madeira/mármore/etc) — mesmo mecanismo do ChessBoard.tsx: a
+              imagem cobre o tabuleiro inteiro por trás, as casas abaixo ficam transparentes.
+              Faltava aqui antes (o editor só pintava a cor light/dark aproximada, nunca a foto
+              real), por isso o mesmo tema de madeira aparecia diferente no editor de posição. */}
+          {bt.image && (
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute', inset: 0,
+                backgroundImage: `url(${bt.image})`, backgroundSize: '100% 100%',
+              }}
+            />
+          )}
           {displayRanks.map((rank, ri) =>
             displayFiles.map((file, fi) => {
               const square = `${file}${rank}`
@@ -236,7 +249,7 @@ export function PositionEditorView({ boardWidth, containerRef, onAnalyze }: Posi
                     position: 'relative',
                     width: squareSize,
                     height: squareSize,
-                    background: isLight ? bt.light : bt.dark,
+                    background: bt.image ? 'transparent' : (isLight ? bt.light : bt.dark),
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
