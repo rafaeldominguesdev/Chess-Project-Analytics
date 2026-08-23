@@ -80,7 +80,7 @@ function AccuracyBox({ value, delay }: { value: number; delay: number }) {
         animationDelay: `${delay}ms`,
       }}
     >
-      <span className="cl-mono" style={{ fontSize: 40, fontWeight: 800, color: c }}>{value}%</span>
+      <span className="cl-mono" style={{ fontSize: 40, fontWeight: 800, color: c }}>{value.toFixed(1)}%</span>
     </div>
   )
 }

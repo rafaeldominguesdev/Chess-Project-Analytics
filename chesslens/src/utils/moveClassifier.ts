@@ -160,5 +160,9 @@ export function calcAccuracy(
   const arithmeticMean = perMove.reduce((a, b) => a + b, 0) / perMove.length
   // Math.max(1, a) no denominador só evita divisão por zero num lance de precisão exatamente 0.
   const harmonicMean = perMove.length / perMove.reduce((acc, a) => acc + 1 / Math.max(1, a), 0)
-  return Math.round((arithmeticMean + harmonicMean) / 2)
+  // Uma casa decimal (não arredondado pro inteiro) — pedido direto do usuário: "deixa quebrado o
+  // número, tipo não ser 95%, pode ser 94.4%" — bate com o jeito que o chess.com mostra a
+  // precisão de verdade (nunca um número redondo), e o cálculo já tem essa granularidade, só
+  // estava sendo jogada fora no arredondamento final.
+  return Math.round((arithmeticMean + harmonicMean) * 5) / 10
 }
