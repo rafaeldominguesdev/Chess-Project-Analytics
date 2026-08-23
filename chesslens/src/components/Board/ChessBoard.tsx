@@ -542,7 +542,7 @@ export function ChessBoard({
                 position: 'absolute',
                 top: -squareSize * 0.12,
                 right: -squareSize * 0.12,
-                animation: 'pop 0.25s ease-out',
+                ...(reducedMotion ? {} : { animation: 'pop 0.25s ease-out' }),
               }}
             >
               <SquareQualityMarker quality={currentQuality} size={squareSize * 0.46} />
@@ -581,7 +581,7 @@ export function ChessBoard({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                animation: 'pop var(--dur-enter) var(--ease-snap)',
+                ...(reducedMotion ? {} : { animation: 'pop var(--dur-enter) var(--ease-snap)' }),
               }}
             >
               #
