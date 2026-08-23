@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { Chess } from 'chess.js'
 import type { ClassifiedMove, GameInfo } from '../../types/chess.types'
 import type { StockfishEval } from '../../hooks/useStockfish'
@@ -107,42 +108,143 @@ function EnginePanel({
   )
 }
 
-/** Barra de progresso animada da análise do Stockfish rodando em segundo plano. */
-function AnalysisProgress({ progress }: { progress: { done: number; total: number } }) {
-  const pct = progress.total > 0 ? Math.min(100, Math.round((progress.done / progress.total) * 100)) : 0
-  const finished = pct >= 100
+/**
+ * Overlay de tela cheia mostrado enquanto o Stockfish ainda está analisando a partida em segundo
+ * plano, antes de "Começar a Revisão" — pedido direto do usuário: "não vá direto, apareça um
+ * número aumentando até 100% no meio da tela, tudo em volta com um blur, não fique parado, faça
+ * bem bonito, com motion". Antes disso a tela de resumo já mostrava os números de precisão/
+ * classificação se populando sozinhos por baixo — funcional, mas parecia "quebrado" (números
+ * mudando toda hora sem contexto, mais perceptível agora que a análise ficou mais profunda/lenta,
+ * ver `useGameAnalysis.ts`). O overlay cobre a tela inteira (não só esse painel lateral) com um
+ * blur de fundo, e some sozinho assim que a análise termina, revelando o resumo já pronto.
+ *
+ * Continua montado (só com opacidade 0) por um instante depois que `progress` vira `null` — dá
+ * tempo da transição de saída rodar em vez de sumir seco, e mantém o número/anel travado em 100%
+ * durante essa saída (guardado em `lastProgressRef`) em vez de zerar de repente.
+ */
+function AnalysisLoadingOverlay({
+  progress, onSkip,
+}: {
+  progress: { done: number; total: number } | null
+  onSkip: () => void
+}) {
   const reducedMotion = usePrefersReducedMotion()
+  const [mounted, setMounted] = useState(!!progress)
+  const [visible, setVisible] = useState(false)
+  const [displayPct, setDisplayPct] = useState(0)
+  const lastProgressRef = useRef<{ done: number; total: number }>({ done: 0, total: 0 })
+  if (progress) lastProgressRef.current = progress
+  const shown = progress ?? lastProgressRef.current
+  const targetPct = shown.total > 0 ? Math.min(100, (shown.done / shown.total) * 100) : 0
+
+  useEffect(() => {
+    if (progress) {
+      setMounted(true)
+      const id = requestAnimationFrame(() => setVisible(true))
+      return () => cancelAnimationFrame(id)
+    }
+    setVisible(false)
+    const t = setTimeout(() => setMounted(false), 320)
+    return () => clearTimeout(t)
+  }, [progress])
+
+  // Conta até o alvo suavemente em vez de saltar de vez a cada posição classificada — em
+  // profundidade 18 cada posição pode levar alguns segundos, sem isso o número fica "parado"
+  // a maior parte do tempo e só pula de repente (o oposto de "não fique parado", pedido do usuário).
+  useEffect(() => {
+    if (reducedMotion) { setDisplayPct(targetPct); return }
+    let raf: number
+    const step = () => {
+      setDisplayPct((prev) => {
+        if (prev >= targetPct) return prev
+        const next = prev + Math.max(0.4, (targetPct - prev) * 0.08)
+        return next >= targetPct ? targetPct : next
+      })
+      raf = requestAnimationFrame(step)
+    }
+    raf = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(raf)
+  }, [targetPct, reducedMotion])
+
+  if (!mounted) return null
+
+  const shownPct = Math.round(displayPct)
+  const radius = 54
+  const circumference = 2 * Math.PI * radius
+  const dashOffset = circumference * (1 - displayPct / 100)
 
   return (
-    <div className="cl-fade-in" style={{ marginBottom: 10 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5, gap: 8 }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--color-gray-muted)', fontWeight: 700, minWidth: 0 }}>
-          <span
-            style={{
-              width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
-              background: finished ? 'var(--color-success)' : 'var(--color-blue-bright)',
-              animation: (finished || reducedMotion) ? 'none' : 'cl-pulse-dot 1.1s ease-in-out infinite',
-            }}
-          />
-          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {finished ? 'Análise do Stockfish concluída' : 'Stockfish analisando a partida…'}
-          </span>
-        </span>
-        <span className="cl-mono" style={{ fontSize: 11.5, color: 'var(--color-text-on-dark)', fontWeight: 800, flexShrink: 0 }}>
-          {pct}%
-        </span>
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 300,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'rgba(10,10,11,0.62)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        opacity: visible ? 1 : 0,
+        transition: 'opacity 0.32s var(--ease-snap)',
+        pointerEvents: visible ? 'auto' : 'none',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 22,
+          transform: visible ? 'scale(1) translateY(0)' : 'scale(0.94) translateY(10px)',
+          transition: 'transform 0.32s var(--ease-hinge)',
+        }}
+      >
+        <div style={{ position: 'relative', width: 156, height: 156 }}>
+          {!reducedMotion && (
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute', inset: -22, borderRadius: '50%',
+                background: 'conic-gradient(from 0deg, transparent 0%, rgba(232,169,60,0.55) 16%, transparent 38%)',
+                filter: 'blur(11px)',
+                animation: 'cl-analysis-spin 2.4s linear infinite',
+              }}
+            />
+          )}
+          <svg width={156} height={156} style={{ position: 'relative', transform: 'rotate(-90deg)' }}>
+            <circle cx={78} cy={78} r={radius} fill="none" stroke="var(--color-gray-border)" strokeWidth={9} />
+            <circle
+              cx={78} cy={78} r={radius} fill="none"
+              stroke="var(--color-blue-bright)" strokeWidth={9} strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={dashOffset}
+              style={{
+                transition: reducedMotion ? 'none' : 'stroke-dashoffset 0.15s linear',
+                filter: 'drop-shadow(0 0 10px rgba(232,169,60,0.6))',
+              }}
+            />
+          </svg>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span className="cl-mono" style={{ fontSize: 36, fontWeight: 800, color: 'var(--color-text-on-dark)', letterSpacing: -0.5 }}>
+              {shownPct}%
+            </span>
+          </div>
+        </div>
+
+        <div style={{ textAlign: 'center' }}>
+          <p className="cl-display" style={{ fontSize: 18, color: 'var(--color-text-on-dark)', marginBottom: 4 }}>
+            Analisando com o Stockfish
+          </p>
+          <p className="cl-mono" style={{ fontSize: 12, color: 'var(--color-gray-muted)' }}>
+            {shown.done} de {shown.total} posições · profundidade 18
+          </p>
+        </div>
+
+        <button
+          onClick={onSkip}
+          className="cl-btn cl-btn-ghost"
+          style={{ fontSize: 11.5, padding: '6px 14px', color: 'var(--color-gray-muted)' }}
+        >
+          Pular e ver mesmo assim
+        </button>
       </div>
-      <div style={{ height: 5, borderRadius: 3, background: 'var(--color-bg-panel)', overflow: 'hidden' }}>
-        <div
-          style={{
-            height: '100%', width: `${pct}%`, borderRadius: 3,
-            background: finished ? 'var(--color-success)' : 'var(--color-blue-bright)',
-            transition: 'width 0.35s ease, background 0.3s ease',
-          }}
-        />
-      </div>
-      {/* keyframe local do dot pulsante — não mexe em index.css, que é de outro agente */}
-      <style>{`@keyframes cl-pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }`}</style>
+
+      {/* keyframe local do brilho girando — não mexe em index.css, que é de outro agente */}
+      <style>{`@keyframes cl-analysis-spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }
@@ -184,8 +286,20 @@ export function ReviewPanel({
   const whiteName = gameInfo?.white ?? 'Brancas'
   const blackName = gameInfo?.black ?? 'Pretas'
 
+  // Só usado pelo botão "Pular" do overlay de análise — guarda o `total` da análise que a pessoa
+  // decidiu não esperar, pra saber que essa dispensa vale só pra essa partida (a próxima tem um
+  // `total` de posições diferente quase sempre, então o overlay volta a aparecer normalmente).
+  const [dismissedTotal, setDismissedTotal] = useState<number | null>(null)
+
   return (
-    <aside className={`cl-tool-aside${reviewStarted ? ' cl-tool-aside-pinned-footer' : ''}`}>
+    <>
+      {!reviewStarted && (
+        <AnalysisLoadingOverlay
+          progress={progress && progress.total === dismissedTotal ? null : progress}
+          onSkip={() => setDismissedTotal(progress?.total ?? null)}
+        />
+      )}
+      <aside className={`cl-tool-aside${reviewStarted ? ' cl-tool-aside-pinned-footer' : ''}`}>
       {/* A navegação (BoardControls) fica FORA da área rolável, como rodapé fixo do painel —
           pedido direto do usuário ("fixa pra não ficar mexendo... cortou as opções de pular
           lance"). Antes ela era só o último item dentro do mesmo `<div>` rolável que Coach +
@@ -208,11 +322,11 @@ export function ReviewPanel({
       >
         {!reviewStarted ? (
           <div key="summary" className="cl-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {/* Tela de resumo: fotos lado a lado + precisão + comparação por categoria.
-                O Stockfish já está analisando em segundo plano, então esses números
-                vão se populando sozinhos antes mesmo de clicar em "Começar a Revisão". */}
+            {/* Tela de resumo: fotos lado a lado + precisão + comparação por categoria. O
+                Stockfish já está analisando em segundo plano — enquanto não termina, o overlay
+                de tela cheia (`AnalysisLoadingOverlay`, acima) cobre esse card, então esses
+                números só ficam visíveis já com os valores finais. */}
             <div className="cl-card" style={{ padding: 13 }}>
-              {progress && <AnalysisProgress progress={progress} />}
               <PlayerComparison
                 moves={moves}
                 whiteName={whiteName}
@@ -274,6 +388,7 @@ export function ReviewPanel({
           />
         </div>
       )}
-    </aside>
+      </aside>
+    </>
   )
 }
