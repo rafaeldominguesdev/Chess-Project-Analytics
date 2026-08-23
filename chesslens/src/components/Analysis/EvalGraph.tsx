@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { QUALITY_CONFIG, winningChances } from '../../utils/moveClassifier'
+import { CALIBRATION_MULTIPLIER, QUALITY_CONFIG, winningChances } from '../../utils/moveClassifier'
 
 interface EvalGraphProps {
   evals: number[]              // perspectiva das brancas, centipawns (-2000..2000)
@@ -99,7 +99,7 @@ export function EvalGraph({ evals, currentPosition, onSeek }: EvalGraphProps) {
     const isWhiteMove = i % 2 === 1
     const before = isWhiteMove ? evals[i - 1] : -evals[i - 1]
     const after = isWhiteMove ? evals[i] : -evals[i]
-    const drop = Math.max(0, winPercent(before) - winPercent(after))
+    const drop = Math.max(0, winPercent(before) - winPercent(after)) * CALIBRATION_MULTIPLIER
     if (drop >= BLUNDER_DROP) criticalMoments.push({ index: i, severity: 'blunder' })
     else if (drop >= MISTAKE_DROP) criticalMoments.push({ index: i, severity: 'mistake' })
   }

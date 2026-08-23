@@ -82,7 +82,25 @@ function winPercent(cp: number): number {
  * `materialDelta` = material próprio perdido pelo lance (positivo = sacrificou material).
  * Este app só tem análise single-PV (sem multi-PV como o algoritmo real do chess.com), então
  * esta é uma aproximação honesta, não uma cópia exata.
+ *
+ * `CALIBRATION_MULTIPLIER`: comparação real feita pelo usuário — mesma partida analisada aqui e
+ * no chess.com de verdade (`rafexzk` vs `W_Sanches`, 27 lances, 23/08/2026), lance a lance: o
+ * chess.com marcou ~15% dos lances de brancas como algum tipo de erro (3 imprecisão + 1 miss em
+ * 27), este app marcava só ~4% (1 imprecisão em 27) com os limiares antigos — e um lance real,
+ * "24. Kxf1", que o chess.com marca como imprecisão, esta análise marcava como "Melhor" (era
+ * literalmente a recomendação do motor aqui). Não é só limiar mal calibrado: a queda de % de
+ * chance de vitória que ESTE motor calcula (Stockfish 18 single-PV, profundidade 18, no
+ * navegador) tende a sair menor que o que o sistema do chess.com usa como referência pra mesma
+ * jogada — sem acesso ao motor/profundidade exatos deles, não dá pra igualar de verdade, então
+ * a saída é recalibrar: multiplica a queda calculada por esse fator ANTES de classificar/pontuar,
+ * empurrando os limiares "efetivos" pra baixo de propósito. Ajustado pra aproximar os dois pontos
+ * reais de calibração que existem até agora (essa partida casual, 78.4% real vs muito mais alto
+ * antes daqui; e uma partida do Magnus Carlsen de nível altíssimo, 84% real, que já batia bem
+ * com o multiplicador 1x — jogo de altíssimo nível tem poucos lances com queda grande, então o
+ * multiplicador mexe pouco nele e mexe muito nos jogos com mais erro real, como esse aqui).
  */
+export const CALIBRATION_MULTIPLIER = 1.8
+
 export function classifyMove(
   evalBefore: number,
   evalAfter: number,
@@ -95,7 +113,7 @@ export function classifyMove(
   // Normaliza para a perspectiva de quem jogou
   const before = color === 'w' ? evalBefore : -evalBefore
   const after = color === 'w' ? evalAfter : -evalAfter
-  const winDrop = Math.max(0, winPercent(before) - winPercent(after))
+  const winDrop = Math.max(0, winPercent(before) - winPercent(after)) * CALIBRATION_MULTIPLIER
 
   if (isBestMove) {
     // Lance melhor que sacrifica material numa posição aproximadamente equilibrada
@@ -154,7 +172,7 @@ export function calcAccuracy(
   const perMove = own.map((m) => {
     const before = color === 'w' ? m.evalBefore! : -m.evalBefore!
     const after = color === 'w' ? m.evalAfter! : -m.evalAfter!
-    const winDrop = Math.max(0, winPercent(before) - winPercent(after))
+    const winDrop = Math.max(0, winPercent(before) - winPercent(after)) * CALIBRATION_MULTIPLIER
     return moveAccuracy(winDrop)
   })
   const arithmeticMean = perMove.reduce((a, b) => a + b, 0) / perMove.length
