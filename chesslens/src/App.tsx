@@ -60,7 +60,12 @@ function AppInner() {
 
   const { theme } = useTheme()
   const { boardWidth, containerRef } = useBoardSize(theme.boardSize, { chromeWidth: BOARD_ROW_CHROME_WIDTH })
-  const { evaluation, isReady, analyze } = useStockfish(15)
+  // multiPv=3 pede as 3 melhores linhas ao mesmo worker que já calculava a avaliação ao vivo da
+  // posição atual (era multiPv=1) — reaproveita o mesmo motor em vez de subir um segundo worker
+  // em paralelo só pra alimentar o painel "Motor" da Revisão de partida (mesmo padrão já usado
+  // no Tabuleiro de análise livre, `AnalysisBoardView`). `evaluation` continua sendo só a linha 1
+  // (pra barra de avaliação) — `engineLines`/`engineIsAnalyzing` alimentam o painel de texto.
+  const { evaluation, lines: engineLines, isReady, isAnalyzing: engineIsAnalyzing, analyze } = useStockfish(15, 3)
   const { analyzeGame, progress } = useGameAnalysis(12)
   const { playForSan } = useMoveSound()
 
@@ -245,6 +250,9 @@ function AppInner() {
               onNext={goNext}
               onLast={goLast}
               onFlipBoard={flipBoard}
+              currentFen={currentFen}
+              engineLines={engineLines}
+              engineIsAnalyzing={engineIsAnalyzing}
             />
           </>
         )}
