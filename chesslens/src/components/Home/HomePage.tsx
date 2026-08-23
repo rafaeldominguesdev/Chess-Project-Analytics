@@ -22,16 +22,6 @@ function base(props: SVGProps<SVGSVGElement>): SVGProps<SVGSVGElement> {
   return { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', ...props }
 }
 
-function CpuIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...base(props)}>
-      <rect x="6" y="6" width="12" height="12" rx="2" />
-      <rect x="9.5" y="9.5" width="5" height="5" />
-      <path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3" />
-    </svg>
-  )
-}
-
 function RibbonIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...base(props)}>
@@ -58,8 +48,11 @@ function ArrowRightIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
-const FEATURES = [
-  { Icon: CpuIcon, label: 'Stockfish completo', description: 'Motor rodando 100% no seu navegador, sem servidor.' },
+// Card "Stockfish completo" usa o logo oficial do site (`public/logo.png`) no lugar de um ícone
+// genérico de CPU — pedido direto do usuário. É o único card com `image` em vez de `Icon` (os
+// outros dois continuam com SVG próprio); o card renderiza um dos dois, nunca os dois juntos.
+const FEATURES: { Icon?: typeof RibbonIcon; image?: string; label: string; description: string }[] = [
+  { image: '/logo.png', label: 'Stockfish completo', description: 'Motor rodando 100% no seu navegador, sem servidor.' },
   { Icon: RibbonIcon, label: 'Classificação lance a lance', description: 'Brilhante, erro, imprecisão — pra cada jogada, igual chess.com.' },
   { Icon: BookIcon, label: 'Repertório de abertura', description: 'Nome real da abertura, linhas que você mais joga e onde foge da teoria.' },
 ]
@@ -190,7 +183,7 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
             </h2>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-start', gap: 14 }}>
-            {FEATURES.map(({ Icon, label, description }) => (
+            {FEATURES.map(({ Icon, image, label, description }) => (
               <div key={label} className="cl-card cl-feature-card" style={{
                 display: 'flex', flexDirection: 'column', gap: 10,
                 flex: '0 0 250px',
@@ -205,9 +198,14 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
                 <span style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   width: 34, height: 34, borderRadius: 'var(--radius-sm)', flexShrink: 0,
-                  background: 'color-mix(in srgb, var(--color-bg-main) 55%, transparent)', color: 'var(--color-blue-bright)',
+                  overflow: 'hidden',
+                  // O card "Stockfish completo" usa o logo oficial (imagem, já tem fundo/cantos
+                  // próprios) em vez de um ícone de traço — sem o fundo/cor tintados dos outros,
+                  // que ficariam duplicados atrás de uma imagem opaca.
+                  background: image ? 'transparent' : 'color-mix(in srgb, var(--color-bg-main) 55%, transparent)',
+                  color: 'var(--color-blue-bright)',
                 }}>
-                  <Icon />
+                  {image ? <img src={image} alt="" width={34} height={34} style={{ display: 'block', objectFit: 'cover' }} /> : Icon && <Icon />}
                 </span>
                 <span style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--color-text-on-dark)', lineHeight: 1.3, textShadow: '0 1px 6px rgba(0,0,0,0.6)' }}>{label}</span>
