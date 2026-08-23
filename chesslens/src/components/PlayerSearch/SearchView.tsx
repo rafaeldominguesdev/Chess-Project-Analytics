@@ -235,7 +235,7 @@ function LoadingSkeleton() {
           <div style={{ ...shimmer, width: 120, height: 12 }} />
         </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 12 }}>
         {[0, 1, 2, 3].map((i) => (
           <div key={i} style={{ ...shimmer, height: 100, borderRadius: 'var(--radius-lg)' }} />
         ))}

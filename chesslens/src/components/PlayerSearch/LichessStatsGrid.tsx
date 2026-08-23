@@ -13,7 +13,7 @@ export function LichessStatsGrid({ stats }: { stats: LichessStats }) {
     .filter((e): e is { key: PerfKey; perf: NonNullable<LichessStats['bullet']> } => !!e.perf && e.perf.games > 0)
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 12 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 12 }}>
       {entries.map(({ key, perf }, i) => {
         const meta = TIME_CLASS_META[key]
         return (
