@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { countryCodeToFlagEmoji } from '../../utils/flags'
 import { PremiumIcon, isPremiumStatus } from '../PremiumIcon'
+import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion'
 
 interface PlayerCardProps {
   username: string
@@ -54,6 +55,7 @@ export function PlayerCard({
   const flag = countryCodeToFlagEmoji(countryCode)
   const isPremium = isPremiumStatus(status)
   const hasAccuracy = typeof accuracy === 'number' && !Number.isNaN(accuracy)
+  const reducedMotion = usePrefersReducedMotion()
 
   const dim = size === 'lg' ? 38 : 32
   const nameSize = size === 'lg' ? 14.5 : 13
@@ -160,7 +162,7 @@ export function PlayerCard({
             style={{
               width: 7, height: 7, borderRadius: '50%',
               background: 'var(--color-blue-bright)', display: 'inline-block', flexShrink: 0,
-              animation: 'clPlayerTurnPulse 1.6s ease-out infinite',
+              ...(reducedMotion ? {} : { animation: 'clPlayerTurnPulse 1.6s ease-out infinite' }),
             }}
             title="Jogando"
           />
