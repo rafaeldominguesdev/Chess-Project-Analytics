@@ -1,35 +1,42 @@
-@import url('https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=Syne:wght@600;700;800&family=Spline+Sans+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  /* Identidade visual "ChessLens Cinza Azulado": fundo cinza-chumbo neutro (não mais preto
-     puro, pedido direto do usuário — "muito preto, deixa cinza igual do chess.com"), painéis
-     num cinza um degrau mais claro, destaque em azul bebê (era âmbar/dourado — trocado a pedido
-     direto do usuário, "quero a cor secundária azul meio bebê"). Elementos interativos (botões,
+  /* Identidade visual "ChessLens Cinza Azulado": fundo cinza NEUTRO (sem matiz de nenhuma cor —
+     pedido direto do usuário depois da 1ª troca de paleta, "não quero o site meio azulado, quero
+     cinza e o azul só nos botões e em textos chamativos"; a 1ª versão desses tokens usava cinzas
+     ligeiramente puxados pro azul, e isso "vazava" a sensação de azul pro site inteiro mesmo com
+     o acento sendo usado só em detalhes). Painéis num cinza um degrau mais claro, destaque em
+     azul bebê reservado de propósito pra botões/estados ativos/texto de destaque — não pra fundo/
+     borda/texto secundário, que agora são R=G=B de verdade. `--color-bg-sidebar` é um tom
+     dedicado, mais escuro que `--color-bg-main` (pedido direto do usuário: "quero a sidebar um
+     pouco mais escura que o cinza do resto do site") — só a sidebar principal usa esse token,
+     o resto do app continua na escala normal main/panel/raised. Elementos interativos (botões,
      cards, toggles) continuam com visual "físico"/skeumórfico — parecem teclas encaixadas num
      soquete, com sombra dupla (corte claro em cima, assento escuro embaixo) e cantos bem
      arredondados; só a paleta de cor mudou, não o estilo. --color-bg-main/--color-bg-panel/
      --color-blue-bright/--color-text-on-dark/--color-gray-muted/--color-gray-border trocam de
      valor conforme o tema de UI escolhido (ver ThemeContext/UI_THEMES) — os daqui são o
      fallback antes do primeiro render. As outras (blue-primary, blue-light, blue-ice,
-     bg-surface, shadow-btn, text-on-light, cores de resultado, tokens de raio/animação) são
-     fixas, não trocam por tema. Os nomes das variáveis ("blue-*") já eram esses desde antes do
-     app virar âmbar — voltaram a fazer sentido literal agora.
+     bg-surface, bg-sidebar, shadow-btn, text-on-light, cores de resultado, tokens de raio/
+     animação) são fixas, não trocam por tema. Os nomes das variáveis ("blue-*") já eram esses
+     desde antes do app virar âmbar — voltaram a fazer sentido literal com a troca pra azul.
   */
-  --color-bg-main: #1A1B1F;
-  --color-bg-panel: #24262C;
-  --color-bg-raised: #2E3038;
+  --color-bg-main: #1C1C1C;
+  --color-bg-panel: #242424;
+  --color-bg-raised: #2D2D2D;
+  --color-bg-sidebar: #141414;
   --color-bg-surface: #EDE8E0;
   --color-blue-primary: #3E93BF;
   --color-blue-bright: #74C6EA;
   --color-blue-light: #A3DCF3;
   --color-blue-ice: #DDF2FB;
-  --color-gray-border: #3A3C44;
-  --color-gray-muted: #94969F;
+  --color-gray-border: #3A3A3A;
+  --color-gray-muted: #97979B;
   --color-shadow-btn: #000000;
-  --color-text-on-dark: #ECEDF0;
+  --color-text-on-dark: #ECECEC;
   --color-text-on-light: #10171C;
 
   /* Semânticas de resultado — vitória/derrota/empate (usar em vez de hex fixo) */
@@ -43,10 +50,14 @@
   --board-highlight: #E8A93C;
   --board-highlight-dark: #C68A22;
 
-  /* Tipografia: interface geral (Onest), destaque/título (Syne), dados numéricos (Spline Sans Mono) */
-  --font-body: 'Onest', system-ui, -apple-system, sans-serif;
-  --font-display: 'Syne', 'Onest', system-ui, sans-serif;
-  --font-mono: 'Spline Sans Mono', ui-monospace, 'SFMono-Regular', monospace;
+  /* Tipografia (trocada a pedido direto do usuário, "quero uma tipografia legal pro site" — era
+     Onest/Syne/Spline Sans Mono): interface geral (Inter, o padrão de fato pra UI limpa e bem
+     legível em qualquer tamanho), destaque/título (Space Grotesk, geométrica e mais marcante,
+     boa presença em título grande sem ficar "gritando"), dados numéricos (JetBrains Mono, ótimos
+     numerais tabulares — feita pra código/dados, não "dança" de largura ao trocar dígito). */
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
 
   /* Raios — cantos discretos, estilo tecla física (menos arredondado que antes) */
   --radius-sm: 6px;

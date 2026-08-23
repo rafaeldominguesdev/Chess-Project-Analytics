@@ -128,14 +128,16 @@ export const PIECE_COLOR_FILTER: Partial<Record<PieceSetName, string>> = {
 }
 
 export const UI_THEMES: Record<UIThemeName, UITheme> = {
-  // Visual padrão do app: fundo cinza-chumbo neutro (era quase preto puro — pedido direto do
-  // usuário, "muito preto, deixa cinza igual do chess.com"), painéis num cinza um degrau mais
-  // claro, destaque em azul bebê (era âmbar/dourado — pedido direto do usuário, "quero a cor
-  // secundária azul meio bebê"). Botões e cards continuam com visual "físico"/skeumórfico (ver
-  // .cl-btn/.cl-card em index.css) — sombra dupla simulando profundidade, cantos bem arredondados,
-  // só a paleta mudou. Chave/nome interno ficou "amber-noir" de propósito (não afeta nada visível
-  // — não há seletor de tema de UI na interface hoje, só os valores importam).
-  'amber-noir':    { label: 'Cinza Azulado',   bg: '#1A1B1F', surface: '#24262C', accent: '#74C6EA', text: '#ECEDF0', textMuted: '#94969F', border: '#3A3C44', shadowBtn: '#000000' },
+  // Visual padrão do app: fundo cinza NEUTRO (era quase preto puro, depois cinza puxado pro
+  // azul — pedido direto do usuário, "não quero o site meio azulado, quero cinza e o azul só nos
+  // botões/textos chamativos", por isso agora R=G=B de verdade nesses tokens), painéis num cinza
+  // um degrau mais claro, destaque em azul bebê (era âmbar/dourado). Botões e cards continuam
+  // com visual "físico"/skeumórfico (ver .cl-btn/.cl-card em index.css) — sombra dupla simulando
+  // profundidade, cantos bem arredondados, só a paleta mudou. Chave/nome interno ficou
+  // "amber-noir" de propósito (não afeta nada visível — não há seletor de tema de UI na
+  // interface hoje, só os valores importam). `--color-bg-sidebar` (mais escuro, pedido do
+  // usuário) não faz parte desse objeto — é fixo, não troca por tema (ver index.css).
+  'amber-noir':    { label: 'Cinza Azulado',   bg: '#1C1C1C', surface: '#242424', accent: '#74C6EA', text: '#ECECEC', textMuted: '#97979B', border: '#3A3A3A', shadowBtn: '#000000' },
   'brasil':        { label: 'Brasil',          bg: '#F6F9F2', surface: '#FFFFFF', accent: '#2E7D32', text: '#16231A', textMuted: '#5C6E5F', border: '#DCE6D4' },
   'dark-classic':  { label: 'Dark Classic',    bg: '#1a1a2e', surface: '#16213e', accent: '#e2b96a', text: '#e0e0e0', textMuted: '#8892a4', border: '#2a3654' },
   'dark-slate':    { label: 'Dark Slate',      bg: '#0d1117', surface: '#161b22', accent: '#58a6ff', text: '#c9d1d9', textMuted: '#8b949e', border: '#30363d' },

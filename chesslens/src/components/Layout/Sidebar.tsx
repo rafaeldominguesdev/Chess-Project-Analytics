@@ -77,7 +77,9 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
         height: '100vh',
         display: 'flex', flexDirection: 'column',
         padding: collapsed ? '18px 10px' : '18px 14px',
-        background: 'var(--color-bg-panel)',
+        // Um tom mais escuro que o resto do app (--color-bg-panel), não o mesmo — pedido direto
+        // do usuário: "quero a sidebar um pouco mais escura que o cinza do resto do site".
+        background: 'var(--color-bg-sidebar)',
         borderRight: '1px solid var(--color-gray-border)',
         zIndex: 30,
         transition: 'width var(--dur-enter) var(--ease-snap), padding var(--dur-enter) var(--ease-snap)',
