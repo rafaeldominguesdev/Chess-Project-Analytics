@@ -321,6 +321,28 @@ body {
   .cl-tool-aside-scroll { overflow-y: visible; max-height: none; }
 }
 
+/* Variante com um rodapé FIXO fora da área rolável (hoje só a Revisão de partida usa, pra
+   pinar `BoardControls` — ver ReviewPanel.tsx). Pedido direto do usuário: a navegação de lances
+   ficava abaixo da dobra sempre que o conteúdo acima (coach + motor + avaliação + lances) fosse
+   mais alto que a tela, e a altura total mudava lance a lance (cartão do coach só aparece em
+   erros, motor varia de tamanho) — fazendo os controles "pular" de posição a cada clique.
+   Só tirar `.cl-tool-aside-scroll` do fluxo normal (como fiz primeiro, com `flex:1` mas sem
+   dar uma altura FIXA pro `<aside>`) não bastava: sem um teto definido no próprio `<aside>`,
+   o rodapé simplesmente somava altura por cima do `max-height` do scroll — o `<aside>` inteiro
+   ficava mais alto que a tela de novo, só que agora sem chance de rolar até o rodapé (ele tinha
+   saído da área rolável). A altura FIXA aqui é o que faz `flex:1 1 auto` no scroll reservar
+   exatamente o espaço que sobra pro rodapé, garantindo que ele sempre cabe por inteiro. */
+@media (min-width: 981px) {
+  .cl-tool-aside-pinned-footer {
+    height: calc(100vh - 20px);
+  }
+  .cl-tool-aside-pinned-footer > .cl-tool-aside-scroll {
+    max-height: none;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}
+
 /* ══════════════════════════════════════════════
    Home — hero com a mascote como plano de fundo. Em telas estreitas o texto
    (que normalmente fica encostado à direita) precisa ocupar a largura toda,

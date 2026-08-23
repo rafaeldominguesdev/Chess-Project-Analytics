@@ -187,7 +187,20 @@ export function ReviewPanel({
   const blackName = gameInfo?.black ?? 'Pretas'
 
   return (
-    <aside className="cl-tool-aside">
+    <aside className={`cl-tool-aside${reviewStarted ? ' cl-tool-aside-pinned-footer' : ''}`}>
+      {/* A navegação (BoardControls) fica FORA da área rolável, como rodapé fixo do painel —
+          pedido direto do usuário ("fixa pra não ficar mexendo... cortou as opções de pular
+          lance"). Antes ela era só o último item dentro do mesmo `<div>` rolável que Coach +
+          Motor + Avaliação + Lances — em qualquer tela onde essa pilha inteira passasse da
+          altura da janela (`.cl-tool-aside-scroll` tem `max-height: calc(100vh - 20px)` e rola
+          por dentro em telas largas, ver index.css), os botões de navegação ficavam abaixo da
+          dobra, exigindo rolar o painel pra alcançá-los — e a altura total mudava a cada lance
+          (o cartão do coach só aparece em erros, o painel do motor variava), fazendo a posição
+          de rolagem necessária "pular" a cada clique. Com a navegação fixa fora do scroll, ela
+          está sempre visível, na mesma posição, não importa quanto o conteúdo acima cresça.
+          A classe extra `cl-tool-aside-pinned-footer` (ver index.css) dá ao `<aside>` uma altura
+          FIXA em telas largas — sem isso, o rodapé só somaria altura por cima do teto do scroll,
+          empurrando o próprio rodapé pra fora da tela de novo, sem chance de rolar até ele. */}
       <div
         className="cl-tool-aside-scroll"
         style={{
@@ -245,22 +258,24 @@ export function ReviewPanel({
                 <MoveList moves={moves} currentMoveIndex={currentMoveIndex} onGoTo={onGoTo} />
               </Panel>
             </div>
-
-            <div className="cl-row-in" style={{ animationDelay: '110ms' }}>
-              <BoardControls
-                isLoaded={isLoaded}
-                currentMoveIndex={currentMoveIndex}
-                totalMoves={moves.length}
-                onFirst={onFirst}
-                onPrev={onPrev}
-                onNext={onNext}
-                onLast={onLast}
-                onFlip={onFlipBoard}
-              />
-            </div>
           </div>
         )}
       </div>
+
+      {reviewStarted && (
+        <div style={{ paddingTop: 10, paddingRight: 2, flexShrink: 0 }}>
+          <BoardControls
+            isLoaded={isLoaded}
+            currentMoveIndex={currentMoveIndex}
+            totalMoves={moves.length}
+            onFirst={onFirst}
+            onPrev={onPrev}
+            onNext={onNext}
+            onLast={onLast}
+            onFlip={onFlipBoard}
+          />
+        </div>
+      )}
     </aside>
   )
 }
