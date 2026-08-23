@@ -236,47 +236,76 @@ export function OpeningTrainerView({ boardWidth, containerRef }: OpeningTrainerV
       </div>
 
       <aside className="cl-tool-aside">
-        <div className="cl-tool-aside-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingRight: 2 }}>
-          {touchedLines.length > 0 && (
-            <div className="cl-card" style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <SectionLabel>Variantes tocadas nessa linha</SectionLabel>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {touchedLines.map((t) => (
-                  <div key={t.name} style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                    <span className="cl-mono" style={{ fontSize: 10.5, color: 'var(--color-gray-muted)', flexShrink: 0 }}>{t.eco}</span>
-                    <span style={{ fontSize: 12, color: 'var(--color-text-on-dark)', lineHeight: 1.4 }}>{t.name}</span>
-                  </div>
-                ))}
+        <div
+          className="cl-tool-aside-scroll"
+          style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, justifyContent: 'center', paddingRight: 2 }}
+        >
+          <div className="cl-card cl-fade-in" style={{ padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 22 }}>
+            {touchedLines.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <SectionLabel>Variantes tocadas nessa linha</SectionLabel>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 260, overflowY: 'auto', paddingRight: 2 }}>
+                  {touchedLines.map((t) => (
+                    <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span className="cl-mono" style={{
+                        fontSize: 11.5, fontWeight: 800, color: 'var(--color-gray-muted)', flexShrink: 0,
+                        padding: '3px 9px', borderRadius: 'var(--radius-sm)', background: 'var(--color-bg-main)',
+                        border: '1px solid var(--color-gray-border)',
+                      }}>{t.eco}</span>
+                      <span style={{ fontSize: 14, color: 'var(--color-text-on-dark)', lineHeight: 1.4 }}>{t.name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-
-          {(status === 'your-turn' || status === 'wrong') && (
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={showHint} disabled={status !== 'your-turn'} className="cl-btn cl-btn-sm" style={{ flex: 1, width: 'auto', height: 'auto', padding: '9px 0', fontSize: 11.5, gap: 6 }}>
-                <LightbulbIcon />
-                Mostrar peça
-              </button>
-              <button onClick={showMoveHint} disabled={status !== 'your-turn'} className="cl-btn cl-btn-sm" style={{ flex: 1, width: 'auto', height: 'auto', padding: '9px 0', fontSize: 11.5, gap: 6 }} title="Mostra o lance inteiro como seta no tabuleiro">
-                <MoveArrowIcon />
-                Mostrar lance
-              </button>
-            </div>
-          )}
-
-          <button
-            onClick={nextLine}
-            className={`cl-btn ${status === 'done' ? 'cl-btn-accent' : ''}`}
-            style={{ padding: '12px 0', fontSize: 13 }}
-          >
-            {status === 'done' ? 'Próxima linha →' : 'Pular pra outra linha'}
-          </button>
-
-          <div style={{ fontSize: 11.5, color: 'var(--color-gray-muted)', textAlign: 'center' }}>
-            <span className="cl-mono">{linesCompleted}</span> linha{linesCompleted !== 1 ? 's' : ''} nessa sessão
-            {wrongAttempts > 0 && (
-              <> · <span className="cl-mono" style={{ color: 'var(--color-error)' }}>{wrongAttempts}</span> erro{wrongAttempts !== 1 ? 's' : ''}</>
             )}
+
+            {touchedLines.length > 0 && (status === 'your-turn' || status === 'wrong') && (
+              <div style={{ height: 1, background: 'var(--color-gray-border)' }} />
+            )}
+
+            {(status === 'your-turn' || status === 'wrong') && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <SectionLabel>Precisa de uma ajuda?</SectionLabel>
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <button
+                    onClick={showHint}
+                    disabled={status !== 'your-turn'}
+                    className="cl-btn"
+                    style={{ flex: 1, width: 'auto', height: 'auto', flexDirection: 'column', padding: '18px 8px', fontSize: 13, gap: 9 }}
+                  >
+                    <LightbulbIcon width={22} height={22} />
+                    Mostrar peça
+                  </button>
+                  <button
+                    onClick={showMoveHint}
+                    disabled={status !== 'your-turn'}
+                    className="cl-btn"
+                    style={{ flex: 1, width: 'auto', height: 'auto', flexDirection: 'column', padding: '18px 8px', fontSize: 13, gap: 9 }}
+                    title="Mostra o lance inteiro como seta no tabuleiro"
+                  >
+                    <MoveArrowIcon width={22} height={22} />
+                    Mostrar lance
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div style={{ height: 1, background: 'var(--color-gray-border)' }} />
+
+            <button
+              onClick={nextLine}
+              className={`cl-btn ${status === 'done' ? 'cl-btn-accent' : ''}`}
+              style={{ padding: '18px 0', fontSize: 15, fontWeight: 700 }}
+            >
+              {status === 'done' ? 'Próxima linha →' : 'Pular pra outra linha'}
+            </button>
+
+            <div style={{ fontSize: 13, color: 'var(--color-gray-muted)', textAlign: 'center' }}>
+              <span className="cl-mono">{linesCompleted}</span> linha{linesCompleted !== 1 ? 's' : ''} nessa sessão
+              {wrongAttempts > 0 && (
+                <> · <span className="cl-mono" style={{ color: 'var(--color-error)' }}>{wrongAttempts}</span> erro{wrongAttempts !== 1 ? 's' : ''}</>
+              )}
+            </div>
           </div>
         </div>
       </aside>
@@ -350,7 +379,7 @@ function FamilyCard({ family, stats, onStart }: {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="cl-display" style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-gray-muted)' }}>
+    <div className="cl-display" style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-gray-muted)' }}>
       {children}
     </div>
   )
