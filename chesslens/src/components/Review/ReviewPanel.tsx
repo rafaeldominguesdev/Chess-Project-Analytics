@@ -15,14 +15,13 @@ import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion'
 // um compartilhado) pra não gerar conflito com outros agentes trabalhando em paralelo.
 const PV_PREVIEW_PLIES = 4
 
-// Mesma formatação da etiqueta da barra de avaliação — cp/mate do Stockfish vêm relativos a
-// quem tem a vez, converte pra brancas.
-function formatLineEval(line: StockfishEval, sideToMove: 'w' | 'b'): string {
-  if (line.mate !== null) {
-    const whiteMate = sideToMove === 'w' ? line.mate : -line.mate
-    return `#${Math.abs(whiteMate)}`
-  }
-  const whiteCp = sideToMove === 'w' ? (line.cp ?? 0) : -(line.cp ?? 0)
+// Mesma formatação da etiqueta da barra de avaliação — `line.cp`/`.mate` já vêm relativos às
+// brancas (useStockfish.ts converte na hora, usando o lado a jogar de quando a busca foi pedida,
+// não o da posição que a revisão mostra agora — os dois podem divergir por vários segundos numa
+// busca em profundidade 18, era isso que fazia a avaliação "mudar que nem louca" ao navegar).
+function formatLineEval(line: StockfishEval): string {
+  if (line.mate !== null) return `#${Math.abs(line.mate)}`
+  const whiteCp = line.cp ?? 0
   if (whiteCp > 0) return `+${(whiteCp / 100).toFixed(1)}`
   if (whiteCp < 0) return (whiteCp / 100).toFixed(1)
   return '0.0'
@@ -60,7 +59,6 @@ function EnginePanel({
   lines: (StockfishEval | null)[]
   isAnalyzing: boolean
 }) {
-  const sideToMove = fen.split(' ')[1] === 'b' ? 'b' : 'w'
   const previews = lines.map((line) => (line ? pvToSan(fen, line.pv, PV_PREVIEW_PLIES) : []))
   const depth = lines[0]?.depth
 
@@ -96,7 +94,7 @@ function EnginePanel({
                 fontSize: 12, fontWeight: 800, minWidth: 36, flexShrink: 0,
                 color: i === 0 ? 'var(--color-text-on-dark)' : 'var(--color-gray-muted)',
               }}>
-                {line ? formatLineEval(line, sideToMove) : '···'}
+                {line ? formatLineEval(line) : '···'}
               </span>
               <span className="cl-mono" style={{ fontSize: 11.5, color: 'var(--color-gray-muted)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {line ? (previews[i]?.join(' ') || '—') : 'calculando…'}

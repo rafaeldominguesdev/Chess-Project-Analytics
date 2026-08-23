@@ -35,13 +35,11 @@ const SUGGESTION_STYLE = [
 const PV_PREVIEW_PLIES = 4
 
 // Mesma formatação da etiqueta da barra de avaliação (EvalBar.tsx), reaproveitada aqui pra cada
-// linha do motor — cp/mate do Stockfish vêm relativos a quem tem a vez, converte pra brancas.
-function formatLineEval(line: StockfishEval, sideToMove: 'w' | 'b'): string {
-  if (line.mate !== null) {
-    const whiteMate = sideToMove === 'w' ? line.mate : -line.mate
-    return `#${Math.abs(whiteMate)}`
-  }
-  const whiteCp = sideToMove === 'w' ? (line.cp ?? 0) : -(line.cp ?? 0)
+// linha do motor — `line.cp`/`.mate` já vêm relativos às brancas (useStockfish.ts converte na
+// hora, usando o lado a jogar de quando a busca foi pedida, não precisa de `sideToMove` aqui).
+function formatLineEval(line: StockfishEval): string {
+  if (line.mate !== null) return `#${Math.abs(line.mate)}`
+  const whiteCp = line.cp ?? 0
   if (whiteCp > 0) return `+${(whiteCp / 100).toFixed(1)}`
   if (whiteCp < 0) return (whiteCp / 100).toFixed(1)
   return '0.0'
@@ -119,9 +117,11 @@ export function AnalysisBoardView({ boardWidth, containerRef, initialFen }: Anal
     // A partida pode ter sido reiniciada nesse meio-tempo — o índice não existe mais.
     if (!moves[pending.moveIndex]) { pendingClassifyRef.current = null; return }
 
-    const sideToMoveAfter = pending.fenAfter.split(' ')[1] === 'b' ? 'b' : 'w'
-    const evalBefore = toWhiteCp(pending.beforeCp, pending.beforeMate, pending.color)
-    const evalAfter = toWhiteCp(line.cp, line.mate, sideToMoveAfter)
+    // `pending.beforeCp/beforeMate` e `line.cp/line.mate` já vêm relativos às brancas (conversão
+    // feita dentro de `useStockfish.ts`) — `toWhiteCp` aqui só colapsa mate num valor e satura o
+    // range, não precisa (nem deve) inverter sinal de novo, então sempre 'w'.
+    const evalBefore = toWhiteCp(pending.beforeCp, pending.beforeMate, 'w')
+    const evalAfter = toWhiteCp(line.cp, line.mate, 'w')
     const isBest = !!pending.bestMoveBefore && pending.from + pending.to === pending.bestMoveBefore.slice(0, 4)
     const isBook = isBookMove(moves.slice(0, pending.moveIndex + 1).map((m) => m.san))
     const materialDelta = materialForSide(pending.fenBefore, pending.color) - materialForSide(pending.fenAfter, pending.color)
@@ -152,8 +152,6 @@ export function AnalysisBoardView({ boardWidth, containerRef, initialFen }: Anal
     const match = identifyOpening(moves.map((m) => m.san))
     return match ? `${match.eco} · ${match.name}` : null
   }, [moves])
-
-  const sideToMove = currentFen.split(' ')[1] === 'b' ? 'b' : 'w'
 
   // Prévia em SAN das 3 linhas do motor (texto, complementando as setas de sugestão no
   // tabuleiro) — princípio observado no chess.com/analysis (ver matriz de referências, Fase 3).
@@ -235,7 +233,7 @@ export function AnalysisBoardView({ boardWidth, containerRef, initialFen }: Anal
             Nova partida
           </button>
 
-          <EnginePanel lines={lines} previews={enginePreviews} sideToMove={sideToMove} isAnalyzing={isAnalyzing} />
+          <EnginePanel lines={lines} previews={enginePreviews} isAnalyzing={isAnalyzing} />
 
           {opening && (
             <div style={{
@@ -286,11 +284,10 @@ export function AnalysisBoardView({ boardWidth, containerRef, initialFen }: Anal
  *  redesign (matriz de referências: chess.com mostra as linhas como texto; Lichess deixa claro
  *  quando o motor está calculando ou parado). */
 function EnginePanel({
-  lines, previews, sideToMove, isAnalyzing,
+  lines, previews, isAnalyzing,
 }: {
   lines: (StockfishEval | null)[]
   previews: string[][]
-  sideToMove: 'w' | 'b'
   isAnalyzing: boolean
 }) {
   const depth = lines[0]?.depth
@@ -328,7 +325,7 @@ function EnginePanel({
                 fontSize: 12, fontWeight: 800, minWidth: 36, flexShrink: 0,
                 color: i === 0 ? 'var(--color-text-on-dark)' : 'var(--color-gray-muted)',
               }}>
-                {line ? formatLineEval(line, sideToMove) : '···'}
+                {line ? formatLineEval(line) : '···'}
               </span>
               <span className="cl-mono" style={{ fontSize: 11.5, color: 'var(--color-gray-muted)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {line ? (previews[i]?.join(' ') || '—') : 'calculando…'}

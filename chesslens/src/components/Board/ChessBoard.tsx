@@ -246,21 +246,20 @@ export function ChessBoard({
     return arr
   }, [evaluation?.bestMove, theme.showArrows, extraArrows, currentQuality])
 
-  // O Stockfish reporta cp/mate relativo a quem tem a vez de jogar na posição atual (`fen`),
-  // não relativo às brancas. Como a vez alterna a cada lance, sem essa inversão a barra
-  // "pulava" de forma absurda a cada jogada — metade das vezes mostrando o lado errado.
-  const sideToMove = fen.split(' ')[1] === 'b' ? 'b' : 'w'
-
+  // `evaluation.cp`/`.mate` já vêm relativos às brancas (conversão feita dentro de
+  // `useStockfish.ts`, usando o lado a jogar de quando aquela busca específica foi pedida — não
+  // dá mais pra reconverter aqui usando o `fen` que a tela mostra AGORA, porque numa busca em
+  // profundidade 18 (que pode levar vários segundos) esses dois "lado a jogar" ficam diferentes
+  // boa parte do tempo, e recalcular o sinal com o lado errado é exatamente o bug real que o
+  // usuário reportou ("avaliação mudando que nem louco" ao navegar lances).
+  //
   // A cada lance o motor zera a linha por um instante (recomeça a busca do zero) — sem isso a
   // barra "piscava" pro centro e voltava pro valor certo pouco depois. Guarda o último valor já
-  // convertido pra brancas (que não precisa mudar de sinal depois) e só atualiza quando chega
-  // avaliação nova de verdade, senão mantém proporcional ao que já se sabia da posição.
+  // convertido pra brancas e só atualiza quando chega avaliação nova de verdade, senão mantém
+  // proporcional ao que já se sabia da posição.
   const lastEvalRef = useRef<{ cp: number; mate: number | null }>({ cp: 0, mate: null })
   if (evaluation) {
-    lastEvalRef.current = {
-      cp: evaluation.cp != null ? (sideToMove === 'w' ? evaluation.cp : -evaluation.cp) : 0,
-      mate: evaluation.mate != null ? (sideToMove === 'w' ? evaluation.mate : -evaluation.mate) : null,
-    }
+    lastEvalRef.current = { cp: evaluation.cp ?? 0, mate: evaluation.mate }
   }
   const evalCp = lastEvalRef.current.cp
   const evalMate = lastEvalRef.current.mate
