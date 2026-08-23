@@ -39,13 +39,16 @@ export function AnalyzeNavIcon(props: IconProps) {
   )
 }
 
-/** Alvo — treino de táticas: acertar o lance certo é "acertar o centro". */
+/** Peça de quebra-cabeça — treino de táticas (Puzzles). Era um alvo (círculos concêntricos);
+ *  trocado a pedido direto do usuário, que mandou duas referências visuais de peça de puzzle
+ *  (uma colada no chat, outra depois salva como arquivo em `images.jpeg` na raiz do projeto) —
+ *  ambas com marca d'água de banco de imagens ("peqfree") repetida por cima, então não dá pra
+ *  usar o arquivo em si; foi redesenhada do zero como SVG próprio. Quadrado com aba saindo em
+ *  cima e entalhe encaixando embaixo, pra ler como peça de encaixe de verdade. */
 export function TargetIcon(props: IconProps) {
   return (
     <svg {...base(props)}>
-      <circle cx="12" cy="12" r="8.5" />
-      <circle cx="12" cy="12" r="4.5" />
-      <circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none" />
+      <path d="M4 4H9A3 3 0 0 1 15 4H20V20H15A3 3 0 0 0 9 20H4Z" />
     </svg>
   )
 }
