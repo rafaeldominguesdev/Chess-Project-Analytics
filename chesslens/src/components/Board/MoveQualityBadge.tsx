@@ -19,12 +19,23 @@ const SIZES = {
   lg: { fontSize: 20, icon: 22 },
 } as const
 
+// O ícone de livro (contorno fino, sem preenchimento) lê visualmente menor que os ícones
+// preenchidos (estrela, joinha) mesmo em caixa delimitadora do mesmo tamanho — traço fino
+// "ocupa" menos peso visual que uma forma sólida. Compensa só esse (pedido direto do usuário,
+// "aumenta o tamanho dele" sobre o ícone de livro especificamente — tanto na lista de lances
+// quanto no círculo de anotação sobre a casa do tabuleiro, "aumenta em Tabuleiro"). O círculo
+// (`SquareQualityMarker`) usa uma escala menor que o badge solto (`MoveQualityBadge`) porque lá
+// o ícone já ocupa quase o disco inteiro (`size * 0.58`) — escalar igual (1.3x) estouraria a
+// borda do círculo.
+const BOOK_ICON_SCALE = 1.3
+
 // Só o ícone/símbolo, sem caixinha ao redor (era um chip com fundo+borda antes — pedido pra
 // ficar "como se fosse só ele", sem parecer emoji dentro de quadrado).
 export function MoveQualityBadge({ quality, size = 'sm' }: MoveQualityBadgeProps) {
   const cfg = QUALITY_CONFIG[quality]
   const Icon = QUALITY_ICONS[quality]
   const s = SIZES[size]
+  const iconSize = quality === 'book' ? Math.round(s.icon * BOOK_ICON_SCALE) : s.icon
 
   return (
     <span
@@ -41,7 +52,7 @@ export function MoveQualityBadge({ quality, size = 'sm' }: MoveQualityBadgeProps
         filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))',
       }}
     >
-      {Icon ? <Icon width={s.icon} height={s.icon} /> : cfg.symbol}
+      {Icon ? <Icon width={iconSize} height={iconSize} /> : cfg.symbol}
     </span>
   )
 }
@@ -88,7 +99,7 @@ export function SquareQualityMarker({ quality, size }: SquareQualityMarkerProps)
         justifyContent: 'center',
       }}
     >
-      {Icon ? <Icon width={size * 0.58} height={size * 0.58} /> : cfg.symbol}
+      {Icon ? <Icon width={size * 0.58 * (quality === 'book' ? 1.15 : 1)} height={size * 0.58 * (quality === 'book' ? 1.15 : 1)} /> : cfg.symbol}
     </span>
   )
 }
