@@ -7,6 +7,7 @@ import type { OpeningFamily } from '../../utils/openingRepertoire'
 import { ChessBoard, BOARD_ROW_CHROME_WIDTH } from '../Board/ChessBoard'
 import { MiniBoard } from '../Board/MiniBoard'
 import { FirstMoveIcon, PrevMoveIcon, NextMoveIcon, LastMoveIcon } from '../Board/icons'
+import { CoachComment } from '../Review/CoachComment'
 
 interface OpeningTrainerViewProps {
   boardWidth: number
@@ -61,7 +62,7 @@ function BackIcon(props: SVGProps<SVGSVGElement>) {
 
 const STATUS_META: Record<string, { text: string; color: string }> = {
   'your-turn': { text: 'Sua vez — encontre o lance de teoria', color: 'var(--color-gray-muted)' },
-  wrong: { text: 'Isso não é teoria conhecida aqui', color: 'var(--color-error)' },
+  wrong: { text: 'Não é a teoria dessa linha', color: 'var(--color-error)' },
   'their-turn': { text: 'Adversário pensando…', color: 'var(--color-gray-muted)' },
   done: { text: 'Linha terminou — fora de teoria conhecida', color: 'var(--color-success)' },
 }
@@ -85,9 +86,10 @@ const QUALITY_YELLOW = '#F0C548'
  */
 export function OpeningTrainerView({ boardWidth, containerRef }: OpeningTrainerViewProps) {
   const {
-    families, stats, family, side, status,
+    families, stats, lineStats, family, side, status,
     fen, lastMove, touchedLines, isLive, viewIndex, totalPly,
-    wrongAttempts, hintSquare, hintMove, suggestedMove, linesCompleted,
+    wrongAttempts, hintSquare, hintMove, suggestedMove, bookMoveSan, linesCompleted,
+    engineEval, wrongClassifiedMove,
     startLine, nextLine, backToPicker, attemptMove, retry, showHint, showMoveHint,
     goFirst, goPrev, goNext, goLive,
   } = useOpeningTrainer()
@@ -170,18 +172,25 @@ export function OpeningTrainerView({ boardWidth, containerRef }: OpeningTrainerV
         <ChessBoard
           fen={fen}
           lastMove={lastMove}
-          evaluation={null}
+          // `bestMove: null` corta só a seta teal "lance do motor" que o `ChessBoard` desenha
+          // sozinho quando `evaluation.bestMove` existe — mantém a barra de avaliação (que só
+          // olha `cp`/`mate`), mas evita ela empilhar em cima da seta de sugestão/dica do próprio
+          // treino (reportado como bug pelo usuário: "2 setas ao mesmo tempo pro mesmo lugar").
+          evaluation={engineEval ? { ...engineEval, bestMove: null } : null}
           boardWidth={boardWidth}
-          showEvalBar={false}
+          showEvalBar
           interactive={status === 'your-turn' && isLive}
           boardOrientation={side}
           hintSquare={isLive ? hintSquare : null}
           extraArrows={[
             // Seta fraca sempre visível na vez de quem treina, indicando o lance mais documentado
             // dali pra frente — pedido direto do usuário. Some ao navegar pra um lance passado
-            // (não faz sentido sugerir jogada numa posição que só está sendo revisada).
-            ...(isLive && suggestedMove ? [{ startSquare: suggestedMove.from, endSquare: suggestedMove.to, color: 'rgba(232,169,60,0.5)' }] : []),
-            ...(isLive && hintMove ? [{ startSquare: hintMove.from, endSquare: hintMove.to, color: 'var(--color-blue-bright)' }] : []),
+            // (não faz sentido sugerir jogada numa posição que só está sendo revisada). Se a dica
+            // de lance completo (`hintMove`) apontar pro MESMO quadrado (as duas são a mesma cor,
+            // azul bebê, e costumam coincidir), o `ChessBoard` já deduplica pelo par de/para —
+            // não precisa suprimir uma das duas na mão aqui.
+            ...(isLive && suggestedMove ? [{ startSquare: suggestedMove.from, endSquare: suggestedMove.to, color: 'var(--color-blue-bright)', opacity: 0.45 }] : []),
+            ...(isLive && hintMove ? [{ startSquare: hintMove.from, endSquare: hintMove.to, color: 'var(--color-blue-bright)', opacity: 0.9 }] : []),
           ]}
           onPieceDrop={({ sourceSquare, targetSquare, promotion }) => (targetSquare ? attemptMove(sourceSquare, targetSquare, promotion) : false)}
         />
@@ -241,20 +250,54 @@ export function OpeningTrainerView({ boardWidth, containerRef }: OpeningTrainerV
           style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, justifyContent: 'center', paddingRight: 2 }}
         >
           <div className="cl-card cl-fade-in" style={{ padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 22 }}>
+            {status === 'wrong' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <SectionLabel>Análise do seu lance</SectionLabel>
+                {wrongClassifiedMove ? (
+                  <CoachComment move={wrongClassifiedMove} />
+                ) : (
+                  <div className="cl-card" style={{ padding: 12, fontSize: 12.5, color: 'var(--color-gray-muted)' }}>
+                    Analisando seu lance com o motor…
+                  </div>
+                )}
+                {bookMoveSan && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: 'var(--color-gray-muted)' }}>
+                    <span>📖</span>
+                    <span>
+                      A teoria dessa linha é{' '}
+                      <span className="cl-mono" style={{ color: 'var(--color-blue-bright)', fontWeight: 700 }}>{bookMoveSan}</span>
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {status === 'wrong' && touchedLines.length > 0 && (
+              <div style={{ height: 1, background: 'var(--color-gray-border)' }} />
+            )}
+
             {touchedLines.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <SectionLabel>Variantes tocadas nessa linha</SectionLabel>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 260, overflowY: 'auto', paddingRight: 2 }}>
-                  {touchedLines.map((t) => (
-                    <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span className="cl-mono" style={{
-                        fontSize: 11.5, fontWeight: 800, color: 'var(--color-gray-muted)', flexShrink: 0,
-                        padding: '3px 9px', borderRadius: 'var(--radius-sm)', background: 'var(--color-bg-main)',
-                        border: '1px solid var(--color-gray-border)',
-                      }}>{t.eco}</span>
-                      <span style={{ fontSize: 14, color: 'var(--color-text-on-dark)', lineHeight: 1.4 }}>{t.name}</span>
-                    </div>
-                  ))}
+                  {touchedLines.map((t) => {
+                    const mastery = lineStats[`${t.eco}|${t.name}|${side}`]?.mastery
+                    return (
+                      <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span className="cl-mono" style={{
+                          fontSize: 11.5, fontWeight: 800, color: 'var(--color-gray-muted)', flexShrink: 0,
+                          padding: '3px 9px', borderRadius: 'var(--radius-sm)', background: 'var(--color-bg-main)',
+                          border: '1px solid var(--color-gray-border)',
+                        }}>{t.eco}</span>
+                        <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: 'var(--color-text-on-dark)', lineHeight: 1.4 }}>{t.name}</span>
+                        {typeof mastery === 'number' && (
+                          <span className="cl-mono" style={{ fontSize: 11, fontWeight: 800, flexShrink: 0, color: masteryColor(mastery) }}>
+                            {mastery}%
+                          </span>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             )}

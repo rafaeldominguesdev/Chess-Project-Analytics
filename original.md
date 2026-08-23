@@ -636,4 +636,4 @@ Agora:
 
 1. atualize o progresso ao final.
 
-Comece de maneira incremental e lógica. **Não reinicie o redesign e não substitua a capivara.**
+Comece de maneira incremental e lógica. **Não reinicie o redesign e não substitua a capivara.*

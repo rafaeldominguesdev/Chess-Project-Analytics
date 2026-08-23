@@ -213,7 +213,7 @@ export function AnalysisBoardView({ boardWidth, containerRef, initialFen }: Anal
       {/* Center — mesma coluna do tabuleiro de análise/treino */}
       <div ref={containerRef} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, paddingTop: 8 }}>
         <div style={{ width: cardWidth }}>
-          <TurnCard turn={turn} isCheck={/\+|#$/.test(moves[currentMoveIndex]?.san ?? '')} />
+          <TurnCard turn={turn} isCheck={/\+|#$/.test(moves[currentMoveIndex]?.san ?? '')} opening={opening} />
         </div>
 
         <ChessBoard
@@ -359,16 +359,36 @@ function EnginePanel({
   )
 }
 
-function TurnCard({ turn, isCheck }: { turn: string; isCheck: boolean }) {
+// Mesmo formato do card de cabeçalho do Treino de Aberturas (`FamilyHeaderCard` em
+// `OpeningTrainerView.tsx`) — ícone à esquerda + rótulo em duas linhas + badge à direita — pedido
+// direto do usuário pra padronizar o resto do site nesse mesmo estilo "gordinho"/centralizado,
+// em vez da barra fina de texto que existia antes aqui.
+function TurnCard({ turn, isCheck, opening }: { turn: string; isCheck: boolean; opening: string | null }) {
   return (
-    <div className="cl-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '8px 14px' }}>
-      <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--color-text-on-dark)' }}>
-        Vez das <span style={{ color: 'var(--color-blue-bright)' }}>{turn}</span>
-      </span>
-      {isCheck && (
+    <div className="cl-card" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px' }}>
+      <span style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        width: 38, height: 38, borderRadius: 'var(--radius-sm)', flexShrink: 0,
+        background: 'var(--color-bg-main)',
+      }}>
         <span style={{
-          fontSize: 10.5, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase',
-          padding: '3px 8px', borderRadius: 'var(--radius-sm)', background: 'var(--color-error)', color: '#fff',
+          width: 16, height: 16, borderRadius: '50%', flexShrink: 0,
+          background: turn === 'Brancas' ? 'var(--color-text-on-dark)' : '#2A2C33',
+          border: '1.5px solid var(--color-blue-bright)',
+        }} />
+      </span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0, flex: 1 }}>
+        <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-gray-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {opening ?? 'Partida livre'}
+        </span>
+        <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-text-on-dark)', lineHeight: 1.2 }}>
+          Vez das <span style={{ color: 'var(--color-blue-bright)' }}>{turn}</span>
+        </span>
+      </div>
+      {isCheck && (
+        <span className="cl-mono" style={{
+          fontSize: 10.5, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase', flexShrink: 0,
+          padding: '4px 10px', borderRadius: 'var(--radius-sm)', background: 'var(--color-error)', color: '#fff',
         }}>
           Xeque
         </span>

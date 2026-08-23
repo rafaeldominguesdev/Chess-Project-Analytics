@@ -1,10 +1,13 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Chess } from 'chess.js'
 import {
   getGlobalOpeningTree, getOpeningFamilies, pickBestChild, pickWeightedChild,
 } from '../utils/openingRepertoire'
 import type { OpeningNode } from '../utils/openingRepertoire'
 import { useMoveSound } from './useMoveSound'
+import { useStockfish } from './useStockfish'
+import { classifyMove, toWhiteCp } from '../utils/moveClassifier'
+import type { ClassifiedMove } from '../types/chess.types'
 
 export type Side = 'white' | 'black'
 
@@ -29,21 +32,46 @@ const STATS_KEY = 'chesslens-opening-stats'
 // repetição espaçada de verdade (várias linhas curtas em vários dias > uma linha gigante uma vez).
 const MAX_PLY = 24
 
-function loadStats(): Record<string, FamilyStats> {
+// Genérico pros dois placares (família e variação) — mesmo par de leitura/escrita, só muda a
+// chave do localStorage.
+function loadJsonRecord(key: string): Record<string, FamilyStats> {
   try {
-    const raw = localStorage.getItem(STATS_KEY)
+    const raw = localStorage.getItem(key)
     return raw ? JSON.parse(raw) : {}
   } catch {
     return {}
   }
 }
 
-function saveStats(stats: Record<string, FamilyStats>) {
-  try { localStorage.setItem(STATS_KEY, JSON.stringify(stats)) } catch { /* localStorage indisponível — ignora */ }
+function saveJsonRecord(key: string, value: Record<string, FamilyStats>) {
+  try { localStorage.setItem(key, JSON.stringify(value)) } catch { /* localStorage indisponível — ignora */ }
 }
 
 function statsKey(familyKey: string, side: Side): string {
   return `${familyKey}|${side}`
+}
+
+// Placar por VARIAÇÃO exata (não só por família) — pedido direto do usuário: o placar de família
+// escondia se a pessoa já sabia bem uma variação específica ou não ("não aprende variáveis").
+// Só nome+ECO+lado (mesma FamilyStats, chave mais fina) — mesma aproximação honesta, sem
+// intervalo de repetição de verdade.
+const LINE_STATS_KEY = 'chesslens-opening-line-stats'
+
+function lineStatsKey(eco: string, name: string, side: Side): string {
+  return `${eco}|${name}|${side}`
+}
+
+// Atualiza o placar (família ou variação, mesmo formato `FamilyStats`) com o resultado de uma
+// sessão: começa em 100, cada lance errado tira `penaltyPerWrong` (nunca abaixo de 0), e combina
+// com o histórico numa média móvel (65% do que já tinha, 35% da sessão nova) — pura, sem I/O;
+// quem chama decide quando persistir.
+function bumpMastery(
+  prev: Record<string, FamilyStats>, key: string, wrongCount: number, penaltyPerWrong: number,
+): Record<string, FamilyStats> {
+  const old = prev[key] ?? { attempts: 0, mastery: 50, lastPracticed: 0 }
+  const sessionScore = Math.max(0, 100 - wrongCount * penaltyPerWrong)
+  const mastery = Math.round(old.mastery * 0.65 + sessionScore * 0.35)
+  return { ...prev, [key]: { attempts: old.attempts + 1, mastery, lastPracticed: Date.now() } }
 }
 
 interface TouchedLine { eco: string; name: string }
@@ -64,7 +92,14 @@ interface TouchedLine { eco: string; name: string }
  */
 export function useOpeningTrainer() {
   const families = useMemo(() => getOpeningFamilies(), [])
-  const [stats, setStats] = useState<Record<string, FamilyStats>>(() => loadStats())
+  const [stats, setStats] = useState<Record<string, FamilyStats>>(() => loadJsonRecord(STATS_KEY))
+  const [lineStats, setLineStats] = useState<Record<string, FamilyStats>>(() => loadJsonRecord(LINE_STATS_KEY))
+  // Persistência é um efeito colateral do próprio state, não da chamada que o atualiza — evita
+  // gravar 2x no localStorage se o updater funcional rodar 2x pro mesmo commit (StrictMode em
+  // dev, ou um re-render que aborta), já que `setStats`/`setLineStats` fariam isso se salvassem
+  // dentro do próprio callback do updater.
+  useEffect(() => { saveJsonRecord(STATS_KEY, stats) }, [stats])
+  useEffect(() => { saveJsonRecord(LINE_STATS_KEY, lineStats) }, [lineStats])
 
   const [familyKey, setFamilyKey] = useState<string | null>(null)
   const [side, setSide] = useState<Side>('white')
@@ -86,16 +121,38 @@ export function useOpeningTrainer() {
   // nessa linha, desde o começo da abertura. Só pra revisar; treino continua pausado enquanto
   // não voltar pro "ao vivo".
   const [viewIndex, setViewIndex] = useState<number | null>(null)
+  // Lance errado já classificado pelo Stockfish (o quão bom/ruim ele era de verdade, não só "não
+  // é teoria") — pedido direto do usuário: "se jogar esse lance responde com... uma análise do
+  // tabuleiro". `null` enquanto não há lance errado pendente ou a análise ainda não chegou.
+  const [wrongClassifiedMove, setWrongClassifiedMove] = useState<ClassifiedMove | null>(null)
+  // SAN do lance de teoria recomendado a partir da posição atual (mesmo alvo de `suggestedMove`,
+  // só que em texto legível pra mostrar ao lado da análise do lance errado).
+  const [bookMoveSan, setBookMoveSan] = useState<string | null>(null)
 
   const chessRef = useRef(new Chess())
   const nodeRef = useRef<OpeningNode | null>(null)
   const plyRef = useRef(0)
   const wrongAttemptsRef = useRef(0)
+  // Erros cometidos tentando sair do nó ATUAL (zera a cada lance certo) — usado só pra pontuar a
+  // variação nomeada que acaba de ser alcançada, separado do contador de erros da sessão inteira.
+  const wrongSinceNodeRef = useRef(0)
   const touchedRef = useRef<Set<string>>(new Set())
   const replyTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const hintTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const { playForSan, play } = useMoveSound()
+
+  // Motor único (mesmo padrão de `AnalysisBoardView.tsx`): analisa a posição ao vivo continuamente
+  // (alimenta a barra de avaliação) e também classifica lances errados sob demanda — nunca duas
+  // buscas ao mesmo tempo, sempre casadas pelo FEN pedido (`requestedFenRef`/`lastEvalRef`).
+  const { lines: engineLines, isReady: engineReady, analyze } = useStockfish(14, 1)
+  const requestedFenRef = useRef('')
+  const lastEvalRef = useRef<{ fen: string; cp: number | null; mate: number | null; bestMove: string | null } | null>(null)
+  const pendingClassifyRef = useRef<{
+    san: string; from: string; to: string; color: 'w' | 'b'; moveNumber: number
+    fenBefore: string; fenAfter: string
+    beforeCp: number | null; beforeMate: number | null; bestMoveBefore: string | null
+  } | null>(null)
 
   const family = useMemo(() => families.find((f) => f.key === familyKey) ?? null, [families, familyKey])
 
@@ -104,24 +161,40 @@ export function useOpeningTrainer() {
     return (side === 'white') === whiteToMove
   }, [side])
 
-  const recordNamedNode = useCallback((node: OpeningNode) => {
-    if (!node.name || touchedRef.current.has(node.name)) return
-    touchedRef.current.add(node.name)
-    setTouchedLines((prev) => [...prev, { eco: node.eco!, name: node.name! }])
-  }, [])
+  // `scored` = true só quando ESSE nó foi alcançado por um lance que quem treina escolheu de
+  // verdade (não os lances-raiz tocados sozinhos, nem a resposta do "adversário" simulado) — só
+  // aí faz sentido gravar mastery da variação, senão estaria pontuando decisão que não foi da
+  // pessoa.
+  const recordNamedNode = useCallback((node: OpeningNode, scored: boolean) => {
+    if (!node.name) return
+    if (!touchedRef.current.has(node.name)) {
+      touchedRef.current.add(node.name)
+      setTouchedLines((prev) => [...prev, { eco: node.eco!, name: node.name! }])
+    }
+    if (!scored) return
+    const key = lineStatsKey(node.eco!, node.name!, side)
+    // Mesma fórmula do placar de família (100 - N por erro, nunca abaixo de 0), só que por
+    // variação nomeada (penalidade um pouco mais dura, 25 em vez de 20) — é isso que faz o treino
+    // "lembrar" quais variações específicas a pessoa já manja, não só a família inteira.
+    const wrongCount = wrongSinceNodeRef.current
+    wrongSinceNodeRef.current = 0
+    setLineStats((prev) => bumpMastery(prev, key, wrongCount, 25))
+  }, [side])
 
   // Calcula a seta de sugestão (lance mais documentado a partir da posição atual) — chamada toda
   // vez que a posição volta a ser "vez de quem treina" (início da linha, depois de um lance certo,
   // ou depois de tentar de novo num lance errado).
   const updateSuggestion = useCallback((node: OpeningNode | null) => {
     const target = node ? pickBestChild(node) : null
-    if (!target?.san) { setSuggestedMove(null); return }
+    if (!target?.san) { setSuggestedMove(null); setBookMoveSan(null); return }
     const probe = new Chess(chessRef.current.fen())
     try {
       const r = probe.move(target.san)
       setSuggestedMove({ from: r.from, to: r.to })
+      setBookMoveSan(target.san)
     } catch {
       setSuggestedMove(null)
+      setBookMoveSan(null)
     }
   }, [])
 
@@ -132,14 +205,7 @@ export function useOpeningTrainer() {
     // Placar simples da sessão: começa em 100, cada lance errado tira 20 (nunca abaixo de 0).
     // Não modela "quanto faltava saber" nem intervalo de repetição de verdade — é uma
     // aproximação honesta, documentada, não uma cópia de SM-2/Anki.
-    const sessionScore = Math.max(0, 100 - wrongAttemptsRef.current * 20)
-    setStats((prev) => {
-      const old = prev[key] ?? { attempts: 0, mastery: 50, lastPracticed: 0 }
-      const mastery = Math.round(old.mastery * 0.65 + sessionScore * 0.35)
-      const next = { ...prev, [key]: { attempts: old.attempts + 1, mastery, lastPracticed: Date.now() } }
-      saveStats(next)
-      return next
-    })
+    setStats((prev) => bumpMastery(prev, key, wrongAttemptsRef.current, 20))
   }, [familyKey, side])
 
   // Decide o que fazer a partir da posição atual (`nodeRef`/`plyRef`): espera o lance de quem
@@ -174,7 +240,7 @@ export function useOpeningTrainer() {
       setPathSan((p) => [...p, child.san!])
       setFen(chessRef.current.fen())
       playForSan(result.san)
-      recordNamedNode(child)
+      recordNamedNode(child, false) // resposta do "adversário" simulado — não foi decisão de quem treina
       step(ply + 1)
     }, 550)
   }, [isTraineeTurn, playForSan, recordNamedNode, finalizeSession, updateSuggestion])
@@ -189,10 +255,13 @@ export function useOpeningTrainer() {
     setSide(chosenSide)
     setWrongAttempts(0)
     wrongAttemptsRef.current = 0
+    wrongSinceNodeRef.current = 0
     setHintSquare(null)
     setHintMove(null)
     setTouchedLines([])
     setViewIndex(null)
+    setWrongClassifiedMove(null)
+    pendingClassifyRef.current = null
     touchedRef.current = new Set()
 
     const chess = new Chess()
@@ -208,7 +277,7 @@ export function useOpeningTrainer() {
       }
       played.push(san)
       node = child
-      recordNamedNode(node)
+      recordNamedNode(node, false) // lances-raiz definem a família, tocados sozinhos — não é decisão de quem treina
     }
 
     chessRef.current = chess
@@ -236,6 +305,8 @@ export function useOpeningTrainer() {
     if (status !== 'your-turn' || viewIndex !== null || !nodeRef.current) return false
     clearTimeout(hintTimerRef.current)
     const chess = chessRef.current
+    const fenBeforeMove = chess.fen()
+    const moverColor: 'w' | 'b' = fenBeforeMove.split(' ')[1] === 'b' ? 'b' : 'w'
     let result: ReturnType<Chess['move']>
     try {
       result = chess.move({ from: sourceSquare, to: targetSquare, promotion: promotion ?? 'q' })
@@ -245,11 +316,29 @@ export function useOpeningTrainer() {
 
     const child = nodeRef.current.children.get(result.san)
     if (!child) {
+      const fenAfterMove = chess.fen()
       chess.undo()
       setWrongAttempts((n) => n + 1)
       wrongAttemptsRef.current += 1
+      wrongSinceNodeRef.current += 1
       setStatus('wrong')
+      setWrongClassifiedMove(null) // limpa a análise anterior — a nova chega em instantes
       play('error')
+
+      // Pede ao motor uma análise do lance que a pessoa acabou de tentar, pra responder com algo
+      // melhor que "não é teoria conhecida": ele foi um lance de xadrez bom, razoável ou um erro
+      // de verdade? A referência "antes" é a última avaliação que já tínhamos pra essa mesma
+      // posição (o motor já vinha analisando ao vivo enquanto era a vez de quem treina).
+      const beforeSnapshot = lastEvalRef.current?.fen === fenBeforeMove ? lastEvalRef.current : null
+      pendingClassifyRef.current = {
+        san: result.san, from: result.from, to: result.to, color: moverColor,
+        moveNumber: Math.floor(plyRef.current / 2) + 1,
+        fenBefore: fenBeforeMove, fenAfter: fenAfterMove,
+        beforeCp: beforeSnapshot?.cp ?? null, beforeMate: beforeSnapshot?.mate ?? null,
+        bestMoveBefore: beforeSnapshot?.bestMove ?? null,
+      }
+      analyze(fenAfterMove)
+      requestedFenRef.current = fenAfterMove
       return false
     }
 
@@ -258,15 +347,17 @@ export function useOpeningTrainer() {
     setPathSan((p) => [...p, result.san])
     setFen(chess.fen())
     playForSan(result.san)
-    recordNamedNode(child)
+    recordNamedNode(child, true) // decisão de verdade de quem treina — pontua a variação
     continueFrom(plyRef.current)
     return true
-  }, [status, viewIndex, playForSan, play, recordNamedNode, continueFrom])
+  }, [status, viewIndex, playForSan, play, recordNamedNode, continueFrom, analyze])
 
   const retry = useCallback(() => {
     clearTimeout(hintTimerRef.current)
     setHintSquare(null)
     setHintMove(null)
+    setWrongClassifiedMove(null)
+    pendingClassifyRef.current = null
     updateSuggestion(nodeRef.current)
     setStatus((s) => (s === 'wrong' ? 'your-turn' : s))
   }, [updateSuggestion])
@@ -335,6 +426,50 @@ export function useOpeningTrainer() {
   const displayFen = history.fens[displayIndex] ?? fen
   const displayLastMove = history.moves[displayIndex] ?? null
 
+  // Mantém o motor sempre analisando a posição EXIBIDA na tela (ao vivo ou sendo revisada no
+  // histórico) — alimenta a barra de avaliação continuamente durante o treino ("quero... uma
+  // análise do tabuleiro", pedido direto do usuário), e cada avaliação que chega vira a
+  // referência "antes" pro próximo lance errado que precisar ser classificado (só importa
+  // enquanto ao vivo, já que só dá pra jogar lance nessa posição).
+  useEffect(() => {
+    if (!engineReady || !displayFen) return
+    analyze(displayFen)
+    requestedFenRef.current = displayFen
+  }, [displayFen, engineReady, analyze])
+
+  useEffect(() => {
+    const line = engineLines[0]
+    if (!line) return
+    const forFen = requestedFenRef.current
+    lastEvalRef.current = { fen: forFen, cp: line.cp, mate: line.mate, bestMove: line.bestMove }
+
+    const pending = pendingClassifyRef.current
+    if (!pending || forFen !== pending.fenAfter) return
+
+    // `beforeCp/beforeMate` e `line.cp/line.mate` já vêm relativos às brancas (useStockfish.ts
+    // converte na hora) — `toWhiteCp` aqui só colapsa mate num valor e satura o range, não inverte
+    // sinal de novo (por isso sempre 'w').
+    const evalBefore = toWhiteCp(pending.beforeCp, pending.beforeMate, 'w')
+    const evalAfter = toWhiteCp(line.cp, line.mate, 'w')
+    const isBest = !!pending.bestMoveBefore && pending.from + pending.to === pending.bestMoveBefore.slice(0, 4)
+    // Nunca "livro" aqui de propósito: por definição só chegamos nessa classificação quando o
+    // lance NÃO está no banco ECO a partir dessa posição — o que ela mede é se, mesmo assim, era
+    // um lance de xadrez razoável (ou até o melhor lance do motor) ou um erro de verdade.
+    const classification = classifyMove(evalBefore, evalAfter, pending.color, isBest, false, 0)
+    setWrongClassifiedMove({
+      san: pending.san, from: pending.from, to: pending.to,
+      fen: pending.fenAfter, fenBefore: pending.fenBefore,
+      moveNumber: pending.moveNumber, color: pending.color,
+      classification, evalBefore, evalAfter, bestMove: pending.bestMoveBefore, clock: null,
+    })
+    pendingClassifyRef.current = null
+    // Volta a analisar a posição de ANTES do lance errado (a posição ao vivo, onde quem treina
+    // ainda está) — sem isso, uma segunda tentativa errada na mesma jogada não acharia mais um
+    // "antes" batendo com `lastEvalRef` (ficaria apontando pro FEN do lance errado anterior).
+    analyze(pending.fenBefore)
+    requestedFenRef.current = pending.fenBefore
+  }, [engineLines, analyze])
+
   const goFirst = useCallback(() => setViewIndex(0), [])
   const goPrev = useCallback(() => setViewIndex((i) => Math.max(0, (i ?? pathSan.length) - 1)), [pathSan.length])
   const goNext = useCallback(() => setViewIndex((i) => {
@@ -344,11 +479,12 @@ export function useOpeningTrainer() {
   const goLive = useCallback(() => setViewIndex(null), [])
 
   return {
-    families, stats,
+    families, stats, lineStats,
     family, side, status,
     fen: displayFen, lastMove: displayLastMove, pathSan, touchedLines,
     isLive: viewIndex === null, viewIndex: displayIndex, totalPly: pathSan.length,
-    wrongAttempts, hintSquare, hintMove, suggestedMove, linesCompleted,
+    wrongAttempts, hintSquare, hintMove, suggestedMove, bookMoveSan, linesCompleted,
+    engineEval: engineLines[0] ?? null, wrongClassifiedMove,
     startLine, nextLine, backToPicker, attemptMove, retry, showHint, showMoveHint,
     goFirst, goPrev, goNext, goLive,
   }

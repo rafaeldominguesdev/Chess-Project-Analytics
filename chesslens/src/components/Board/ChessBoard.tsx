@@ -14,10 +14,12 @@ import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion'
 
 const EVAL_BAR_WIDTH = 24
 const ROW_GAP = 8
-// Cor/espessura das setas desenhadas à mão (botão direito arrastando) — âmbar, pra não confundir
-// com o verde das sugestões do engine (`topMoveArrows`), que ocupam o mesmo overlay.
+// Cor/espessura das setas desenhadas à mão (botão direito arrastando) — azul bebê (o destaque da
+// interface), fina o bastante pra não competir com o verde das sugestões do engine
+// (`topMoveArrows`), que ocupam o mesmo overlay. Espessura pedida pelo usuário pra ficar mais
+// parecida com o chess.com — mais fina que a versão anterior (0.16).
 const USER_ARROW_COLOR = 'var(--color-blue-bright)'
-const USER_ARROW_WIDTH_RATIO = 0.16 // fração do tamanho da casa
+const USER_ARROW_WIDTH_RATIO = 0.12 // fração do tamanho da casa
 
 /** Largura extra (fora do quadrado do tabuleiro) ocupada pela barra de avaliação.
  *  Usado por quem calcula `boardWidth` pra não estourar a largura do container. */
@@ -67,7 +69,10 @@ interface ChessBoardProps {
   showEvalBar?: boolean
   interactive?: boolean
   boardOrientation?: 'white' | 'black'
-  extraArrows?: { startSquare: string; endSquare: string; color: string }[]
+  /** Renderizadas pelo mesmo SVG "à mão" das setas do usuário (`customArrows`), não pelo desenho
+   *  padrão (mais grosso/arredondado) da lib — pedido direto do usuário: "tem ser azul bebê... e
+   *  não pode ser tão grande", comparando com a seta desenhada com o botão direito. */
+  extraArrows?: { startSquare: string; endSquare: string; color: string; opacity?: number }[]
   /** Setas com ESPESSURA por seta (a lib só dá pra pintar de cor, não engrossar) — usado pro
    *  tabuleiro de análise livre mostrar as N melhores opções ranqueadas (1ª mais grossa). Quando
    *  presente, substitui a seta única de ameaça/melhor-lance (evaluation.bestMove) — não some as duas. */
@@ -242,9 +247,8 @@ export function ChessBoard({
       const color = isBadMove ? QUALITY_CONFIG.blunder.color : '#1BACA6'
       arr.push({ startSquare: bm.slice(0, 2), endSquare: bm.slice(2, 4), color })
     }
-    if (extraArrows) arr.push(...extraArrows)
     return arr
-  }, [evaluation?.bestMove, theme.showArrows, extraArrows, currentQuality])
+  }, [evaluation?.bestMove, theme.showArrows, currentQuality])
 
   // `evaluation.cp`/`.mate` já vêm relativos às brancas (conversão feita dentro de
   // `useStockfish.ts`, usando o lado a jogar de quando aquela busca específica foi pedida — não
@@ -267,7 +271,7 @@ export function ChessBoard({
   const squareSize = boardWidth / 8
   // Tamanho da fonte da notação (a-h/1-8) escala com a casa — o padrão da lib é um
   // 13px fixo, que fica minúsculo num tabuleiro grande.
-  const notationFontSize = Math.round(Math.min(26, Math.max(15, squareSize * 0.19)))
+  const notationFontSize = Math.round(Math.min(30, Math.max(18, squareSize * 0.23)))
   const notationStyles = useMemo(() => ({
     dark: { color: bt.light, fontWeight: 700 as const },
     light: { color: bt.dark, fontWeight: 700 as const },
@@ -285,18 +289,32 @@ export function ChessBoard({
     return squareOrigin(checkInfo.square, boardOrientation, squareSize)
   }, [checkInfo, boardOrientation, squareSize])
 
-  // Junta as duas fontes de seta num só array antes de calcular a geometria: as sugestões do
-  // engine (`topMoveArrows`, prop) e as desenhadas à mão pelo usuário (botão direito, estado
-  // interno acima) — mesmo desenho pras duas, só muda cor/espessura.
+  // Junta as três fontes de seta num só array antes de calcular a geometria: as sugestões do
+  // engine (`topMoveArrows`, prop), as de contexto (`extraArrows` — sugestão/dica dos treinos) e
+  // as desenhadas à mão pelo usuário (botão direito, estado interno acima) — mesmo desenho
+  // "quadrado" pras três, só muda cor/espessura/opacidade. `extraArrows` passava antes pelo
+  // desenho padrão (mais grosso e arredondado) da lib — pedido direto do usuário: igualar ao
+  // visual das setas desenhadas à mão (fino, ponta triangular, azul bebê).
   const arrowSpecs = useMemo(() => {
     const specs: { from: string; to: string; color: string; strokeWidth: number; opacity: number }[] = []
     if (topMoveArrows) {
       for (const a of topMoveArrows) specs.push({ ...a, opacity: a.opacity ?? 0.85 })
     }
-    const userWidth = Math.max(4, squareSize * USER_ARROW_WIDTH_RATIO)
+    const userWidth = Math.max(3.5, squareSize * USER_ARROW_WIDTH_RATIO)
+    for (const a of extraArrows ?? []) {
+      specs.push({ from: a.startSquare, to: a.endSquare, color: a.color, strokeWidth: userWidth, opacity: a.opacity ?? 0.75 })
+    }
     for (const a of drawnArrows) specs.push({ from: a.from, to: a.to, color: USER_ARROW_COLOR, strokeWidth: userWidth, opacity: 0.85 })
-    return specs
-  }, [topMoveArrows, drawnArrows, squareSize])
+    // Deduplica por par (de/para): mantém só a última entrada de cada par, já que fontes mais
+    // tardias (dica ativa, seta desenhada à mão) têm prioridade sobre uma sugestão mais fraca
+    // que aponte pro mesmo lugar. Sem isso, duas setas empilhadas no mesmo quadrado (ex: a seta
+    // de sugestão do Treino de Aberturas e a dica de lance completo, quando coincidem) pareciam
+    // um bug visual — mecanismo compartilhado aqui em vez de cada chamador ter que suprimir a
+    // própria seta na mão quando desconfia de colisão com outra fonte.
+    const byPair = new Map<string, (typeof specs)[number]>()
+    for (const s of specs) byPair.set(`${s.from}-${s.to}`, s)
+    return [...byPair.values()]
+  }, [topMoveArrows, extraArrows, drawnArrows, squareSize])
 
   // Geometria das setas de espessura variável — a lib só desenha com uma espessura fixa pro
   // tabuleiro inteiro, então essas são desenhadas à mão num SVG por cima do tabuleiro, com o
@@ -484,7 +502,7 @@ export function ChessBoard({
           )
         })()}
 
-        {/* Setas de espessura variável (topMoveArrows) — ver comentário do prop e de `customArrows`. */}
+        {/* Setas "à mão" (topMoveArrows/extraArrows/desenhadas pelo usuário) — ver `customArrows`. */}
         {customArrows.length > 0 && (
           <svg
             width={boardWidth}
@@ -514,8 +532,8 @@ export function ChessBoard({
                 fill="none"
                 stroke={a.color}
                 strokeWidth={a.strokeWidth}
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                strokeLinecap="butt"
+                strokeLinejoin="miter"
                 opacity={a.opacity}
                 markerEnd={`url(#${a.id})`}
               />

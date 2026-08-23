@@ -413,21 +413,35 @@ body {
 }
 .cl-hero-bg {
   height: calc(56.25cqw + 12px);
+  /* Camada 0 (bem no topo, `normal`): a caixa termina num corte reto (altura fixa em `cqw`) e
+     o resto do wrapper embaixo é preto sólido (`.cl-home-hero-wrap` acima) — sem essa camada, a
+     arte (ainda "viva" bem na borda inferior da caixa: perna da capivara, tabuleiro) batia direto
+     nesse preto sólido e criava uma "emenda"/barra reta visível, ainda mais evidente agora que os
+     cards de Recurso flutuam bem em cima dela (achado do usuário). Esse gradiente desvanece só o
+     último pedaço da própria caixa pra preto, criando a transição suave que a arte sozinha não
+     garantia mais (o corte residual de `cover` já não cai exatamente onde a arte "esmaece").*/
   background-image:
+    linear-gradient(to bottom, transparent 72%, #000000 100%),
+    radial-gradient(ellipse 42% 30% at 26% 90%, color-mix(in srgb, var(--color-blue-light) 65%, transparent), transparent 72%),
+    radial-gradient(ellipse 42% 30% at 76% 90%, color-mix(in srgb, var(--color-blue-light) 65%, transparent), transparent 72%),
     url(/hero-bg.png?v=2),
     radial-gradient(ellipse 55% 65% at 30% 55%, color-mix(in srgb, var(--color-blue-bright) 14%, transparent), transparent 70%);
-  background-size: cover, 100% 100%;
-  background-repeat: no-repeat, no-repeat;
-  background-position: 18% var(--hero-bg-pos-y, 90%), center;
+  background-size: 100% 100%, 100% 100%, 100% 100%, cover, 100% 100%;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+  /* `--hero-bg-pos-x` isola só o número que muda entre breakpoints (ajuste fino do corte
+     residual horizontal, ver comentário grande logo acima do arquivo) — sem essa variável, os
+     4 breakpoints precisariam repetir a lista inteira de 5 posições só pra mudar 1 número. */
+  background-position: center, center, center, var(--hero-bg-pos-x, 18%) var(--hero-bg-pos-y, 90%), center;
+  background-blend-mode: normal, screen, screen, normal, normal;
 }
 @media (max-width: 1200px) {
-  .cl-hero-bg { background-position: 28% var(--hero-bg-pos-y, 90%), center; }
+  .cl-hero-bg { --hero-bg-pos-x: 28%; }
 }
 @media (max-width: 900px) {
-  .cl-hero-bg { background-position: 36% var(--hero-bg-pos-y, 90%), center; }
+  .cl-hero-bg { --hero-bg-pos-x: 36%; }
 }
 @media (max-width: 760px) {
-  .cl-hero-bg { background-position: 42% var(--hero-bg-pos-y, 90%), center; }
+  .cl-hero-bg { --hero-bg-pos-x: 42%; }
 }
 
 /* Respiração sutil da capivara — todo o plano de fundo (mascote + tabuleiro) sobe e desce

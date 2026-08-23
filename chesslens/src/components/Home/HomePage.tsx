@@ -1,22 +1,21 @@
-import type { SVGProps } from 'react'
 import { ChesscomMarkIcon, LichessMarkIcon } from '../PlatformIcons'
 import type { Platform } from '../PlayerSearch/SearchView'
+import type { SVGProps } from 'react'
 
 interface HomePageProps {
   onOpenSearch: (platform: Platform) => void
 }
 
 // ── PRA DESCER/SUBIR A IMAGEM DE FUNDO: mexe só nesse número aqui. ──────────────────────────
-//    A janela de fundo (`.cl-hero-bg` em index.css) cobre a altura inteira da página com
-//    `background-size: cover` — a arte preenche a caixa nos 4 lados sempre, sem vão. Quando a
-//    caixa é mais alta que a proporção 16:9 da arte, sobra corte vertical; HERO_BG_POSITION_Y
-//    decide de qual lado esse corte sai:
-//      0   → corta embaixo (risco: tabuleiro, que quase encosta na borda inferior da arte)
-//      100 → corta em cima (seguro: só a faixa preta vazia acima da cabeça da capivara)
-//    Valor atual = 90 → âncora quase no fundo, corte sai quase todo de cima. Não baixar muito
-//    (a folga acima da cabeça acaba perto de ~85-90; abaixo disso o corte pode chegar nas
-//    orelhas). Pra descer a imagem mais, aumente (até 100). Pra subir, diminua com cautela.
-const HERO_BG_POSITION_Y = 90
+//    A janela de fundo (`.cl-hero-bg` em index.css) sempre cobre a altura inteira da página
+//    (hero + recursos + rodapé) com `background-size: cover` — sem cortar as laterais, sem
+//    sobrar vão nem faltar embaixo. HERO_BG_POSITION_Y escolhe qual fatia VERTICAL da imagem
+//    aparece dentro dessa janela:
+//      0   → mostra o TOPO da imagem (a capivara "desce"/sai mais de baixo do enquadramento)
+//      100 → mostra o FUNDO da imagem (a capivara "sobe"/sai mais de cima do enquadramento)
+//    Valor atual = 20 (mostra bem perto do topo da arte). Pra descer a capivara na tela,
+//    AUMENTE esse número (experimente 40, 60...). Pra subir, diminua (0 já é o mínimo).
+const HERO_BG_POSITION_Y = 40
 
 function base(props: SVGProps<SVGSVGElement>): SVGProps<SVGSVGElement> {
   return { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', ...props }
@@ -48,13 +47,8 @@ function ArrowRightIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
-// Card "Stockfish completo" usa o logo OFICIAL do próprio motor Stockfish (não o logo do site —
-// pedido direto do usuário depois de corrigir minha primeira tentativa, que tinha colocado o logo
-// do ChessLens ali por engano). Baixado direto de stockfishchess.org/images/logo/icon_512x512.png
-// (o link oficial referenciado no próprio README do projeto no GitHub, official-stockfish/
-// Stockfish) — peixe sobre tabuleiro quadriculado, a mascote/marca real do motor. É o único card
-// com `image` em vez de `Icon` (os outros dois continuam com SVG próprio); o card renderiza um
-// dos dois, nunca os dois juntos.
+// Card "Stockfish completo" usa o logo oficial do próprio motor (imagem), não um ícone de traço
+// — os outros dois cards continuam com SVG; o card renderiza um dos dois, nunca os dois juntos.
 const FEATURES: { Icon?: typeof RibbonIcon; image?: string; label: string; description: string }[] = [
   { image: '/stockfish-logo.png', label: 'Stockfish completo', description: 'Motor rodando 100% no seu navegador, sem servidor.' },
   { Icon: RibbonIcon, label: 'Classificação lance a lance', description: 'Brilhante, erro, imprecisão — pra cada jogada, igual chess.com.' },
@@ -62,54 +56,36 @@ const FEATURES: { Icon?: typeof RibbonIcon; image?: string; label: string; descr
 ]
 
 /**
- * Tela inicial — só a vitrine: capivara em tela cheia, título, os dois cards de plataforma
- * (Chess.com/Lichess) e os cards de Recursos. Não busca nada aqui — clicar num card de
- * plataforma leva pra a tela de "Analisar" (`SearchView`), que é uma página separada, sem a
- * imagem de fundo, dedicada à busca em si. Rola internamente, como o resto do app.
+ * Tela inicial — dividida em seções empilhadas (hero de busca, recursos, rodapé) em vez de um
+ * card único monolítico, pra dar espaço fácil pra novas seções entrarem no futuro (ex: partidas
+ * recentes, estatísticas) sem precisar redesenhar tudo. Rola internamente, como o resto do app.
  */
 export function HomePage({ onOpenSearch }: HomePageProps) {
   return (
-    // `background:'#000'` aqui, não só em `.cl-home-hero-wrap` logo abaixo: esse `<div>` é o
-    // container de ROLAGEM da Home inteira (`maxHeight: calc(100vh - 20px)`), e `.cl-home-hero-
-    // wrap` só tem uma altura MÍNIMA (`minHeight`, um piso, não um "esticar até preencher") — em
-    // telas altas o conteúdo (hero + cards) pode ficar mais curto que o espaço disponível aqui,
-    // sobrando uma faixa cinza (herdada de `body`/--color-bg-main) embaixo do wrap preto. Achado
-    // pelo usuário direto no DOM depois do fix anterior (que só cobriu o wrap, não este pai).
-    <div style={{ flex: 1, minWidth: 0, overflowX: 'hidden', overflowY: 'auto', maxHeight: 'calc(100vh - 20px)', background: '#000000' }}>
+    <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', maxHeight: 'calc(100vh - 20px)' }}>
       {/* Wrapper com altura = altura do conteúdo (hero + recursos + rodapé). Os cards de Recurso
           não têm mais fundo opaco: ficam "flutuando" com vidro fosco (fundo translúcido + blur
           só onde o card ocupa), então a imagem de fundo continua visível por baixo deles em vez
           de sumir atrás de um retângulo sólido. Reenquadramento da imagem: ver as constantes
           HERO_BG_* logo acima do componente e as regras de `.cl-hero-bg` em index.css.
-          `containerType: 'inline-size'` transforma este wrapper num container de consulta CSS —
-          é o que permite `.cl-hero-bg` (abaixo) medir a própria LARGURA via `cqw` e calcular a
-          própria altura na proporção 16:9 da arte, em vez de esticar pela altura do wrapper
-          (que pode ser bem mais alta que 16:9 — conteúdo empilhado: hero + cards + rodapé). */}
-      <div className="cl-home-hero-wrap" style={{ position: 'relative', minHeight: 'calc(100vh - 110px)', display: 'flex', flexDirection: 'column' }}>
+          `cl-home-hero-wrap` (classe, não inline) é o que dá `container-type: inline-size` a
+          esse wrapper — sem ela, `.cl-hero-bg` perde a altura em `cqw` (calculada a partir da
+          LARGURA do container, index.css) e volta a esticar pela altura do wrapper inteiro,
+          cortando capivara ou tabuleiro pra caber. */}
+      <div className="cl-home-hero-wrap" style={{ position: 'relative', minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
         <div
           aria-hidden
           className="cl-hero-bg"
           style={{
-            // Faixa do topo do wrapper, não o wrapper inteiro: `top`/`left`/`right` fixam a
-            // largura (100% do container), e a ALTURA vem de `.cl-hero-bg` em index.css
-            // (`height: calc(56.25cqw + 12px)`, ou seja: largura × 9/16, a proporção nativa da
-            // arte, mais uma folga de respiração). Isso mantém essa caixa sempre PRÓXIMA da
-            // proporção 16:9 da própria imagem, não importa o quão alto o wrapper fique (o
-            // conteúdo abaixo — cards de Recurso, rodapé — continua sobre a cor de fundo normal,
-            // não precisa de imagem atrás). Com a caixa já quase 16:9, `background-size: cover`
-            // (index.css) não precisa cortar quase nada — é o que garante capivara E tabuleiro
-            // sempre visíveis inteiros, em qualquer largura de janela. `top: -6px` (a caixa é
-            // 12px mais alta que a largura×9/16 pura) dá folga pra `cl-hero-breathe` (respiração,
-            // translateY ±5px em index.css) sem revelar a cor de fundo por trás no topo da
-            // página. `background-position` (18%/... x, HERO_BG_POSITION_Y y, em index.css) ainda
-            // existe como ajuste fino pro pouco corte residual, mas não é mais o que evita cortar
-            // capivara/tabuleiro — isso agora é a proporção da caixa em si.
-            position: 'absolute', top: -6, right: 0, left: 0,
+            // `top:-6` (não `bottom:0` com altura fixa): a altura real vem de `.cl-hero-bg` em
+            // index.css (`calc(56.25cqw + 12px)`, ou seja largura×9/16 — a proporção nativa da
+            // arte — mais folga de respiração), que mede a LARGURA do wrapper via `cqw` e por
+            // isso mantém a caixa sempre perto de 16:9. É essa proporção quase-16:9 que faz
+            // `background-size: cover` (index.css) não precisar cortar quase nada da arte.
+            position: 'absolute', top: -6, left: 0, right: 0,
             ...({ '--hero-bg-pos-y': `${HERO_BG_POSITION_Y}%` } as React.CSSProperties),
           }}
         />
-        {/* Fumaça do rodapé — névoa âmbar subindo do fim da página, só decorativa (aria-hidden). */}
-        <div aria-hidden className="cl-footer-fog" />
 
         <div className="cl-fade-in" style={{ position: 'relative' }}>
         {/* ── Hero: título + busca flutuam direto sobre o plano de fundo acima, sem card. Essa
@@ -119,7 +95,7 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
             Recursos, pra imagem "respirar" no meio. ── */}
         <div style={{
           display: 'flex', justifyContent: 'flex-end', minHeight: 170, marginBottom: 130,
-          padding: 'clamp(28px, 4vw, 44px) clamp(40px, 6vw, 72px) 0',
+          padding: 'clamp(8px, 1.5vw, 14px) clamp(10px, 1.5vw, 18px) 0',
         }}>
             <div className="cl-home-hero-content" style={{ flex: '0 1 380px', display: 'flex', flexDirection: 'column', gap: 12, justifyContent: 'flex-start', minWidth: 0 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -175,10 +151,14 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
         </div>
         </div>
 
-        {/* ── Recursos + Rodapé — encostados na ESQUERDA (não mais centralizados) e empurrados
-            pro FUNDO da página (`marginTop:'auto'` no wrapper flex-column acima empurra esse
-            bloco até a base, com o vão grande acima deixando a imagem de fundo "respirar"). ── */}
-        <div style={{ position: 'relative', maxWidth: 1080, marginTop: 'auto', padding: '0 clamp(8px, 2vw, 16px) 40px' }}>
+        {/* ── Recursos — encostado no FUNDO da página (`marginTop:'auto'`, com o wrapper acima
+            em `display:flex, flexDirection:column`), deixando o vão acima livre pra imagem de
+            fundo "respirar". Continua com o maxWidth:1080 centralizado (igual ao resto do app),
+            diferente da linha do hero acima. `width:'100%'` explícito é necessário aqui: dentro
+            de um flex-column, margin horizontal `auto` sozinho desativa o `stretch` (comporta-
+            mento do flexbox) e a caixa encolhe pro tamanho do conteúdo em vez de ocupar os
+            1080px — foi isso que apertou os cards de Recurso e quebrou a grade em 2 linhas. ── */}
+        <div style={{ position: 'relative', width: '100%', maxWidth: 1080, margin: '0 auto', marginTop: 'auto', padding: '0 clamp(8px, 2vw, 16px) 40px' }}>
         <section style={{ marginBottom: 4 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
             <span aria-hidden style={{ width: 4, height: 14, borderRadius: 2, background: 'var(--color-blue-bright)' }} />
@@ -186,12 +166,11 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
               O que você tem aqui
             </h2>
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-start', gap: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 14 }}>
             {FEATURES.map(({ Icon, image, label, description }) => (
               <div key={label} className="cl-card cl-feature-card" style={{
-                display: 'flex', flexDirection: 'column', gap: 10,
-                flex: '0 0 250px',
-                padding: '16px 18px',
+                display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12,
+                padding: '14px 18px',
                 // Vidro fosco — fundo translúcido + blur só na área do card, em vez de opaco,
                 // pra imagem de fundo continuar visível por baixo (ver wrapper com o plano de
                 // fundo mais acima, que agora cobre a altura da página inteira).
@@ -203,9 +182,8 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   width: 34, height: 34, borderRadius: 'var(--radius-sm)', flexShrink: 0,
                   overflow: 'hidden',
-                  // O card "Stockfish completo" usa o logo oficial (imagem, já tem fundo/cantos
-                  // próprios) em vez de um ícone de traço — sem o fundo/cor tintados dos outros,
-                  // que ficariam duplicados atrás de uma imagem opaca.
+                  // O card com logo (imagem, já tem fundo/cantos próprios) não recebe o fundo
+                  // tintado dos ícones de traço — ficaria duplicado atrás de uma imagem opaca.
                   background: image ? 'transparent' : 'color-mix(in srgb, var(--color-bg-main) 55%, transparent)',
                   color: 'var(--color-blue-bright)',
                 }}>
@@ -219,7 +197,6 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
             ))}
           </div>
         </section>
-
         </div>
       </div>
     </div>

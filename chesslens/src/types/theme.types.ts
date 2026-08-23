@@ -20,6 +20,9 @@ export type UIThemeName =
 
 export type AnimationSpeed = 'none' | 'fast' | 'normal' | 'slow'
 export type BoardSize = 'small' | 'medium' | 'large' | 'auto'
+// SoundTheme é derivado de SOUND_THEMES (fonte única da verdade)
+import type { SoundTheme } from '../utils/sounds'
+export type { SoundTheme }
 
 export interface ThemeConfig {
   boardTheme: BoardThemeName
@@ -32,6 +35,7 @@ export interface ThemeConfig {
   animationSpeed: AnimationSpeed
   boardSize: BoardSize
   soundEnabled: boolean
+  soundTheme: SoundTheme
 }
 
 export interface BoardTheme {

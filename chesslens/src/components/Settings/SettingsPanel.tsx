@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { BOARD_THEMES, CURATED_BOARD_THEMES, CURATED_PIECE_SETS, PIECE_SETS, PIECE_COLOR_FILTER } from '../../utils/boardThemes'
-import type { PieceSetName, BoardSize, AnimationSpeed } from '../../types/theme.types'
+import type { PieceSetName, BoardSize, AnimationSpeed, SoundTheme } from '../../types/theme.types'
 import { BoardIcon, AppearanceIcon, MotionIcon, SoundIcon, SearchIcon } from './icons'
+import { SOUND_THEMES, playSound } from '../../utils/sounds'
 
 type CategoryId = 'board' | 'appearance' | 'animation' | 'sound'
 
@@ -79,7 +80,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
     theme,
     setBoardTheme, setPieceSet,
     setShowCoordinates, setShowArrows, setShowLegalMoves, setShowLastMove,
-    setBoardSize, setAnimationSpeed, setSoundEnabled,
+    setBoardSize, setAnimationSpeed, setSoundEnabled, setSoundTheme,
   } = useTheme()
   const [category, setCategory] = useState<CategoryId>('board')
   const [query, setQuery] = useState('')
@@ -298,9 +299,33 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
             )}
 
             {active?.id === 'sound' && (
-              <Section label="Sons">
-                <Toggle label="Som" description="Efeito sonoro a cada lance" checked={theme.soundEnabled} onChange={setSoundEnabled} />
-              </Section>
+              <>
+                <Section label="Sons">
+                  <Toggle label="Som" description="Efeito sonoro a cada lance" checked={theme.soundEnabled} onChange={setSoundEnabled} />
+                </Section>
+
+                <Divider />
+
+                <Section label="Tema do som">
+                  <div style={{ fontSize: 11.5, color: 'var(--color-gray-muted)', marginTop: -6, marginBottom: 10 }}>
+                    Sons livres do lichess.org — os do chess.com são proprietários, não dá pra
+                    reproduzir aqui. Clique pra ouvir e escolher.
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
+                    {(Object.keys(SOUND_THEMES) as SoundTheme[]).map((key) => (
+                      <SizeButton
+                        key={key}
+                        label={SOUND_THEMES[key]}
+                        isSelected={theme.soundTheme === key}
+                        onClick={() => {
+                          setSoundTheme(key)
+                          playSound('move', key)
+                        }}
+                      />
+                    ))}
+                  </div>
+                </Section>
+              </>
             )}
           </div>
         </div>

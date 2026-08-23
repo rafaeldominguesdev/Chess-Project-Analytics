@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import type { ThemeConfig, BoardThemeName, PieceSetName, UIThemeName, AnimationSpeed, BoardSize } from '../types/theme.types'
+import type { ThemeConfig, BoardThemeName, PieceSetName, UIThemeName, AnimationSpeed, BoardSize, SoundTheme } from '../types/theme.types'
 import { UI_THEMES, BOARD_THEMES } from '../utils/boardThemes'
+import { SOUND_THEMES } from '../utils/sounds'
 
 const STORAGE_KEY = 'chesslens-theme'
 
@@ -18,6 +19,7 @@ const DEFAULT_THEME: ThemeConfig = {
   animationSpeed: 'normal',
   boardSize: 'auto',
   soundEnabled: true,
+  soundTheme: 'standard',
 }
 
 // Defaults antigos — quem tinha isso salvo nunca escolheu um tema de propósito, então migra pro
@@ -42,6 +44,7 @@ interface ThemeContextValue {
   setAnimationSpeed: (v: AnimationSpeed) => void
   setBoardSize: (v: BoardSize) => void
   setSoundEnabled: (v: boolean) => void
+  setSoundTheme: (v: SoundTheme) => void
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
@@ -80,6 +83,7 @@ function loadSaved(): ThemeConfig {
       if (OLD_DEFAULT_BOARD_THEMES.has(merged.boardTheme)) merged.boardTheme = DEFAULT_THEME.boardTheme
       if (OLD_DEFAULT_UI_THEMES.has(merged.uiTheme)) merged.uiTheme = DEFAULT_THEME.uiTheme
       if (OLD_DEFAULT_PIECE_SETS.has(merged.pieceSet)) merged.pieceSet = DEFAULT_THEME.pieceSet
+      if (!SOUND_THEMES[merged.soundTheme]) merged.soundTheme = DEFAULT_THEME.soundTheme
       return merged
     }
   } catch {}
@@ -115,6 +119,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setAnimationSpeed: (v) => update({ animationSpeed: v }),
       setBoardSize: (v) => update({ boardSize: v }),
       setSoundEnabled: (v) => update({ soundEnabled: v }),
+      setSoundTheme: (v) => update({ soundTheme: v }),
     }}>
       {children}
     </ThemeContext.Provider>

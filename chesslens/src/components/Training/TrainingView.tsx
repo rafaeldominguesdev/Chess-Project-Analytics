@@ -196,12 +196,10 @@ export function TrainingView({ boardWidth, containerRef }: TrainingViewProps) {
             <div className="cl-card" style={{
               display: 'flex', flexDirection: 'column', gap: 10, padding: 14,
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <SectionLabel>Esse puzzle</SectionLabel>
-                <span className="cl-mono" style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-blue-bright)' }}>
-                  {puzzle.rating}
-                </span>
-              </div>
+              {/* Rating já aparece no card do topo (mesma posição do card de família do Treino de
+                  Aberturas) — repetir aqui era duplicado e ficava desalinhado com o resto do site
+                  (pedido direto do usuário: padronizar como as Aberturas fazem). */}
+              <SectionLabel>Esse puzzle</SectionLabel>
               {puzzle.themes.length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                   {puzzle.themes.slice(0, 4).map((t) => (

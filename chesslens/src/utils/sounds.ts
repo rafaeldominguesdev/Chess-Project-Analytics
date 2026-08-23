@@ -1,6 +1,20 @@
 // Sons de lance. Não dá pra usar os sons do chess.com de verdade — são proprietários, não é
-// permitido redistribuir. Usamos o tema "standard" (padrão) da lichess.org.
-const SOUND_BASE = 'https://lichess1.org/assets/sound/standard'
+// permitido redistribuir (pedido direto do usuário: "quero algo igual do chess.com" — não dá,
+// mas ele pode escolher entre os temas do lichess.org, que são livres, em vez de ficar preso só
+// no "standard" — pedido dele: "coloca todos os sons pra pessoa poder escolher qual prefiro").
+const SOUND_BASE = 'https://lichess1.org/assets/sound'
+
+export const SOUND_THEMES = {
+  standard: 'Padrão',
+  piano: 'Piano',
+  nes: 'NES (8-bit)',
+  sfx: 'Efeitos (SFX)',
+  futuristic: 'Futurista',
+  lisp: 'Lisp',
+  robot: 'Robô',
+} as const
+
+export type SoundTheme = keyof typeof SOUND_THEMES
 
 const SOUND_FILES = {
   move: 'Move.mp3',
@@ -14,20 +28,21 @@ const SOUND_FILES = {
 
 export type SoundName = keyof typeof SOUND_FILES
 
-const cache = new Map<SoundName, HTMLAudioElement>()
+const cache = new Map<string, HTMLAudioElement>()
 
-function getAudio(name: SoundName): HTMLAudioElement {
-  let audio = cache.get(name)
+function getAudio(theme: SoundTheme, name: SoundName): HTMLAudioElement {
+  const key = `${theme}:${name}`
+  let audio = cache.get(key)
   if (!audio) {
-    audio = new Audio(`${SOUND_BASE}/${SOUND_FILES[name]}`)
+    audio = new Audio(`${SOUND_BASE}/${theme}/${SOUND_FILES[name]}`)
     audio.preload = 'auto'
-    cache.set(name, audio)
+    cache.set(key, audio)
   }
   return audio
 }
 
-export function playSound(name: SoundName) {
-  const audio = getAudio(name)
+export function playSound(name: SoundName, theme: SoundTheme = 'standard') {
+  const audio = getAudio(theme, name)
   audio.currentTime = 0
   // Autoplay pode ser bloqueado fora de um gesto do usuário; ignoramos o erro.
   void audio.play().catch(() => {})
