@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { AnalyzeNavIcon, BoardNavIcon, BookNavIcon, BrandMarkIcon, ChevronIcon, GearIcon, PositionSetupIcon, SunNavIcon, TargetIcon, WrenchIcon } from './icons'
+import { AnalyzeNavIcon, BoardNavIcon, BookNavIcon, BrandMarkIcon, ChevronIcon, ErrorTrainNavIcon, GearIcon, PositionSetupIcon, SunNavIcon, TargetIcon, WrenchIcon } from './icons'
 
 interface SidebarProps {
   onSettings: () => void
@@ -7,6 +7,7 @@ interface SidebarProps {
   onToggleTraining: () => void
   onToggleBoard: () => void
   onToggleOpeningTraining: () => void
+  onToggleErrorTraining: () => void
   onGoHome: () => void
   onAnalyzeClick: () => void
   onMaintenanceClick: (feature: string) => void
@@ -14,6 +15,7 @@ interface SidebarProps {
   trainingActive: boolean
   boardActive: boolean
   openingTrainingActive: boolean
+  errorTrainingActive: boolean
   positionEditorActive: boolean
   searchActive: boolean
 }
@@ -29,8 +31,9 @@ const WIDTH_COLLAPSED = 68
 // comercial deles (preço, loja, blog) — não faz sentido num projeto pessoal. Lista enxuta, só o
 // que tem chance real de virar funcionalidade — o resto dos itens do chessigma (Woodpecker,
 // Blunder Shield, Sparring, Treino de Conversão, Próximo Lance, Calculadora de Elo) foi tirado.
-// "Treino de Aberturas" saiu daqui — virou funcionalidade de verdade, tem `NavItem` próprio abaixo.
-const TRAIN_PLACEHOLDERS = ['Treino de Erros']
+// "Treino de Aberturas" e "Treino de Erros" saíram daqui — viraram funcionalidade de verdade,
+// cada um com `NavItem` próprio abaixo.
+const TRAIN_PLACEHOLDERS: string[] = []
 
 /** Sidebar fixa à esquerda: marca e navegação principal. "Treino" é uma lista simples (Puzzles +
  *  placeholders); "Ferramentas" é um grupo que expande/recolhe (Analisar, Tabuleiro, Definir
@@ -41,7 +44,7 @@ const TRAIN_PLACEHOLDERS = ['Treino de Erros']
  *  fica colado no topo, ao lado da marca — e os dois estados (colapsada / ferramentas aberta)
  *  persistem entre sessões (localStorage), já que são preferência de layout, não algo que muda
  *  por partida. Rola internamente (overflowY) porque com tudo expandido não cabe numa tela baixa. */
-export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard, onToggleOpeningTraining, onGoHome, onAnalyzeClick, onMaintenanceClick, onTogglePositionEditor, trainingActive, boardActive, openingTrainingActive, positionEditorActive, searchActive }: SidebarProps) {
+export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard, onToggleOpeningTraining, onToggleErrorTraining, onGoHome, onAnalyzeClick, onMaintenanceClick, onTogglePositionEditor, trainingActive, boardActive, openingTrainingActive, errorTrainingActive, positionEditorActive, searchActive }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(() => {
     const saved = localStorage.getItem(COLLAPSED_KEY)
     // Sem preferência salva ainda: começa colapsada (só ícones) em telas estreitas, senão a
@@ -133,6 +136,7 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
       <NavSection label="Treino" collapsed={collapsed}>
         <NavItem icon={<TargetIcon width={22} height={22} />} label="Puzzles" active={trainingActive} onClick={onToggleTraining} collapsed={collapsed} />
         <NavItem icon={<BookNavIcon width={22} height={22} />} label="Treino de Aberturas" active={openingTrainingActive} onClick={onToggleOpeningTraining} collapsed={collapsed} />
+        <NavItem icon={<ErrorTrainNavIcon width={22} height={22} />} label="Treino de Erros" active={errorTrainingActive} onClick={onToggleErrorTraining} collapsed={collapsed} />
         {TRAIN_PLACEHOLDERS.map((label) => (
           <NavItem key={label} icon={<WrenchIcon width={21} height={21} />} label={label} collapsed={collapsed} soon
             onClick={() => onMaintenanceClick(label)} />

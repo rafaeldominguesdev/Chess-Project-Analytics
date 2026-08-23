@@ -100,6 +100,18 @@ export function BookNavIcon(props: IconProps) {
   )
 }
 
+/** Lupa com alerta dentro — Treino de Erros (achar/revisar os próprios erros nas partidas). */
+export function ErrorTrainNavIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <circle cx="10" cy="10" r="6.5" />
+      <path d="M14.8 14.8 20 20" />
+      <path d="M10 7v3.7" />
+      <circle cx="10" cy="13" r="0.7" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
 /** Seta simples — usada no botão de encolher/expandir a sidebar, gira via CSS conforme o estado. */
 export function ChevronIcon(props: IconProps) {
   return (
