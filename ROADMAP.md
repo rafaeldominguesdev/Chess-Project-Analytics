@@ -41,14 +41,23 @@ gerar depois.
 
 Sem isso, Treino de Erros e Relatório não existem.
 
-- [ ] IndexedDB com três stores: `games` (PGN + metadados), `analyses` (resultado por partida),
-      `positions` (cache FEN + profundidade → avaliação).
-- [ ] Reabrir partida já analisada = instantâneo.
-- [ ] Análise em background com barra de progresso e navegação liberada durante o cálculo (o
-      app já tem uma versão disso — overlay de análise da Revisão de partida — mas sem
-      persistência: fechar o navegador perde o resultado).
-- [ ] Import/export do banco local (JSON) — o usuário não pode perder o histórico ao limpar o
-      navegador.
+- [x] IndexedDB com três stores: `games` (PGN + metadados), `analyses` (resultado por partida),
+      `positions` (cache FEN + profundidade → avaliação) — **feito em 2026-08-23**
+      (`src/persistence/`, banco `chesslens-db`, sem lib nova — wrapper próprio pequeno, mesma
+      filosofia "nunca quebra o app" do padrão de `localStorage` já usado no projeto).
+- [x] Reabrir partida já analisada = instantâneo — **feito em 2026-08-23**. Só os números brutos
+      do motor (`whiteEvals`/`bestMoves`) são cacheados, nunca a classificação em si — ela é
+      recalculada na hora com a lógica ATUAL de `classifyMove`/`isBookMove`, então um cache
+      antigo nunca fica preso a uma regra de classificação desatualizada. Testado ao vivo:
+      reabrir a mesma partida pula o Stockfish inteiramente, sem overlay de análise.
+- [x] Análise em background com barra de progresso e navegação liberada durante o cálculo —
+      **resolvido em 2026-08-23** como efeito colateral do cache de `positions` (cruzado entre
+      partidas): se o navegador fechar no meio de uma análise, cada posição já avaliada virou um
+      cache HIT, então reabrir é um resume quase instantâneo, não um recálculo do zero — sem
+      precisar de trabalho extra além do já feito nos 2 itens acima.
+- [x] Import/export do banco local (JSON) — **feito em 2026-08-23**, nova categoria "Dados" em
+      Configurações. `positions` fica de fora do arquivo de propósito (cache de performance, não
+      histórico do usuário).
 
 **Pronto quando:** você analisa 10 partidas, fecha o navegador, reabre e tudo está lá sem
 recalcular.
