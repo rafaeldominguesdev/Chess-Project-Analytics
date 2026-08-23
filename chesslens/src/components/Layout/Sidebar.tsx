@@ -20,8 +20,10 @@ interface SidebarProps {
 
 const COLLAPSED_KEY = 'chesslens-sidebar-collapsed'
 const TOOLS_OPEN_KEY = 'chesslens-sidebar-tools-open'
-const WIDTH_EXPANDED = 254
-const WIDTH_COLLAPSED = 60
+// Aumentado a pedido direto do usuário: "deixe maior a sidebar e os icones e texto esta
+// apertado" — eram 254/60, ícones 19-20px e fonte 10-12px, ficando apertado visualmente.
+const WIDTH_EXPANDED = 278
+const WIDTH_COLLAPSED = 68
 
 // Estrutura de menu inspirada na sidebar do chessigma.com (Treino / Ferramentas), sem a parte
 // comercial deles (preço, loja, blog) — não faz sentido num projeto pessoal. Lista enxuta, só o
@@ -103,9 +105,9 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
             }}
           >
             <span style={{ color: 'var(--color-blue-bright)', display: 'flex', flexShrink: 0 }}>
-              <BrandMarkIcon width={24} height={24} />
+              <BrandMarkIcon width={27} height={27} />
             </span>
-            <span className="cl-display" style={{ fontSize: 14, fontWeight: 800, color: 'var(--color-text-on-dark)', whiteSpace: 'nowrap' }}>ChessLens</span>
+            <span className="cl-display" style={{ fontSize: 15.5, fontWeight: 800, color: 'var(--color-text-on-dark)', whiteSpace: 'nowrap' }}>ChessLens</span>
           </button>
         )}
         <button
@@ -114,7 +116,7 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
           aria-label={collapsed ? 'Expandir menu' : 'Encolher menu'}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            width: 26, height: 26, flexShrink: 0, padding: 0,
+            width: 29, height: 29, flexShrink: 0, padding: 0,
             borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-gray-border)',
             background: 'var(--color-bg-raised)', color: 'var(--color-text-on-dark)', cursor: 'pointer',
             transition: 'background-color var(--dur-tap) var(--ease-tap), border-color var(--dur-tap) var(--ease-tap)',
@@ -122,17 +124,17 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-blue-bright)' }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-gray-border)' }}
         >
-          <ChevronIcon width={15} height={15} style={{ transform: collapsed ? 'rotate(180deg)' : 'none', transition: 'transform var(--dur-enter) var(--ease-snap)' }} />
+          <ChevronIcon width={17} height={17} style={{ transform: collapsed ? 'rotate(180deg)' : 'none', transition: 'transform var(--dur-enter) var(--ease-snap)' }} />
         </button>
       </div>
 
       <div style={{ height: 1, background: 'var(--color-gray-border)', marginBottom: 18 }} />
 
       <NavSection label="Treino" collapsed={collapsed}>
-        <NavItem icon={<TargetIcon width={20} height={20} />} label="Puzzles" active={trainingActive} onClick={onToggleTraining} collapsed={collapsed} />
-        <NavItem icon={<BookNavIcon width={20} height={20} />} label="Treino de Aberturas" active={openingTrainingActive} onClick={onToggleOpeningTraining} collapsed={collapsed} />
+        <NavItem icon={<TargetIcon width={22} height={22} />} label="Puzzles" active={trainingActive} onClick={onToggleTraining} collapsed={collapsed} />
+        <NavItem icon={<BookNavIcon width={22} height={22} />} label="Treino de Aberturas" active={openingTrainingActive} onClick={onToggleOpeningTraining} collapsed={collapsed} />
         {TRAIN_PLACEHOLDERS.map((label) => (
-          <NavItem key={label} icon={<WrenchIcon width={19} height={19} />} label={label} collapsed={collapsed} soon
+          <NavItem key={label} icon={<WrenchIcon width={21} height={21} />} label={label} collapsed={collapsed} soon
             onClick={() => onMaintenanceClick(label)} />
         ))}
       </NavSection>
@@ -150,12 +152,12 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
             }}
           >
             <span style={{
-              fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
+              fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
               color: 'var(--color-gray-muted)', whiteSpace: 'nowrap', flex: 1,
             }}>
               Ferramentas
             </span>
-            <ChevronIcon width={11} height={11} style={{
+            <ChevronIcon width={12} height={12} style={{
               color: 'var(--color-gray-muted)', transform: toolsOpen ? 'rotate(-90deg)' : 'rotate(-180deg)',
               transition: 'transform var(--dur-tap) var(--ease-tap)', flexShrink: 0,
             }} />
@@ -163,9 +165,9 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
         )}
         {(collapsed || toolsOpen) && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <NavItem icon={<AnalyzeNavIcon width={20} height={20} />} label="Analisar" active={searchActive} onClick={onAnalyzeClick} collapsed={collapsed} />
-            <NavItem icon={<BoardNavIcon width={20} height={20} />} label="Tabuleiro" active={boardActive} onClick={onToggleBoard} collapsed={collapsed} />
-            <NavItem icon={<PositionSetupIcon width={20} height={20} />} label="Definir Posição" active={positionEditorActive} onClick={onTogglePositionEditor} collapsed={collapsed} />
+            <NavItem icon={<AnalyzeNavIcon width={22} height={22} />} label="Analisar" active={searchActive} onClick={onAnalyzeClick} collapsed={collapsed} />
+            <NavItem icon={<BoardNavIcon width={22} height={22} />} label="Tabuleiro" active={boardActive} onClick={onToggleBoard} collapsed={collapsed} />
+            <NavItem icon={<PositionSetupIcon width={22} height={22} />} label="Definir Posição" active={positionEditorActive} onClick={onTogglePositionEditor} collapsed={collapsed} />
           </div>
         )}
       </div>
@@ -173,8 +175,8 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
       <div style={{ flex: 1, minHeight: 12 }} />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <NavItem icon={<SunNavIcon width={20} height={20} />} label="Atualizações" onClick={onUpdates} collapsed={collapsed} />
-        <NavItem icon={<GearIcon width={20} height={20} />} label="Configurações" onClick={onSettings} collapsed={collapsed} />
+        <NavItem icon={<SunNavIcon width={22} height={22} />} label="Atualizações" onClick={onUpdates} collapsed={collapsed} />
+        <NavItem icon={<GearIcon width={22} height={22} />} label="Configurações" onClick={onSettings} collapsed={collapsed} />
       </div>
     </nav>
   )
@@ -185,8 +187,8 @@ function NavSection({ label, collapsed, children }: { label: string; collapsed: 
     <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 16 }}>
       {!collapsed && (
         <span style={{
-          fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
-          color: 'var(--color-gray-muted)', padding: '0 6px', marginBottom: 5, whiteSpace: 'nowrap',
+          fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
+          color: 'var(--color-gray-muted)', padding: '0 6px', marginBottom: 6, whiteSpace: 'nowrap',
         }}>
           {label}
         </span>
@@ -207,8 +209,8 @@ function NavItem({ icon, label, active = false, collapsed, soon = false, onClick
       aria-current={active ? 'page' : undefined}
       className={`cl-btn${active ? ' cl-btn-selected' : ''}`}
       style={{
-        justifyContent: collapsed ? 'center' : 'flex-start', gap: 9, width: '100%',
-        padding: collapsed ? '10px 0' : '10px 11px', fontSize: soon ? 11.5 : 12, letterSpacing: '0.3px',
+        justifyContent: collapsed ? 'center' : 'flex-start', gap: 11, width: '100%',
+        padding: collapsed ? '12px 0' : '12px 13px', fontSize: soon ? 12.5 : 13.5, letterSpacing: '0.3px',
         opacity: soon ? 0.55 : 1,
       }}
     >
@@ -218,8 +220,8 @@ function NavItem({ icon, label, active = false, collapsed, soon = false, onClick
           <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>
           {soon && (
             <span style={{
-              marginLeft: 'auto', fontSize: 8, fontWeight: 800, letterSpacing: '0.02em', textTransform: 'uppercase',
-              padding: '2px 4px', borderRadius: 'var(--radius-sm)', flexShrink: 0,
+              marginLeft: 'auto', fontSize: 9, fontWeight: 800, letterSpacing: '0.02em', textTransform: 'uppercase',
+              padding: '2px 5px', borderRadius: 'var(--radius-sm)', flexShrink: 0,
               background: 'var(--color-bg-main)', color: 'var(--color-gray-muted)',
             }}>
               em breve

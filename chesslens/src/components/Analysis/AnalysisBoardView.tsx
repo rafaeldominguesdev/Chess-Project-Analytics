@@ -96,6 +96,11 @@ export function AnalysisBoardView({ boardWidth, containerRef, initialFen }: Anal
     moveIndex: number; color: 'w' | 'b'; from: string; to: string
     fenBefore: string; fenAfter: string; beforeCp: number | null; beforeMate: number | null; bestMoveBefore: string | null
   } | null>(null)
+  // Última lista de lances, acessível de dentro do efeito de classificação sem precisar listar
+  // `moves` nas deps dele (ver comentário no efeito — listar `moves` lá causava o efeito reagir
+  // ao lance sendo jogado, não só à avaliação do motor chegando).
+  const movesRef = useRef(moves)
+  movesRef.current = moves
 
   useEffect(() => {
     if (isReady) {
@@ -106,6 +111,21 @@ export function AnalysisBoardView({ boardWidth, containerRef, initialFen }: Anal
 
   // Resolve a classificação pendente assim que a avaliação da posição "depois" do lance chega —
   // e também guarda toda avaliação que chega como referência (o "antes" do PRÓXIMO lance).
+  //
+  // Bug real encontrado (pedido do usuário: "todos os lances saindo excelente"): as deps deste
+  // efeito incluíam `moves`, que muda no exato instante em que um lance é jogado — antes do motor
+  // ter avaliado a posição resultante. Isso disparava o efeito de novo IMEDIATAMENTE após o lance,
+  // reaproveitando `lines[0]` (ainda a avaliação da posição ANTERIOR, o motor nem começou a
+  // calcular a nova) e rotulando ela como se já fosse o "depois" — porque o efeito que atualiza
+  // `requestedFenRef` (linha ~100, declarado antes deste no componente, então roda primeiro no
+  // mesmo commit) já tinha avançado a ref pra posição nova. Resultado: `evalBefore` e `evalAfter`
+  // saíam sempre com o MESMO valor (a avaliação de antes do lance, duplicada), então a queda de
+  // % de chance de vitória dava sempre ~0 → sempre "Excelente", pra qualquer lance, bom ou péssimo.
+  // A avaliação de verdade da posição nova chegava alguns segundos depois, mas a classificação já
+  // tinha sido (erradamente) resolvida e `pendingClassifyRef` já estava limpo, então era ignorada.
+  // Correção: o efeito só deve reagir a avaliação NOVA do motor chegando (`lines` mudou de
+  // verdade), nunca a um lance sendo jogado — `moves` sai das deps, acessado via `movesRef` aqui
+  // dentro pra ainda pegar a lista atual sem re-disparar o efeito quando ela muda.
   useEffect(() => {
     const line: StockfishEval | null = lines[0]
     if (!line) return
@@ -114,6 +134,7 @@ export function AnalysisBoardView({ boardWidth, containerRef, initialFen }: Anal
 
     const pending = pendingClassifyRef.current
     if (!pending || forFen !== pending.fenAfter) return
+    const moves = movesRef.current
     // A partida pode ter sido reiniciada nesse meio-tempo — o índice não existe mais.
     if (!moves[pending.moveIndex]) { pendingClassifyRef.current = null; return }
 
@@ -129,7 +150,7 @@ export function AnalysisBoardView({ boardWidth, containerRef, initialFen }: Anal
 
     updateMoveClassification(pending.moveIndex, classification)
     pendingClassifyRef.current = null
-  }, [lines, moves, updateMoveClassification])
+  }, [lines, updateMoveClassification])
 
   const topMoveArrows = useMemo(() => {
     const arrows: { from: string; to: string; color: string; strokeWidth: number; opacity: number }[] = []
