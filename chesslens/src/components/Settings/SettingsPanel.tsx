@@ -1,12 +1,13 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { BOARD_THEMES, CURATED_BOARD_THEMES, CURATED_PIECE_SETS, PIECE_SETS, PIECE_COLOR_FILTER } from '../../utils/boardThemes'
 import type { PieceSetName, BoardSize, AnimationSpeed, SoundTheme } from '../../types/theme.types'
-import { BoardIcon, AppearanceIcon, MotionIcon, SoundIcon, SearchIcon } from './icons'
+import { BoardIcon, AppearanceIcon, MotionIcon, SoundIcon, DataIcon, SearchIcon } from './icons'
 import { SOUND_THEMES, playSound } from '../../utils/sounds'
+import { exportAllToJson, importFromJson } from '../../persistence/exportImport'
 
-type CategoryId = 'board' | 'appearance' | 'animation' | 'sound'
+type CategoryId = 'board' | 'appearance' | 'animation' | 'sound' | 'data'
 
 interface Category {
   id: CategoryId
@@ -36,6 +37,11 @@ const CATEGORIES: Category[] = [
     id: 'sound', label: 'Sons', description: 'Efeitos sonoros ao mover as peças.',
     icon: ({ size }) => <SoundIcon width={size} height={size} />,
     keywords: ['som', 'volume', 'áudio', 'mudo'],
+  },
+  {
+    id: 'data', label: 'Dados', description: 'Exportar ou importar seu histórico de partidas analisadas.',
+    icon: ({ size }) => <DataIcon width={size} height={size} />,
+    keywords: ['backup', 'exportar', 'importar', 'json', 'histórico', 'dados'],
   },
 ]
 
@@ -84,6 +90,33 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
   } = useTheme()
   const [category, setCategory] = useState<CategoryId>('board')
   const [query, setQuery] = useState('')
+  const [dataStatus, setDataStatus] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleExport = async () => {
+    const data = await exportAllToJson()
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `chesslens-backup-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+    setDataStatus(`${data.games.length} partidas e ${data.analyses.length} análises exportadas.`)
+  }
+
+  const handleImportFile = async (file: File) => {
+    try {
+      const parsed: unknown = JSON.parse(await file.text())
+      const result = await importFromJson(parsed)
+      setDataStatus(
+        `${result.importedGames} partidas e ${result.importedAnalyses} análises importadas`
+        + (result.skipped > 0 ? `, ${result.skipped} item(ns) ignorado(s).` : '.'),
+      )
+    } catch {
+      setDataStatus('Arquivo inválido — não foi possível ler como backup do ChessLens.')
+    }
+  }
 
   const visibleCategories = useMemo(() => {
     const q = normalize(query.trim())
@@ -326,6 +359,39 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
                   </div>
                 </Section>
               </>
+            )}
+
+            {active?.id === 'data' && (
+              <Section label="Backup do histórico">
+                <div style={{ fontSize: 11.5, color: 'var(--color-gray-muted)', marginTop: -6, marginBottom: 14 }}>
+                  Exporta as partidas e análises já salvas no seu navegador pra um arquivo JSON —
+                  útil pra guardar antes de limpar os dados do navegador, ou levar pra outro
+                  computador. O cache de posições (só desempenho, não é seu histórico) não entra
+                  no arquivo.
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={handleExport} className="cl-btn cl-btn-accent cl-btn-sm" style={{ width: 'auto', height: 'auto', padding: '8px 14px' }}>
+                    Exportar dados
+                  </button>
+                  <button onClick={() => fileInputRef.current?.click()} className="cl-btn cl-btn-sm" style={{ width: 'auto', height: 'auto', padding: '8px 14px' }}>
+                    Importar dados
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="application/json"
+                    style={{ display: 'none' }}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      e.target.value = ''
+                      if (file) void handleImportFile(file)
+                    }}
+                  />
+                </div>
+                {dataStatus && (
+                  <div style={{ fontSize: 12, color: 'var(--color-text-on-dark)', marginTop: 12 }}>{dataStatus}</div>
+                )}
+              </Section>
             )}
           </div>
         </div>
