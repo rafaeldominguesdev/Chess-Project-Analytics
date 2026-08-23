@@ -16,7 +16,7 @@ const EVAL_BAR_WIDTH = 24
 const ROW_GAP = 8
 // Cor/espessura das setas desenhadas à mão (botão direito arrastando) — âmbar, pra não confundir
 // com o verde das sugestões do engine (`topMoveArrows`), que ocupam o mesmo overlay.
-const USER_ARROW_COLOR = '#E8A93C'
+const USER_ARROW_COLOR = 'var(--color-blue-bright)'
 const USER_ARROW_WIDTH_RATIO = 0.16 // fração do tamanho da casa
 
 /** Largura extra (fora do quadrado do tabuleiro) ocupada pela barra de avaliação.
