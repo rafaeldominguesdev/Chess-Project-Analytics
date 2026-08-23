@@ -67,31 +67,28 @@ recalcular.
 Já existe um item "Treino de Erros" na sidebar, hoje só um placeholder ("em breve"/manutenção).
 Fazer em três etapas separadas, não tudo de uma vez:
 
-- [ ] **2a. Extração** — varrer as análises salvas e gerar candidatos a puzzle (todo lance
-      classificado como Erro ou Erro Grave, com FEN, lance jogado, melhor lance, delta de
-      avaliação). Depende do Sprint 1 (precisa de análises salvas pra varrer).
-- [ ] **2b. Classificação por motivo** — o pedaço mais delicado. Heurísticas puras em cima dos
-      dados que já se tem:
-
-  | Motivo | Como detectar |
-  |---|---|
-  | Peça pendurada | peça sua sem defesa atacada por peça de valor menor ou igual |
-  | Garfo não visto | melhor lance do oponente ataca 2+ peças |
-  | Cravada/enfiada | linha entre peça e rei/dama na melhor linha do motor |
-  | Back-rank | mate ou ganho na última fileira com rei sem escape |
-  | Erro de final | ≤ 6 peças + perda de resultado teórico |
-  | Tempo | lance ruim com < 15% do relógio restante |
-  | Erro de abertura | dentro do banco ECO e desvia da linha principal |
-
-  Comece com 4 motivos bem feitos. Motivo desconhecido cai em "genérico" — melhor isso do que
-  classificar errado.
-- [ ] **2c. Sessão de treino** — fila com repetição espaçada (FSRS ou SM-2), tabuleiro travado,
-      dica progressiva (motivo → peça envolvida → lance), e placar por motivo reaproveitando o
-      componente de domínio do Treino de Aberturas (`useOpeningTrainer.ts` já tem esse padrão —
-      `bumpMastery`/localStorage — dá pra generalizar em vez de reinventar).
+- [x] **2a. Extração** — `src/analysis/errorExtraction.ts`, `extractErrorCandidates()` — varre
+      TODAS as partidas salvas+analisadas (`persistence/`), reparseia o PGN e recalcula a
+      classificação lance a lance (mesma composição de `App.tsx`), filtra mistake/blunder —
+      **feito em 2026-08-23**. Fica sem corte/agrupamento de propósito (Sprint 3 vai precisar da
+      lista completa).
+- [x] **2b. Classificação por motivo** — `src/analysis/mistakeReasons.ts`,
+      `classifyMistakeReason()` — **feito em 2026-08-23**. 4 heurísticas com chess.js puro (sem
+      lib nova): peça pendurada, garfo não visto, cravada/enfiada, back-rank. Ordem fixa de
+      prioridade, cai em `'generic'` quando nenhuma bate. 8 testes (`mistakeReasons.test.ts`),
+      cada FEN validada contra o chess.js real antes de travar no teste. `masteryStats.ts`
+      extraído de `useOpeningTrainer.ts` nessa mesma etapa (mastery genérico por chave, reusado
+      no Treino de Erros com chave própria).
+- [x] **2c. Sessão de treino** — `useErrorTrainer.ts` + `ErrorTrainerView.tsx` — **feito em
+      2026-08-23**. Fila priorizada pelo mastery do motivo (mais baixo primeiro, mesma
+      aproximação recency-weighted do Treino de Aberturas — não é FSRS/SM-2 de verdade, decisão
+      de escopo consciente), corte de 5 candidatos por partida, dica em 3 estágios (motivo →
+      peça → lance). Virou `NavItem` de verdade na sidebar (saiu de `TRAIN_PLACEHOLDERS`).
 
 **Pronto quando:** o app diz "você pendura peça em 18% das partidas" e te dá 10 posições reais
-suas pra treinar isso.
+suas pra treinar isso. *(A estatística agregada em si — "18% das partidas" — é o Sprint 3, que
+consome `extractErrorCandidates()` sem filtro de sessão; aqui o treino já funciona ponta a ponta
+com posições reais.)*
 
 ## Sprint 3 — Relatório do jogador (3–4 dias)
 
