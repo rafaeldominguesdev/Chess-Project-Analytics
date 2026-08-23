@@ -84,7 +84,8 @@ export function AnalysisBoardView({ boardWidth, containerRef, initialFen }: Anal
 
   // multiPv=3 pede as 3 melhores linhas ao engine (não só a melhor) — é isso que alimenta as
   // 3 setas de sugestão. `evaluation` continua sendo só a linha 1 (pra barra de avaliação).
-  const { evaluation, lines, isReady, isAnalyzing, analyze } = useStockfish(15, 3)
+  // Profundidade 18 (era 15, pedido direto do usuário — "quero stockfish melhor").
+  const { evaluation, lines, isReady, isAnalyzing, analyze } = useStockfish(18, 3)
 
   // Qual FEN o pedido de análise em andamento é sobre — junto com `lastEvalRef` (a última
   // avaliação que de fato chegou), dá pra saber com segurança se um resultado novo é "antes" ou
@@ -315,23 +316,25 @@ function EnginePanel({
       {!lines[0] ? (
         <p style={{ fontSize: 12, color: 'var(--color-gray-muted)' }}>Aguardando primeira análise...</p>
       ) : (
+        // Sempre desenha as `lines.length` linhas (3), mesmo antes do engine preencher todas —
+        // uma posição com poucos lances legais, ou o instante logo após trocar de posição (as
+        // linhas antigas somem antes das novas chegarem), fazia o painel "piscar" de 3 pra 1-2
+        // linhas e voltar. Placeholder cinza ocupa o lugar da linha que ainda não chegou, pra
+        // altura do painel ficar estável.
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-          {lines.map((line, i) => {
-            if (!line) return null
-            return (
-              <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 8, opacity: i === 0 ? 1 : 0.65 }}>
-                <span className="cl-mono" style={{
-                  fontSize: 12, fontWeight: 800, minWidth: 36, flexShrink: 0,
-                  color: i === 0 ? 'var(--color-text-on-dark)' : 'var(--color-gray-muted)',
-                }}>
-                  {formatLineEval(line, sideToMove)}
-                </span>
-                <span className="cl-mono" style={{ fontSize: 11.5, color: 'var(--color-gray-muted)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {previews[i]?.join(' ') || '—'}
-                </span>
-              </div>
-            )
-          })}
+          {lines.map((line, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 8, opacity: line ? (i === 0 ? 1 : 0.65) : 0.35 }}>
+              <span className="cl-mono" style={{
+                fontSize: 12, fontWeight: 800, minWidth: 36, flexShrink: 0,
+                color: i === 0 ? 'var(--color-text-on-dark)' : 'var(--color-gray-muted)',
+              }}>
+                {line ? formatLineEval(line, sideToMove) : '···'}
+              </span>
+              <span className="cl-mono" style={{ fontSize: 11.5, color: 'var(--color-gray-muted)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {line ? (previews[i]?.join(' ') || '—') : 'calculando…'}
+              </span>
+            </div>
+          ))}
         </div>
       )}
     </div>

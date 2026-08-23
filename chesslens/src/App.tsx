@@ -67,7 +67,9 @@ function AppInner() {
   // em paralelo só pra alimentar o painel "Motor" da Revisão de partida (mesmo padrão já usado
   // no Tabuleiro de análise livre, `AnalysisBoardView`). `evaluation` continua sendo só a linha 1
   // (pra barra de avaliação) — `engineLines`/`engineIsAnalyzing` alimentam o painel de texto.
-  const { evaluation, lines: engineLines, isReady, isAnalyzing: engineIsAnalyzing, analyze } = useStockfish(15, 3)
+  // Profundidade 18 (era 15, pedido direto do usuário — "quero stockfish melhor"): mais forte,
+  // mesmo motor NNUE completo, só demora um pouco mais pra fechar cada busca.
+  const { evaluation, lines: engineLines, isReady, isAnalyzing: engineIsAnalyzing, analyze } = useStockfish(18, 3)
   const { analyzeGame, progress } = useGameAnalysis(12)
   const { playForSan } = useMoveSound()
 

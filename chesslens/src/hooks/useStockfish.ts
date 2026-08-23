@@ -72,7 +72,11 @@ export function useStockfish(targetDepth = 15, multiPv = 1) {
 
       if (line === 'uciok') {
         // Configura o engine assim que o UCI responde
-        w.postMessage('setoption name Hash value 64')
+        // Hash maior (128MB) ajuda a busca a reaproveitar mais posições transpostas em
+        // profundidades maiores — só essa instância (análise ao vivo/painel "Motor"), não a de
+        // useGameAnalysis.ts (que roda uma busca atrás da outra pra classificar a partida
+        // inteira; lá o custo por lance importa mais que aqui, onde só uma posição por vez).
+        w.postMessage('setoption name Hash value 128')
         w.postMessage('setoption name Threads value 1')
         w.postMessage(`setoption name MultiPV value ${multiPvRef.current}`)
         w.postMessage('isready')
