@@ -70,7 +70,9 @@ function AppInner() {
   // Profundidade 18 (era 15, pedido direto do usuário — "quero stockfish melhor"): mais forte,
   // mesmo motor NNUE completo, só demora um pouco mais pra fechar cada busca.
   const { evaluation, lines: engineLines, isReady, isAnalyzing: engineIsAnalyzing, analyze } = useStockfish(18, 3)
-  const { analyzeGame, progress } = useGameAnalysis(12)
+  // Profundidade 18 (era 12, pedido direto do usuário — mesma justificativa do useStockfish
+  // acima: motor mais forte, mesmo com a partida inteira demorando mais pra classificar).
+  const { analyzeGame, progress } = useGameAnalysis(18)
   const { playForSan } = useMoveSound()
 
   // Som de lance ao navegar entre posições (review).

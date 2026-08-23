@@ -12,9 +12,16 @@ const ENGINE_URL = '/stockfish/stockfish-18-single.js'
 
 /**
  * Analisa a partida inteira posição por posição num worker Stockfish dedicado.
- * Usa profundidade menor (rápida) e é cancelável quando uma nova partida carrega.
+ * Cancelável quando uma nova partida carrega.
+ *
+ * Profundidade 18 (era 12) e Hash 128MB (era 64) — pedido direto do usuário: "quero stockfish
+ * bruto, melhor versão, analisar profundo... pode ser quebrada [demorar]". Mesma profundidade da
+ * análise ao vivo (`useStockfish.ts`), pra classificação de lance (Brilhante/Erro/etc.) e o
+ * painel "Motor" concordarem sobre a mesma posição. Custo: uma partida de ~40 lances por lado
+ * leva bem mais tempo pra terminar de classificar (a barra de progresso já existente em
+ * `ReviewPanel.tsx` cobre essa espera) — aceito de propósito pelo usuário em troca de precisão.
  */
-export function useGameAnalysis(depth = 12) {
+export function useGameAnalysis(depth = 18) {
   const worker = useRef<Worker | null>(null)
   const readyRef = useRef(false)
   const latest = useRef<PositionEval>({ cp: null, mate: null, bestMove: null })
@@ -30,7 +37,7 @@ export function useGameAnalysis(depth = 12) {
     w.onmessage = (e: MessageEvent<string>) => {
       const line = typeof e.data === 'string' ? e.data : String(e.data)
       if (line === 'uciok') {
-        w.postMessage('setoption name Hash value 64')
+        w.postMessage('setoption name Hash value 128')
         w.postMessage('setoption name Threads value 1')
         w.postMessage('isready')
         return
