@@ -8,6 +8,8 @@ import { useMoveSound } from './useMoveSound'
 import { useStockfish } from './useStockfish'
 import { classifyMove, toWhiteCp } from '../analysis/moveClassifier'
 import type { ClassifiedMove } from '../analysis/types'
+import { loadJsonRecord, saveJsonRecord, bumpMastery } from '../analysis/masteryStats'
+import type { MasteryStats } from '../analysis/masteryStats'
 
 export type Side = 'white' | 'black'
 
@@ -18,34 +20,10 @@ export type Side = 'white' | 'black'
 // 'done'       → linha acabou (saiu de teoria conhecida, ou bateu no limite de lances).
 export type TrainerStatus = 'picking' | 'your-turn' | 'wrong' | 'their-turn' | 'done'
 
-interface FamilyStats {
-  attempts: number
-  /** 0-100, média móvel entre sessões — não é um SM-2 de verdade (sem intervalo de repetição por
-   *  enquanto), só um placar de "quão bem essa família+lado tem ido ultimamente" pra priorizar o
-   *  que precisa de mais prática na lista de escolha. */
-  mastery: number
-  lastPracticed: number
-}
-
 const STATS_KEY = 'chesslens-opening-stats'
 // Além desse número de lances por linha a sessão encerra sozinha — sessões mais curtas favorecem
 // repetição espaçada de verdade (várias linhas curtas em vários dias > uma linha gigante uma vez).
 const MAX_PLY = 24
-
-// Genérico pros dois placares (família e variação) — mesmo par de leitura/escrita, só muda a
-// chave do localStorage.
-function loadJsonRecord(key: string): Record<string, FamilyStats> {
-  try {
-    const raw = localStorage.getItem(key)
-    return raw ? JSON.parse(raw) : {}
-  } catch {
-    return {}
-  }
-}
-
-function saveJsonRecord(key: string, value: Record<string, FamilyStats>) {
-  try { localStorage.setItem(key, JSON.stringify(value)) } catch { /* localStorage indisponível — ignora */ }
-}
 
 function statsKey(familyKey: string, side: Side): string {
   return `${familyKey}|${side}`
@@ -53,25 +31,12 @@ function statsKey(familyKey: string, side: Side): string {
 
 // Placar por VARIAÇÃO exata (não só por família) — pedido direto do usuário: o placar de família
 // escondia se a pessoa já sabia bem uma variação específica ou não ("não aprende variáveis").
-// Só nome+ECO+lado (mesma FamilyStats, chave mais fina) — mesma aproximação honesta, sem
+// Só nome+ECO+lado (mesma MasteryStats, chave mais fina) — mesma aproximação honesta, sem
 // intervalo de repetição de verdade.
 const LINE_STATS_KEY = 'chesslens-opening-line-stats'
 
 function lineStatsKey(eco: string, name: string, side: Side): string {
   return `${eco}|${name}|${side}`
-}
-
-// Atualiza o placar (família ou variação, mesmo formato `FamilyStats`) com o resultado de uma
-// sessão: começa em 100, cada lance errado tira `penaltyPerWrong` (nunca abaixo de 0), e combina
-// com o histórico numa média móvel (65% do que já tinha, 35% da sessão nova) — pura, sem I/O;
-// quem chama decide quando persistir.
-function bumpMastery(
-  prev: Record<string, FamilyStats>, key: string, wrongCount: number, penaltyPerWrong: number,
-): Record<string, FamilyStats> {
-  const old = prev[key] ?? { attempts: 0, mastery: 50, lastPracticed: 0 }
-  const sessionScore = Math.max(0, 100 - wrongCount * penaltyPerWrong)
-  const mastery = Math.round(old.mastery * 0.65 + sessionScore * 0.35)
-  return { ...prev, [key]: { attempts: old.attempts + 1, mastery, lastPracticed: Date.now() } }
 }
 
 interface TouchedLine { eco: string; name: string }
@@ -92,8 +57,8 @@ interface TouchedLine { eco: string; name: string }
  */
 export function useOpeningTrainer() {
   const families = useMemo(() => getOpeningFamilies(), [])
-  const [stats, setStats] = useState<Record<string, FamilyStats>>(() => loadJsonRecord(STATS_KEY))
-  const [lineStats, setLineStats] = useState<Record<string, FamilyStats>>(() => loadJsonRecord(LINE_STATS_KEY))
+  const [stats, setStats] = useState<Record<string, MasteryStats>>(() => loadJsonRecord(STATS_KEY))
+  const [lineStats, setLineStats] = useState<Record<string, MasteryStats>>(() => loadJsonRecord(LINE_STATS_KEY))
   // Persistência é um efeito colateral do próprio state, não da chamada que o atualiza — evita
   // gravar 2x no localStorage se o updater funcional rodar 2x pro mesmo commit (StrictMode em
   // dev, ou um re-render que aborta), já que `setStats`/`setLineStats` fariam isso se salvassem

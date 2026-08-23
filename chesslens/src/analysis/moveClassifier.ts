@@ -31,7 +31,7 @@ export function qualityAlphaColor(quality: MoveQuality, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-const PIECE_VALUES: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9 }
+export const PIECE_VALUES: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9 }
 
 /**
  * Soma o valor material (P=1,N=3,B=3,R=5,Q=9) das peças de `color` na posição do FEN.
