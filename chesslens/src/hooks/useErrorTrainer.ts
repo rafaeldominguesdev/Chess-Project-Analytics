@@ -24,6 +24,16 @@ export type ErrorTrainerStatus = 'loading' | 'solving' | 'wrong' | 'solved' | 'e
 export type HintStage = 'none' | 'reason' | 'piece' | 'move'
 
 const ERROR_STATS_KEY = 'chesslens-error-stats'
+// Mastery POR POSIÇÃO específica (gameUrl+moveIndex), separado do mastery por MOTIVO acima —
+// existe só pra decidir a ordem da fila (ver `buildQueue`), nunca aparece na tela. Bug real
+// reportado pelo usuário depois de usar a feature ("repete sempre sem sentido"): antes, a fila
+// só sabia priorizar por MOTIVO (5 categorias — peça pendurada/garfo/cravada/back-rank/genérico),
+// então resolver UM exemplo de "peça pendurada" já derrubava a prioridade de TODOS os outros
+// exemplos daquela categoria de uma vez (o mastery é uma média por chave, e a chave era só o
+// motivo) — sobrava girar entre as poucas categorias restantes, repetindo as mesmas 2-3 posições.
+// Com mastery por posição, resolver uma não afeta as outras — a fila de verdade varre o que
+// ainda não foi bem resolvido, não só "que categoria ampla já foi tocada uma vez".
+const POSITION_STATS_KEY = 'chesslens-error-position-stats'
 // Corta quantos candidatos de UMA MESMA partida entram na fila de treino — sem isso, uma
 // partida excepcionalmente ruim dominaria a sessão inteira sozinha. `extractErrorCandidates`
 // continua devolvendo a lista completa/sem corte (o Relatório do jogador, Sprint 3, precisa
@@ -35,16 +45,21 @@ interface TrainingItem {
   reason: MistakeReason
 }
 
+function itemKey(item: TrainingItem): string {
+  return `${item.candidate.gameUrl}#${item.candidate.moveIndex}`
+}
+
 function uciToMoveObj(uci: string) {
   return { from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci.length > 4 ? uci.slice(4, 5) : undefined }
 }
 
 // Corta no máximo `MAX_PER_GAME` candidatos por partida (prioriza capivarada sobre erro, e
 // dentro da mesma categoria a queda de avaliação maior primeiro — os erros mais graves de cada
-// partida) e ordena o resultado pelo mastery do MOTIVO (mais baixo primeiro) — isso é o que faz
-// a fila puxar mais o que a pessoa mais erra, sem ser uma repetição espaçada de verdade (mesma
-// aproximação já aceita no Treino de Aberturas).
-function buildQueue(all: TrainingItem[], stats: Record<string, MasteryStats>): TrainingItem[] {
+// partida) e ordena o resultado pelo mastery da POSIÇÃO específica (mais baixo primeiro, nunca
+// resolvida = 50 por padrão) — ver comentário de `POSITION_STATS_KEY` acima pra por que não é
+// mastery por motivo. Mesma aproximação recency-weighted já aceita no Treino de Aberturas/Finais,
+// não é repetição espaçada de verdade.
+function buildQueue(all: TrainingItem[], positionStats: Record<string, MasteryStats>): TrainingItem[] {
   const byGame = new Map<string, TrainingItem[]>()
   for (const item of all) {
     const arr = byGame.get(item.candidate.gameUrl) ?? []
@@ -61,16 +76,18 @@ function buildQueue(all: TrainingItem[], stats: Record<string, MasteryStats>): T
     })
     capped.push(...arr.slice(0, MAX_PER_GAME))
   }
-  return capped.sort((a, b) => (stats[a.reason]?.mastery ?? 50) - (stats[b.reason]?.mastery ?? 50))
+  return capped.sort((a, b) => (positionStats[itemKey(a)]?.mastery ?? 50) - (positionStats[itemKey(b)]?.mastery ?? 50))
 }
 
 /**
  * Estado + lógica do Treino de Erros: varre as partidas já analisadas e salvas (Sprint 1,
  * persistence/) atrás de lances errados, descobre o motivo de cada um (Sprint 2b), monta uma
- * fila priorizando o motivo com pior mastery, e treina um lance por vez — o tabuleiro aparece na
- * posição de ANTES do erro, e o objetivo é achar o lance que o motor recomendava no lugar dele.
- * Placar de domínio por motivo no localStorage (mesma aproximação do Treino de Aberturas — média
- * móvel entre sessões, não repetição espaçada de verdade).
+ * fila priorizando a POSIÇÃO com pior mastery (não o motivo amplo — ver comentário de
+ * `POSITION_STATS_KEY`), e treina um lance por vez — o tabuleiro aparece na posição de ANTES do
+ * erro, e o objetivo é achar o lance que o motor recomendava no lugar dele. Dois placares de
+ * domínio no localStorage: por MOTIVO (`ERROR_STATS_KEY`, só decorativo — mostra "quão bem você
+ * lida com peça pendurada em geral" na tela) e por POSIÇÃO (`POSITION_STATS_KEY`, o que decide a
+ * ordem real da fila).
  */
 export function useErrorTrainer(initialReasonFilter?: MistakeReason) {
   const [status, setStatus] = useState<ErrorTrainerStatus>('loading')
@@ -84,7 +101,13 @@ export function useErrorTrainer(initialReasonFilter?: MistakeReason) {
   // valor inicial de um `useState`, sem side-effect nenhum atrelado a ele.
   const [reasonFilter, setReasonFilter] = useState<MistakeReason | 'all'>(initialReasonFilter ?? 'all')
   const [stats, setStats] = useState<Record<string, MasteryStats>>(() => loadJsonRecord(ERROR_STATS_KEY))
-  const [queueIndex, setQueueIndex] = useState(0)
+  const [positionStats, setPositionStats] = useState<Record<string, MasteryStats>>(() => loadJsonRecord(POSITION_STATS_KEY))
+  // Item em treino AGORA — estado de verdade, não derivado de `ordered[queueIndex]` a cada
+  // render: resolver o item atual já muda o mastery DELE (`bumpMastery` em `markSolved`), e
+  // `ordered` reordena a cada mudança de `positionStats`/`stats` — se `current` fosse recalculado
+  // a partir de um índice numa lista que acabou de reordenar, a tela trocava de posição sozinha
+  // (mesma classe de bug já achada e corrigida no Treino de Finais nesta mesma sessão).
+  const [current, setCurrent] = useState<TrainingItem | null>(null)
   const [fen, setFen] = useState('')
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null)
   const [wrongAttempts, setWrongAttempts] = useState(0)
@@ -93,14 +116,14 @@ export function useErrorTrainer(initialReasonFilter?: MistakeReason) {
   const [hintMove, setHintMove] = useState<{ from: string; to: string } | null>(null)
 
   useEffect(() => { saveJsonRecord(ERROR_STATS_KEY, stats) }, [stats])
+  useEffect(() => { saveJsonRecord(POSITION_STATS_KEY, positionStats) }, [positionStats])
 
   const { playForSan, play } = useMoveSound()
   const chessRef = useRef(new Chess())
   const hintTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const queue = reasonFilter === 'all' ? allItems : allItems.filter((i) => i.reason === reasonFilter)
-  const ordered = buildQueue(queue, stats)
-  const current = ordered[queueIndex % ordered.length] ?? null
+  const ordered = buildQueue(queue, positionStats)
 
   const loadItem = useCallback((item: TrainingItem | null) => {
     clearTimeout(hintTimerRef.current)
@@ -108,6 +131,7 @@ export function useErrorTrainer(initialReasonFilter?: MistakeReason) {
     setHintSquare(null)
     setHintMove(null)
     setWrongAttempts(0)
+    setCurrent(item)
     if (!item) {
       setStatus('empty')
       return
@@ -128,27 +152,31 @@ export function useErrorTrainer(initialReasonFilter?: MistakeReason) {
       if (cancelled) return
       const items = candidates.map((candidate) => ({ candidate, reason: classifyMistakeReason(candidate) }))
       setAllItems(items)
-      setQueueIndex(0)
       setExtracted(true)
     })
     return () => { cancelled = true }
   }, [])
 
-  // Assim que o scan termina (ou o filtro de motivo muda depois), carrega o item atual da fila
-  // recalculada — `current` já reflete `allItems`/`reasonFilter` mais recentes no mesmo render.
+  // Assim que o scan termina (ou o filtro de motivo muda depois), carrega o PRIMEIRO item da fila
+  // recalculada — `ordered` já reflete `allItems`/`reasonFilter`/`positionStats` mais recentes no
+  // mesmo render. Só roda quando esses três mudam (não a cada bump de mastery — isso é o que
+  // `nextItem` decide, na hora de avançar).
   useEffect(() => {
     if (!extracted) return // ainda esperando o scan terminar
-    loadItem(current)
+    loadItem(ordered[0] ?? null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [extracted, allItems, reasonFilter])
 
   const nextItem = useCallback(() => {
-    const total = ordered.length
-    if (total === 0) { loadItem(null); return }
-    const next = (queueIndex + 1) % total
-    setQueueIndex(next)
-    loadItem(ordered[next])
-  }, [ordered, queueIndex, loadItem])
+    if (ordered.length === 0) { loadItem(null); return }
+    // Evita repetir o MESMO item que acabou de ser mostrado (comparação por referência — os
+    // objetos de `allItems` são estáveis entre re-sorts) — o mastery dele já subiu com o bump de
+    // `markSolved`, então normalmente já cai pra trás na ordenação sozinho, mas com uma fila
+    // pequena ele podia continuar sendo o de pior mastery mesmo assim (ex: só 1-2 itens naquele
+    // motivo). Cai pro primeiro da lista se não achar outro (fila com 1 item só).
+    const next = ordered.find((item) => item !== current) ?? ordered[0]
+    loadItem(next)
+  }, [ordered, current, loadItem])
 
   const retry = useCallback(() => {
     clearTimeout(hintTimerRef.current)
@@ -163,6 +191,7 @@ export function useErrorTrainer(initialReasonFilter?: MistakeReason) {
     setStatus('solved')
     playForSan(san)
     setStats((prev) => bumpMastery(prev, current.reason, wrongAttempts, 25))
+    setPositionStats((prev) => bumpMastery(prev, itemKey(current), wrongAttempts, 25))
   }, [current, wrongAttempts, playForSan])
 
   const attemptMove = useCallback((sourceSquare: string, targetSquare: string, promotion?: string): boolean => {
