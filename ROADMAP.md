@@ -94,15 +94,30 @@ com posições reais.)*
 
 Tudo agregado sobre as análises salvas — quase nada de motor novo:
 
-- [ ] Precisão por fase (abertura/meio-jogo/final).
-- [ ] Taxa de erro grave × tempo restante no relógio.
-- [ ] Desempenho por abertura cruzado com ECO, com link direto pro Treino de Aberturas daquela
-      linha.
-- [ ] Evolução de precisão nas últimas N partidas.
-- [ ] "Top 3 vazamentos" no topo, com botão "treinar isso agora" → puxa Sprint 2.
+- [x] Precisão por fase (abertura/meio-jogo/final) — **feito em 2026-08-23**.
+      `gamePhase.ts`/`detectGamePhase()` + `computeAccuracyByPhase()`.
+- [x] Taxa de erro grave × tempo restante no relógio — **feito em 2026-08-23**. `clock.ts`
+      (parseia relógio do PGN + `TimeControl`) + `computeErrorRateByClock()`, 4 baldes.
+- [x] Desempenho por abertura cruzado com ECO, com link direto pro Treino de Aberturas daquela
+      linha — **feito em 2026-08-23**. `findFamilyForOpening()` +
+      `computeOpeningPerformance()`; deep-link real (`startLine` disparado ao montar a tela via
+      `initialFamilyKey`/`initialSide`).
+- [x] Evolução de precisão nas últimas N partidas — **feito em 2026-08-23**.
+      `computeAccuracyTrend()` + `AccuracyTrendChart.tsx` (SVG à mão, mesma técnica de
+      `EvalGraph.tsx`).
+- [x] "Top 3 vazamentos" no topo, com botão "treinar isso agora" → puxa Sprint 2 — **feito em
+      2026-08-23**. `computeTopLeaks()` reusa `extractErrorCandidates()`/`classifyMistakeReason()`
+      direto; deep-link real pro Treino de Erros já filtrado pelo motivo (`initialReasonFilter`).
 
 Esse é o sprint que dá o print que a pessoa compartilha. Vale caprichar no visual e deixar a
-capivara comentar o resultado.
+capivara comentar o resultado. *(Feito: comentário da capivara no rodapé do Relatório,
+`reportComments.ts`, mesma voz/avatar de `CoachComment.tsx`.)*
+
+Duas lacunas de dado resolvidas pra viabilizar tudo acima: `GameInfo` ganhou `timeControl?`
+(header do PGN) e `StoredGame` ganhou `perspectiveColor?` (a cor já calculada em
+`RecentGame.color` na busca, só passada adiante) — `resolvePlayerColor()` cobre partidas
+salvas antes dessa mudança com um fallback por nome, e descarta (nunca adivinha) quando não dá
+pra saber com certeza.
 
 ## Sprint 4 — Jogar (4–5 dias)
 
