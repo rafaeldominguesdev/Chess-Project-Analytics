@@ -6,6 +6,7 @@ const SOUND_BASE = 'https://lichess1.org/assets/sound'
 
 export const SOUND_THEMES = {
   standard: 'Padrão',
+  woodland: 'Madeira',
   piano: 'Piano',
   nes: 'NES (8-bit)',
   sfx: 'Efeitos (SFX)',
