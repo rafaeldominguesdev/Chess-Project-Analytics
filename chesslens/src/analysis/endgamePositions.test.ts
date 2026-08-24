@@ -5,9 +5,12 @@ import type { EndgamePosition } from './endgamePositions'
 import type { MasteryStats } from './masteryStats'
 
 describe('ENDGAME_POSITIONS', () => {
-  it('tem pelo menos uma posição de cada categoria do roadmap (K+P vs K, K+R vs K, K+Q vs K, Torre vs Peão, final de peões)', () => {
+  it('tem pelo menos uma posição de cada categoria (as 5 hardcoded do Sprint 4 + as 6 baixadas do banco de puzzles do Lichess)', () => {
     const categories = new Set(ENDGAME_POSITIONS.map((p) => p.category))
-    expect(categories).toEqual(new Set(['kp_vs_k', 'kr_vs_k', 'kq_vs_k', 'rook_vs_pawn', 'pawn_endgame']))
+    expect(categories).toEqual(new Set([
+      'kp_vs_k', 'kr_vs_k', 'kq_vs_k', 'rook_vs_pawn', 'pawn_endgame',
+      'rook_endgame', 'queen_endgame', 'bishop_endgame', 'knight_endgame', 'queen_rook_endgame',
+    ]))
   })
 
   it('todo FEN é legal pro chess.js real (reis não adjacentes, ninguém em xeque fora de quem tem o lance)', () => {
