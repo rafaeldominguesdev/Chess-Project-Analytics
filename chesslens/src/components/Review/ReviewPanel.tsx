@@ -479,6 +479,7 @@ export function ReviewPanel({
           >
             <DownloadIcon />
             Exportar PGN anotado
+          </button>
           <BoardControls
             isLoaded={isLoaded}
             currentMoveIndex={currentMoveIndex}
