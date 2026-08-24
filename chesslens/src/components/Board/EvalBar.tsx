@@ -64,18 +64,28 @@ export function EvalBar({ evaluation, orientation = 'white', isMate }: EvalBarPr
         boxShadow: 'inset 0 1px 4px rgba(0,0,0,0.4)',
       }}
     >
+      {/* `height` em % + `position: absolute` em vez de `flex` — transicionar `flex` obriga o
+          navegador a recalcular layout do container a cada frame (dois irmãos flex disputando
+          espaço), o que "engasgava" a animação em vez de deslizar liso, principalmente com o
+          motor mandando avaliação nova várias vezes por segundo durante uma busca. `height`/`top`
+          em % dentro de um pai `position: relative` anima por composição, sem relayout — mesma
+          técnica von usada pra transição suave. Duração mais longa que `--dur-tap` (110ms, feito
+          pra feedback seco de clique) e curva `--ease-snap` (assentamento suave, sem passar do
+          ponto) — a barra é um medidor contínuo, não um toque discreto. */}
       <div
         style={{
-          flex: topPercent,
+          position: 'absolute', left: 0, right: 0, top: 0,
+          height: `${topPercent}%`,
           background: `linear-gradient(${orientation === 'white' ? '180deg' : '0deg'}, ${topColor}, ${topDeep})`,
-          transition: 'flex 0.4s var(--ease-tap)',
+          transition: 'height 0.5s var(--ease-snap)',
         }}
       />
       <div
         style={{
-          flex: bottomPercent,
+          position: 'absolute', left: 0, right: 0, bottom: 0,
+          height: `${bottomPercent}%`,
           background: `linear-gradient(${orientation === 'white' ? '0deg' : '180deg'}, ${bottomColor}, ${bottomDeep})`,
-          transition: 'flex 0.4s var(--ease-tap)',
+          transition: 'height 0.5s var(--ease-snap)',
         }}
       />
 
