@@ -66,7 +66,7 @@ export async function fetchTablebase(fen: string): Promise<TablebasePosition> {
 /** Colapsa as 8 categorias da API em 3 buckets — pra comparação de resultado teórico não importa
  *  se é "win" de verdade ou "cursed-win" (regra dos 50 lances), o que importa é se dá pra dizer
  *  que é bom/ruim/neutro pra quem tem o lance. */
-function normalizeOutcome(category: TablebaseCategory): 'win' | 'draw' | 'loss' | 'unknown' {
+export function normalizeOutcome(category: TablebaseCategory): 'win' | 'draw' | 'loss' | 'unknown' {
   switch (category) {
     case 'win': case 'cursed-win': case 'maybe-win': return 'win'
     case 'loss': case 'blessed-loss': case 'maybe-loss': return 'loss'
@@ -108,4 +108,29 @@ export function pickHintMove(tablebase: TablebasePosition): TablebaseMove | null
     const mAbs = m.dtz === null ? Infinity : Math.abs(m.dtz)
     return mAbs < bestAbs ? m : best
   })
+}
+
+/** Lance do oponente automático (a "defesa"/"ataque" da tablebase) durante o jogo completo do
+ *  final — sempre um lance que preserva o resultado de QUEM TEM O LANCE agora (nunca joga errado
+ *  de propósito): se está perdendo, resiste o máximo possível (maior DTZ absoluto, empurra o mate
+ *  pra mais longe); se está ganhando, converte pelo caminho mais direto (menor DTZ absoluto); se é
+ *  empate, qualquer lance que preserve o empate serve. Sem isso, "jogar o final inteiro" contra um
+ *  oponente que às vezes joga errado sozinho não testaria a técnica de quem está treinando. */
+export function pickBotDefenseMove(tablebase: TablebasePosition): TablebaseMove | null {
+  const preserving = tablebase.moves.filter((m) => isMovePreserving(tablebase.category, m.category))
+  const pool = preserving.length > 0 ? preserving : tablebase.moves
+  if (pool.length === 0) return null
+
+  const outcome = normalizeOutcome(tablebase.category)
+  if (outcome === 'loss') {
+    return pool.reduce((best, m) => (Math.abs(m.dtz ?? 0) > Math.abs(best.dtz ?? 0) ? m : best))
+  }
+  if (outcome === 'win') {
+    return pool.reduce((best, m) => {
+      const bestAbs = best.dtz === null ? Infinity : Math.abs(best.dtz)
+      const mAbs = m.dtz === null ? Infinity : Math.abs(m.dtz)
+      return mAbs < bestAbs ? m : best
+    })
+  }
+  return pool[0]
 }

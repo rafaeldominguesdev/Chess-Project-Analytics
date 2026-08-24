@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isMovePreserving, pickHintMove } from './endgameTablebase'
+import { isMovePreserving, pickBotDefenseMove, pickHintMove } from './endgameTablebase'
 import type { TablebasePosition } from './endgameTablebase'
 
 describe('isMovePreserving', () => {
@@ -72,5 +72,54 @@ describe('pickHintMove', () => {
 
   it('devolve null quando não há lances', () => {
     expect(pickHintMove({ category: 'draw', moves: [] })).toBeNull()
+  })
+})
+
+describe('pickBotDefenseMove', () => {
+  it('posição perdida pra quem tem o lance: resiste o máximo possível (maior DTZ absoluto entre os que preservam)', () => {
+    const tablebase: TablebasePosition = {
+      category: 'loss',
+      moves: [
+        { uci: 'a1a2', san: 'Ka2', category: 'win', dtz: 8 },   // preserva (adversário fica "win" = eu continuo perdendo), resiste pouco
+        { uci: 'a1b2', san: 'Kb2', category: 'win', dtz: 30 },  // preserva, resiste mais — a escolha certa
+        { uci: 'a1a2', san: 'Kxa2', category: 'loss', dtz: -5 }, // NÃO preserva (viraria vitória própria, impossível numa posição perdida de verdade, mas testa que o filtro funciona)
+      ],
+    }
+    expect(pickBotDefenseMove(tablebase)!.dtz).toBe(30)
+  })
+
+  it('posição ganha pra quem tem o lance: converte pelo caminho mais direto (menor DTZ absoluto entre os que preservam)', () => {
+    const tablebase: TablebasePosition = {
+      category: 'win',
+      moves: [
+        { uci: 'a1a5', san: 'Ra5', category: 'loss', dtz: -24 }, // preserva, mais lento
+        { uci: 'e1e2', san: 'Ke2', category: 'loss', dtz: -6 },  // preserva, mais rápido — a escolha certa
+        { uci: 'e1d2', san: 'Kd2', category: 'win', dtz: 12 },   // NÃO preserva (jogaria fora a vitória)
+      ],
+    }
+    expect(pickBotDefenseMove(tablebase)!.uci).toBe('e1e2')
+  })
+
+  it('empate: qualquer lance que preserve o empate serve', () => {
+    const tablebase: TablebasePosition = {
+      category: 'draw',
+      moves: [
+        { uci: 'a1a2', san: 'Ka2', category: 'draw', dtz: 0 },
+        { uci: 'a1b1', san: 'Kb1', category: 'loss', dtz: -40 }, // NÃO preserva (jogaria fora o empate)
+      ],
+    }
+    expect(pickBotDefenseMove(tablebase)!.uci).toBe('a1a2')
+  })
+
+  it('devolve null quando não há lances', () => {
+    expect(pickBotDefenseMove({ category: 'win', moves: [] })).toBeNull()
+  })
+
+  it('sem nenhum lance que preserve (não deveria acontecer numa tablebase real, mas não trava): cai de volta pra todos os lances', () => {
+    const tablebase: TablebasePosition = {
+      category: 'win',
+      moves: [{ uci: 'e1d2', san: 'Kd2', category: 'win', dtz: 12 }],
+    }
+    expect(pickBotDefenseMove(tablebase)).not.toBeNull()
   })
 })

@@ -13,6 +13,7 @@ interface EndgameTrainerViewProps {
 const STATUS_META: Record<string, { text: string; color: string }> = {
   loading: { text: 'Consultando a tablebase…', color: 'var(--color-gray-muted)' },
   solving: { text: 'Ache um lance que preserve o resultado', color: 'var(--color-gray-muted)' },
+  'bot-thinking': { text: 'O oponente está pensando…', color: 'var(--color-gray-muted)' },
   wrong: { text: 'Esse lance perde o resultado teórico', color: 'var(--color-error)' },
   solved: { text: 'Resolvido! 🎉', color: 'var(--color-success)' },
   error: { text: 'Tablebase indisponível', color: 'var(--color-error)' },
@@ -67,14 +68,17 @@ function MoveArrowIcon(props: SVGProps<SVGSVGElement>) {
  */
 export function EndgameTrainerView({ boardWidth, containerRef }: EndgameTrainerViewProps) {
   const {
-    status, errorMessage, current, fen, lastMove, wrongAttempts, tablebase,
+    status, errorMessage, current, fen, lastMove, wrongAttempts, tablebase, gameOverMessage,
     hintStage, hintSquare, hintMove, stats, totalInQueue,
     attemptMove, nextPosition, retry, retryFetch, showPieceHint, showMoveHint,
   } = useEndgameTrainer()
 
   const meta = STATUS_META[status]
   const cardWidth = boardWidth + BOARD_ROW_CHROME_WIDTH
-  const boardOrientation = fen.split(' ')[1] === 'b' ? 'black' : 'white'
+  // Fixa pelo lado a jogar da posição RAIZ (`current`), não do FEN ao vivo — o lado a jogar
+  // alterna a cada meio-lance conforme o final é jogado, então usar o FEN ao vivo fazia o
+  // tabuleiro girar a cada lance (bug reportado: "eu clico, move peça, o tabuleiro gira").
+  const boardOrientation = current && current.fen.split(' ')[1] === 'b' ? 'black' : 'white'
   const categoryMastery = current ? stats[current.category]?.mastery ?? null : null
 
   return (
@@ -90,7 +94,11 @@ export function EndgameTrainerView({ boardWidth, containerRef }: EndgameTrainerV
           />
         </div>
 
-        {status === 'loading' || status === 'error' || !current ? (
+        {/* Placeholder sem tabuleiro só na carga INICIAL da posição ou em erro — depois disso, o
+            status 'loading' também acontece entre lances (buscando a tablebase da posição
+            seguinte pra validar o próximo lance), e nesse caso o tabuleiro deve continuar visível
+            com a última jogada, não sumir a cada meio-lance. */}
+        {status === 'error' || !current || !fen ? (
           <div style={{
             width: boardWidth, height: boardWidth, borderRadius: 4, border: '2px dashed var(--color-gray-border)',
             display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 24,
@@ -153,6 +161,11 @@ export function EndgameTrainerView({ boardWidth, containerRef }: EndgameTrainerV
                   padding: '4px 10px', borderRadius: 'var(--radius-sm)', background: 'var(--color-bg-main)',
                 }}>
                   {wrongAttempts} tentativa{wrongAttempts > 1 ? 's' : ''} errada{wrongAttempts > 1 ? 's' : ''} nessa posição
+                </span>
+              )}
+              {status === 'solved' && gameOverMessage && (
+                <span style={{ fontSize: 12, color: 'var(--color-gray-muted)', lineHeight: 1.4 }}>
+                  {gameOverMessage}
                 </span>
               )}
             </div>
