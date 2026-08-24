@@ -350,6 +350,7 @@ function AppInner() {
             <ReviewPanel
               gameInfo={gameInfo}
               reviewStarted={reviewStarted}
+              pgn={pgnRef.current}
               moves={moves}
               currentMoveIndex={currentMoveIndex}
               onGoTo={goToMove}
