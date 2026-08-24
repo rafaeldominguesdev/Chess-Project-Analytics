@@ -121,13 +121,21 @@ pra saber com certeza.
 
 ## Sprint 4 — Jogar (4–5 dias)
 
-- [ ] Bots de força limitada: `UCI_LimitStrength` + `UCI_Elo`, faixas de ~800 a 2200, cada uma
-      com uma capivara. Cuidado: Stockfish com Elo baixo joga "estranho", não "fraco humano" —
-      considerar adicionar ruído na escolha entre as top-N linhas.
-- [ ] "Jogar a partir daqui" em qualquer posição da Revisão. Tecnicamente é o item mais barato
-      aqui e o de maior valor percebido — o Tabuleiro de análise livre já existe e cobre parte
-      do caminho (falta só o atalho a partir de uma posição específica da Revisão).
-- [ ] Treino de finais com tablebase (API da Lichess, ou Syzygy 3-4-5 se quiser 100% offline).
+- [x] Bots de força limitada: `UCI_LimitStrength` + `UCI_Elo`, faixas de ~800 a 2200, cada uma
+      com uma capivara — **feito em 2026-08-24**. `analysis/botLevels.ts` (6 faixas) +
+      `hooks/usePlayVsBot.ts` (worker PRÓPRIO, build lite, não mexe em `useStockfish.ts`) +
+      `components/Play/PlayVsBotView.tsx`. Ruído nas faixas mais fracas via `pickBotMove`
+      (sorteio ponderado entre as top-N linhas do motor) — evita o "erro estranho" do Elo baixo
+      cru, joga a 2ª/3ª melhor opção em vez de qualquer coisa.
+- [x] "Jogar a partir daqui" em qualquer posição da Revisão — **feito em 2026-08-24**. Generaliza
+      o mecanismo `pendingBoardFen` que o Editor de Posição já usava pra abrir o Tabuleiro numa
+      posição específica.
+- [x] Treino de finais com tablebase — **feito em 2026-08-24**. API pública da Lichess
+      (`tablebase.lichess.ovh`), 13 posições iniciais (K+P vs K, K+R vs K, K+Q vs K, Torre vs
+      Peão, finais de peão), valida qualquer lance que preserve o resultado teórico (não só o
+      único melhor lance). Joga o final INTEIRO contra um oponente automático movido pela
+      tablebase (`pickBotDefenseMove`), não só "ache um lance e pule pra próxima posição" —
+      ajustado depois do teste ao vivo do usuário pedir isso explicitamente.
 
 ## Sprint 5 — Polimento (contínuo, 1 item por vez)
 
@@ -138,9 +146,11 @@ Um item por sessão do Claude Code, cada um em seu próprio commit:
 - [ ] Setas/círculos com botão direito + seta do melhor lance e da ameaça — setas desenhadas à
       mão já existem (`ChessBoard.tsx`); confirmar se "seta da ameaça" (não só do melhor lance)
       já está coberta.
-- [ ] Ícone + rótulo textual nas classificações (acessibilidade — hoje é só cor) — conferir
-      `QualityIcons.tsx`/`MoveQualityBadge.tsx`, já parecem ter ícone por classificação; validar
-      se falta rótulo textual em algum lugar específico.
+- [x] Ícone + rótulo textual nas classificações (acessibilidade — hoje é só cor) — **feito em
+      2026-08-24**. Já tinha ícone por classificação; faltava nome acessível de verdade pra
+      leitor de tela (`title` sozinho não é confiável em elemento não-interativo). `role="img"
+      aria-label` no `MoveQualityBadge`/`SquareQualityMarker`, `aria-hidden` no ícone/símbolo
+      interno pra não duplicar a leitura.
 - [ ] Retry inline na Revisão ("ache o lance melhor" antes de revelar).
 - [ ] Explicação em linguagem natural do erro, gerada a partir do motivo do Sprint 2b.
 - [ ] Export: PGN anotado com NAG + imagem da posição crítica.
