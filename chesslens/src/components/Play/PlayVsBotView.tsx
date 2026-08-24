@@ -11,13 +11,36 @@ interface PlayVsBotViewProps {
 }
 
 // Mesmo recorte de rosto usado no avatar do "coach" (`CoachComment.tsx`/`ReportView.tsx`) — a
-// capivara é a mascote única do produto, então as faixas de força diferenciam por cor/rótulo ao
-// redor do MESMO recorte, nunca por um desenho novo (regra explícita pra esta tarefa).
+// capivara é a mascote única do produto, um desenho novo por faixa está fora de cogitação. Mas
+// pedido direto do usuário depois de testar ("o mascote é só imagem com zoom") era exatamente o
+// problema: as 6 faixas usavam o MESMO recorte, só trocando a cor do anel. Agora o TAMANHO do
+// recorte varia por faixa, girando ao redor do mesmo ponto fixo (aprox. os olhos/focinho, centro
+// do recorte original `{ x: 260, y: 80, size: 900 }` ainda usado por `CoachComment.tsx`) — faixas
+// fracas usam um recorte mais aberto (mais "olhar distraído", contexto ao redor), faixas fortes um
+// recorte mais fechado, quase só os olhos (mais "focada"). Ainda é 100% a mesma imagem/arte, só
+// matemática de crop diferente por índice de faixa (0 = mais fraca .. 5 = mais forte).
 const CAPY_IMG = { width: 2560, height: 1440 }
-const CAPY_FACE_CROP = { x: 260, y: 80, size: 900 }
+const CAPY_FACE_CENTER = { x: 710, y: 530 }
+// Faixa de tamanhos mais conservadora do que a 1ª tentativa (que ia até 650px) — testado ao vivo,
+// um recorte MUITO fechado ao redor do mesmo centro fixo cortava o rosto de um jeito estranho (só
+// um olho, cortando perto da orelha) porque a capivara está em 3/4 de perfil, não de frente — o
+// "centro do rosto" não é simétrico o bastante pra aguentar um crop extremo sem descentralizar.
+// Essa faixa (1050 a 780) mantém a mesma composição bem enquadrada do recorte original (900,
+// ainda usado por `CoachComment.tsx`) em todas as faixas, só variando o zoom moderadamente.
+const TIER_CROP_SIZES = [1050, 980, 920, 870, 820, 780]
 
-function capybaraAvatarStyle(size: number, borderColor: string): CSSProperties {
-  const scale = size / CAPY_FACE_CROP.size
+function capybaraAvatarStyle(size: number, level: BotLevel, tierIndex: number): CSSProperties {
+  const cropSize = TIER_CROP_SIZES[tierIndex] ?? 900
+  const cropX = CAPY_FACE_CENTER.x - cropSize / 2
+  const cropY = CAPY_FACE_CENTER.y - cropSize / 2
+  const scale = size / cropSize
+  // "Termômetro" visual além da cor do anel: faixas fracas ficam mais foscas/claras (como se
+  // ainda estivesse distraída), faixas fortes mais saturadas/nítidas — reforça a progressão de
+  // força ao primeiro olhar, sem depender só de diferenciar 6 tons de azul quase iguais.
+  const t = tierIndex / (TIER_CROP_SIZES.length - 1) // 0 (mais fraca) .. 1 (mais forte)
+  const saturate = 45 + t * 65
+  const brightness = 0.92 + t * 0.14
+  const contrast = 96 + t * 18
   return {
     width: size,
     height: size,
@@ -25,10 +48,38 @@ function capybaraAvatarStyle(size: number, borderColor: string): CSSProperties {
     flexShrink: 0,
     backgroundImage: 'url(/hero-bg.png?v=2)',
     backgroundSize: `${CAPY_IMG.width * scale}px ${CAPY_IMG.height * scale}px`,
-    backgroundPosition: `${-CAPY_FACE_CROP.x * scale}px ${-CAPY_FACE_CROP.y * scale}px`,
-    border: `2px solid ${borderColor}`,
-    boxShadow: '0 2px 8px -2px rgba(0,0,0,0.6)',
+    backgroundPosition: `${-cropX * scale}px ${-cropY * scale}px`,
+    filter: `saturate(${saturate}%) brightness(${brightness}) contrast(${contrast}%)`,
+    border: `2px solid ${level.color}`,
+    // Anel duplo (borda sólida + halo translúcido que cresce um pouco por faixa) em vez de um
+    // contorno único fino — lê mais como "medalha"/emblema do que como avatar de perfil genérico.
+    boxShadow: `0 0 0 3px color-mix(in srgb, ${level.color} ${16 + t * 24}%, transparent), 0 2px 10px -3px rgba(0,0,0,0.65)`,
   }
+}
+
+/** Fileira de pontos indicando a posição da faixa dentro da progressão total (1 de 6 .. 6 de 6) —
+ *  pista visual adicional além da cor do anel, que sozinha é difícil de escanear rápido entre 6
+ *  tons (2 deles são variações de azul bem próximas). Decorativo (a mesma informação já está no
+ *  Elo em texto/`cl-mono` ao lado), por isso os pontos individuais são `aria-hidden` e só o
+ *  conjunto carrega um `aria-label` com a leitura por extenso. */
+function StrengthPips({ tierIndex, total, color }: { tierIndex: number; total: number; color: string }) {
+  return (
+    <span
+      style={{ display: 'inline-flex', gap: 3, alignItems: 'center' }}
+      aria-label={`Força ${tierIndex + 1} de ${total}`}
+    >
+      {Array.from({ length: total }, (_, i) => (
+        <span
+          key={i}
+          aria-hidden
+          style={{
+            width: 5, height: 5, borderRadius: '50%', flexShrink: 0,
+            background: i <= tierIndex ? color : 'var(--color-gray-border)',
+          }}
+        />
+      ))}
+    </span>
+  )
 }
 
 type ColorChoice = 'w' | 'b' | 'random'
@@ -62,12 +113,13 @@ export function PlayVsBotView({ boardWidth, containerRef }: PlayVsBotViewProps) 
   const gameOver = status !== 'playing'
   const boardOrientation = playerColor === 'w' ? 'white' : 'black'
   const botToMove = currentFen.split(' ')[1] === (playerColor === 'w' ? 'b' : 'w')
+  const tierIndex = level ? levels.findIndex((l) => l.id === level.id) : -1
 
   return (
     <>
       <div ref={containerRef} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, paddingTop: 8 }}>
         <div style={{ width: cardWidth }}>
-          <BotStatusCard level={level} isBotThinking={isBotThinking} botToMove={botToMove && !gameOver} />
+          <BotStatusCard level={level} tierIndex={tierIndex} totalTiers={levels.length} isBotThinking={isBotThinking} botToMove={botToMove && !gameOver} />
         </div>
 
         <ChessBoard
@@ -113,17 +165,20 @@ export function PlayVsBotView({ boardWidth, containerRef }: PlayVsBotViewProps) 
   )
 }
 
-/** Card do cabeçalho durante a partida — avatar da capivara tingido pela cor da faixa escolhida
- *  + rótulo/Elo + indicação de "pensando" (pedido explícito da tarefa: precisa ficar claro
- *  quando o motor está calculando a resposta). */
-function BotStatusCard({ level, isBotThinking, botToMove }: { level: BotLevel | null; isBotThinking: boolean; botToMove: boolean }) {
-  if (!level) return null
+/** Card do cabeçalho durante a partida — avatar da capivara recortado/filtrado pela faixa
+ *  escolhida (ver `capybaraAvatarStyle`) + rótulo/Elo/pips de força + indicação de "pensando"
+ *  (pedido explícito da tarefa: precisa ficar claro quando o motor está calculando a resposta). */
+function BotStatusCard({ level, tierIndex, totalTiers, isBotThinking, botToMove }: {
+  level: BotLevel | null; tierIndex: number; totalTiers: number; isBotThinking: boolean; botToMove: boolean
+}) {
+  if (!level || tierIndex < 0) return null
   return (
     <div className="cl-card" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px' }}>
-      <div style={capybaraAvatarStyle(38, level.color)} />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0, flex: 1 }}>
-        <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-gray-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          Elo <span className="cl-mono">{level.elo}</span>
+      <div style={capybaraAvatarStyle(40, level, tierIndex)} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, flex: 1 }}>
+        <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-gray-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 7 }}>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>Elo <span className="cl-mono">{level.elo}</span></span>
+          <StrengthPips tierIndex={tierIndex} total={totalTiers} color={level.color} />
         </span>
         <span className="cl-display" style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-text-on-dark)', lineHeight: 1.2 }}>
           {level.label}
@@ -255,12 +310,25 @@ function LevelSelectScreen({ levels, isEngineReady, onStart }: {
   return (
     <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', maxHeight: 'calc(100vh - 20px)', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: 1040, display: 'flex', flexDirection: 'column', gap: 16, padding: '8px 4px 40px' }}>
-        <div>
-          <div className="cl-display" style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-on-dark)' }}>Jogar contra a Capivara</div>
-          <div style={{ fontSize: 12.5, color: 'var(--color-gray-muted)', marginTop: 2 }}>
-            Escolha a faixa de força e a cor — o motor (Stockfish, rodando no seu navegador) joga
-            com a força ajustada pra faixa escolhida, sempre em tempo real.
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="cl-display" style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-on-dark)' }}>Jogar contra a Capivara</div>
+            <div style={{ fontSize: 12.5, color: 'var(--color-gray-muted)', marginTop: 2 }}>
+              Escolha a faixa de força e a cor — o motor (Stockfish, rodando no seu navegador) joga
+              com a força ajustada pra faixa escolhida, sempre em tempo real.
+            </div>
           </div>
+          {/* Recorte mais aberto da MESMA arte oficial (`hero-bg.png`, a mesma usada na Home e nos
+              avatares circulares acima) — pedido do usuário depois de ver uma referência de
+              "capivara de corpo inteiro, sentada" que ele mesmo mandou (um clipart genérico com
+              marca d'água, que NÃO foi usado — descaracterizaria a mascote oficial). Sem
+              ferramenta de geração de imagem não dá pra pintar uma ilustração nova no estilo do
+              hero; a alternativa real foi um recorte diferente do MESMO arquivo, largo o
+              suficiente pra mostrar tronco/braços/colo (não só o rosto, como os avatares de
+              faixa acima) segurando a lupa ao lado do tabuleiro — a mesma pose de "sentada
+              jogando" que ele queria, com a arte 100% oficial. `cl-playbot-hero-thumb` esconde
+              esse recorte em telas estreitas (ver index.css) pra não espremer o texto ao lado. */}
+          <div aria-hidden className="cl-playbot-hero-thumb" />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -282,8 +350,15 @@ function LevelSelectScreen({ levels, isEngineReady, onStart }: {
         )}
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 }}>
-          {levels.map((level) => (
-            <LevelCard key={level.id} level={level} disabled={!isEngineReady} onSelect={() => pick(level)} />
+          {levels.map((level, tierIndex) => (
+            <LevelCard
+              key={level.id}
+              level={level}
+              tierIndex={tierIndex}
+              totalTiers={levels.length}
+              disabled={!isEngineReady}
+              onSelect={() => pick(level)}
+            />
           ))}
         </div>
       </div>
@@ -291,20 +366,40 @@ function LevelSelectScreen({ levels, isEngineReady, onStart }: {
   )
 }
 
-function LevelCard({ level, disabled, onSelect }: { level: BotLevel; disabled: boolean; onSelect: () => void }) {
+/** Card de faixa — redesenhado (pedido direto do usuário: "não gostei do menu... a estética dos
+ *  cards"). Mudanças em relação à versão anterior: (1) faixa colorida fina no topo do card, além
+ *  da borda fina já existente — a borda sozinha ficava sutil demais pra diferenciar 6 faixas num
+ *  relance; (2) avatar maior com recorte/filtro progressivo por faixa (`capybaraAvatarStyle`),
+ *  não mais o mesmo recorte fixo; (3) Elo em `cl-mono` colorido pela faixa + pips de força ao
+ *  lado, pra comunicar a progressão sem depender só de ler o número; (4) hierarquia: nome →
+ *  Elo/força → frase → CTA, nessa ordem de leitura de cima pra baixo. */
+function LevelCard({ level, tierIndex, totalTiers, disabled, onSelect }: {
+  level: BotLevel; tierIndex: number; totalTiers: number; disabled: boolean; onSelect: () => void
+}) {
   return (
-    <div className="cl-card" style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 10, borderColor: 'color-mix(in srgb, ' + level.color + ' 35%, var(--color-gray-border))' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={capybaraAvatarStyle(44, level.color)} />
+    <div
+      className="cl-card"
+      style={{
+        padding: 14, paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 12,
+        position: 'relative', overflow: 'hidden',
+        borderColor: 'color-mix(in srgb, ' + level.color + ' 35%, var(--color-gray-border))',
+      }}
+    >
+      <span aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: level.color }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={capybaraAvatarStyle(52, level, tierIndex)} />
         <div style={{ minWidth: 0, flex: 1 }}>
-          <span className="cl-display" style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-on-dark)', display: 'block', lineHeight: 1.25 }}>
+          <span className="cl-display" style={{ fontSize: 14.5, fontWeight: 700, color: 'var(--color-text-on-dark)', display: 'block', lineHeight: 1.25 }}>
             {level.label}
           </span>
-          <span className="cl-mono" style={{ fontSize: 11.5, fontWeight: 700, color: level.color }}>Elo ~{level.elo}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+            <span className="cl-mono" style={{ fontSize: 12.5, fontWeight: 700, color: level.color }}>Elo ~{level.elo}</span>
+            <StrengthPips tierIndex={tierIndex} total={totalTiers} color={level.color} />
+          </div>
         </div>
       </div>
       <p style={{ fontSize: 12, color: 'var(--color-gray-muted)', lineHeight: 1.4, flex: 1 }}>{level.blurb}</p>
-      <button onClick={onSelect} disabled={disabled} className="cl-btn cl-btn-accent" style={{ width: '100%', padding: '8px 0', fontSize: 12.5 }}>
+      <button onClick={onSelect} disabled={disabled} className="cl-btn cl-btn-accent" style={{ width: '100%', padding: '9px 0', fontSize: 12.5 }}>
         Jogar
       </button>
     </div>

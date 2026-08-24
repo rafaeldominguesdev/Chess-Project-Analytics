@@ -510,6 +510,28 @@ body {
   );
 }
 
+/* Recorte "corpo inteiro" da mascote pro cabeçalho da tela "Jogar contra a Capivara"
+   (`LevelSelectScreen` em `PlayVsBotView.tsx`) — mesmo arquivo `hero-bg.png` da Home e dos
+   avatares circulares de faixa, só que um recorte bem mais aberto (mostra tronco/braços/colo
+   segurando a lupa + o tabuleiro do lado, não só o rosto) pra sugerir a pose "sentada, jogando"
+   sem precisar de arte nova. Caixa pequena e autocontida — não reaproveita a máquina de
+   `.cl-hero-bg` (essa é pro hero em largura total da Home, com container query/gradientes
+   ajustados só pra aquela composição; aqui é só uma miniatura ao lado do título). */
+.cl-playbot-hero-thumb {
+  width: 236px;
+  height: 176px;
+  flex-shrink: 0;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-gray-border);
+  background-image: url(/hero-bg.png?v=2);
+  background-size: cover;
+  background-position: 22% 44%;
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.6);
+}
+@media (max-width: 700px) {
+  .cl-playbot-hero-thumb { display: none; }
+}
+
 /* ══════════════════════════════════════════════
    Micro-interações globais — foco por teclado visível e transições
    suaves e consistentes para elementos interativos que ainda não
