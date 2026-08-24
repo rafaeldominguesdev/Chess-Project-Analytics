@@ -7,6 +7,11 @@ export interface GameInfo {
   date: string
   event: string
   termination: string
+  /** Header `TimeControl` do PGN (ex: `"600"`, `"600+5"`) — cru, sem parsear. `undefined` quando
+   *  o PGN não tem esse header (fonte antiga, ou partida sem controle de tempo formal). Usado no
+   *  Relatório do jogador (Sprint 3) pra comparar % de relógio restante entre partidas de ritmos
+   *  diferentes (bullet/rápido/clássico). */
+  timeControl?: string
 }
 
 export interface Opening {

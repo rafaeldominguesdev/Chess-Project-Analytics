@@ -94,6 +94,10 @@ function AppInner() {
   // fens/gameInfo), não o texto original, então precisa ser guardado aqui pra poder salvar no
   // cache junto com o resultado da análise.
   const pgnRef = useRef('')
+  // Lado que o dono do app jogou nesta partida (vem já calculado de `RecentGame.color`, ver
+  // `RecentGames.tsx`) — salvo junto com a partida pro Relatório do jogador (Sprint 3) saber de
+  // quem são as estatísticas sem precisar adivinhar pelo nome depois.
+  const [gamePerspectiveColor, setGamePerspectiveColor] = useState<'w' | 'b' | undefined>(undefined)
   const { playForSan } = useMoveSound()
 
   // Som de lance ao navegar entre posições (review).
@@ -180,13 +184,13 @@ function AppInner() {
       // Só salva quando a análise terminou de verdade (não foi cancelada por outra partida
       // carregando no meio do caminho) — `whiteEvals.length` bate com `fens.length` nesse caso.
       if (gameUrl && gameInfo && whiteEvals.length === fens.length) {
-        await saveGame(gameUrl, pgnRef.current, gameInfo)
+        await saveGame(gameUrl, pgnRef.current, gameInfo, gamePerspectiveColor)
         await saveAnalysis(gameUrl, ANALYSIS_DEPTH, whiteEvals, bestMoves)
       }
     })()
 
     return () => { cancelled = true }
-  }, [fens, isLoaded, analyzeGame, cancelAnalysis, gameUrl, gameInfo])
+  }, [fens, isLoaded, analyzeGame, cancelAnalysis, gameUrl, gameInfo, gamePerspectiveColor])
 
   useKeyboard({
     onPrev: goPrev, onNext: goNext, onFirst: goFirst, onLast: goLast,
@@ -195,11 +199,12 @@ function AppInner() {
     enabled: !settingsOpen && !updatesOpen && !trainingMode && !boardMode && !openingTrainingMode && !errorTrainingMode && !positionEditorMode,
   })
 
-  const handleAnalyzeGame = useCallback((pgn: string, url: string) => {
+  const handleAnalyzeGame = useCallback((pgn: string, url: string, color: 'w' | 'b') => {
     try {
       loadPgn(pgn)
       pgnRef.current = pgn
       setGameUrl(url)
+      setGamePerspectiveColor(color)
       // Só reseta a tela de resumo aqui, no carregamento explícito de uma partida NOVA — antes
       // isso era um useEffect reagindo a qualquer troca de referência de `gameInfo`, o que podia
       // devolver a pessoa pra tela de resumo (o "menu") no meio da revisão sem ela pedir.

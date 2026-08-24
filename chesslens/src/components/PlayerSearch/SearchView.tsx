@@ -25,7 +25,7 @@ interface SearchViewProps {
    *  plataforma buscada (localStorage) ou Chess.com. */
   initialPlatform?: Platform
   /** Chamado quando o usuário clica em "Analisar" numa partida recente — recebe o PGN completo. */
-  onAnalyzeGame: (pgn: string, url: string) => void
+  onAnalyzeGame: (pgn: string, url: string, color: 'w' | 'b') => void
 }
 
 /**

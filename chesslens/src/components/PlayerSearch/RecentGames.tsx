@@ -22,7 +22,7 @@ function formatWhen(endTime: number): string {
 interface RecentGamesProps {
   games: RecentGame[]
   loading: boolean
-  onAnalyze: (pgn: string, url: string) => void
+  onAnalyze: (pgn: string, url: string, color: 'w' | 'b') => void
 }
 
 export function RecentGames({ games, loading, onAnalyze }: RecentGamesProps) {
@@ -108,7 +108,7 @@ export function RecentGames({ games, loading, onAnalyze }: RecentGamesProps) {
             </a>
 
             <button
-              onClick={() => onAnalyze(g.pgn, g.url)}
+              onClick={() => onAnalyze(g.pgn, g.url, g.color === 'white' ? 'w' : 'b')}
               title="Analisar esta partida"
               className="cl-btn cl-btn-accent cl-btn-sm"
               style={{ gap: 5, flexShrink: 0, width: 'auto', height: 'auto', padding: '6px 12px', fontSize: 11.5, whiteSpace: 'nowrap' }}

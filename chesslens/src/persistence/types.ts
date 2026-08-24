@@ -6,6 +6,11 @@ export interface StoredGame {
   pgn: string
   gameInfo: GameInfo
   savedAt: number
+  /** Lado que o dono do app jogou nesta partida — vem de `RecentGame.color` (já calculado na
+   *  busca, comparando contra o username buscado), só repassado até aqui. `undefined` em
+   *  partidas salvas antes desse campo existir; `analysis/playerColor.ts` resolve esse caso com
+   *  um fallback por nome. */
+  perspectiveColor?: 'w' | 'b'
 }
 
 export interface StoredAnalysis {

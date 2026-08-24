@@ -24,6 +24,7 @@ function extractGameInfo(game: Chess): GameInfo {
     date: h['Date'] ?? '?',
     event: h['Event'] ?? '?',
     termination: h['Termination'] ?? '',
+    timeControl: h['TimeControl'] ?? undefined,
   }
 }
 
