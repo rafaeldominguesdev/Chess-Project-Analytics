@@ -183,14 +183,17 @@ export function ErrorTrainerView({ boardWidth, containerRef, onGoToAnalyze, init
       <aside className="cl-tool-aside">
         <div className="cl-tool-aside-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingRight: 2 }}>
           {current && (
-            <div className="cl-card" style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 14 }}>
+            <div className="cl-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '14px 12px', textAlign: 'center' }}>
               <SectionLabel>Essa partida</SectionLabel>
-              <span style={{ fontSize: 12.5, color: 'var(--color-text-on-dark)' }}>
-                {current.gameInfo.white} vs {current.gameInfo.black}
+              <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-text-on-dark)', lineHeight: 1.2 }}>
+                {current.gameInfo.white} <span style={{ color: 'var(--color-gray-muted)', fontWeight: 700 }}>vs</span> {current.gameInfo.black}
               </span>
               {wrongAttempts > 0 && status !== 'solved' && (
-                <span style={{ fontSize: 11.5, color: 'var(--color-error)' }}>
-                  <span className="cl-mono">{wrongAttempts}</span> tentativa{wrongAttempts > 1 ? 's' : ''} errada{wrongAttempts > 1 ? 's' : ''} nesse lance
+                <span className="cl-mono" style={{
+                  fontSize: 11, fontWeight: 700, color: 'var(--color-error)',
+                  padding: '4px 10px', borderRadius: 'var(--radius-sm)', background: 'var(--color-bg-main)',
+                }}>
+                  {wrongAttempts} tentativa{wrongAttempts > 1 ? 's' : ''} errada{wrongAttempts > 1 ? 's' : ''} nesse lance
                 </span>
               )}
             </div>

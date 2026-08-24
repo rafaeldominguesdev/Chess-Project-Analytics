@@ -162,9 +162,8 @@ export function useErrorTrainer(initialReasonFilter?: MistakeReason) {
     if (!current) return
     setStatus('solved')
     playForSan(san)
-    play('victory')
     setStats((prev) => bumpMastery(prev, current.reason, wrongAttempts, 25))
-  }, [current, wrongAttempts, playForSan, play])
+  }, [current, wrongAttempts, playForSan])
 
   const attemptMove = useCallback((sourceSquare: string, targetSquare: string, promotion?: string): boolean => {
     if (!current || status !== 'solving') return false
