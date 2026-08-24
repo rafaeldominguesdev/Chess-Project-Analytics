@@ -7,7 +7,11 @@ import type { StoredGame } from '../persistence/types'
 const LAST_SEARCH_KEYS = ['chesslens-last-player-search-chesscom', 'chesslens-last-player-search-lichess']
 
 function lastSearchedUsernames(): string[] {
-  return LAST_SEARCH_KEYS.map((k) => localStorage.getItem(k)).filter((v): v is string => !!v)
+  try {
+    return LAST_SEARCH_KEYS.map((k) => localStorage.getItem(k)).filter((v): v is string => !!v)
+  } catch {
+    return [] // localStorage indisponível — sem candidato, `resolvePlayerColor` cai em `null`
+  }
 }
 
 /**
