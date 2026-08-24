@@ -178,6 +178,29 @@ Um item por sessão do Claude Code, cada um em seu próprio commit:
       roadmap original. Nenhum tema pronto do Lichess soava como madeira de verdade (testado com
       FFT); em vez disso, baixa o pitch de qualquer tema escolhido via `playbackRate` +
       `preservesPitch=false`.
+- [x] Casa marcada com botão direito vira preenchimento vermelho (não anel), clique numa casa já
+      marcada limpa todas — **feito em 2026-08-24**, pedido direto do usuário fora do roadmap
+      original ("circulizino é feinho").
+- [x] Barra de avaliação com transição suave — **feito em 2026-08-24**. `flex:N%` (relayout a cada
+      tick) trocado por `position:absolute` + `height:N%` (composição, sem relayout).
+- [x] Ícone do Daily amarelo em vez de verde — **feito em 2026-08-24**, pedido direto do usuário.
+- [x] Reinvestigação da força dos bots ("estão muitos bobos") — **feito em 2026-08-24**. Causa
+      raiz real: `UCI_LimitStrength`/`UCI_Elo` só calibram a escolha final do `bestmove`, a busca
+      em si é sempre em força total. Faixas ≥1320 Elo passaram a confiar no `bestmove` real;
+      2 bugs achados e corrigidos (um na calibração em si, outro no ponto de aplicação do lance
+      escolhido que ainda ignorava o `bestmove` calibrado).
+- [x] Redesign visual de "Jogar contra a Capivara" + sidebar — **feito em 2026-08-24**, pedido
+      direto do usuário. Avatar da capivara por faixa de força (crop/filtro progressivo), cards
+      de faixa redesenhados, thumbnail corpo-inteiro no cabeçalho; sidebar: "Treino"/"Ferramentas"
+      viraram grupo com flyout no hover (estilo comportamental inspirado no chessigma.com, não
+      visual), ícones reais (imagens do usuário) pra Treino/Ferramentas/Relatório do Jogador,
+      botões mais "gordinhos"/arredondados. Bug de distorção de ícone na sidebar colapsada
+      corrigido no mesmo lote (68→80px).
+- [x] Rename "ChessLens" → "ChessCap" (nome exibido) — **feito em 2026-08-24**, pedido direto do
+      usuário (trocadilho chess+capivara). Só texto/prosa visível — pasta, `package.json`,
+      classes `.cl-*` e chaves de storage continuam técnicos.
+- [x] Tipografia do site (Manrope + Bricolage Grotesque) — **feito em 2026-08-24**, pedido direto
+      do usuário ("chamativo, confortável, sem exuberante"). JetBrains Mono mantida nos números.
 
 ## Sprint 6 — Retenção
 
