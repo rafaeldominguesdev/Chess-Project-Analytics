@@ -9,6 +9,7 @@ interface SidebarProps {
   onToggleOpeningTraining: () => void
   onToggleErrorTraining: () => void
   onToggleReport: () => void
+  onTogglePlayBot: () => void
   onGoHome: () => void
   onAnalyzeClick: () => void
   onMaintenanceClick: (feature: string) => void
@@ -18,6 +19,7 @@ interface SidebarProps {
   openingTrainingActive: boolean
   errorTrainingActive: boolean
   reportActive: boolean
+  playBotActive: boolean
   positionEditorActive: boolean
   searchActive: boolean
 }
@@ -46,7 +48,7 @@ const TRAIN_PLACEHOLDERS: string[] = []
  *  fica colado no topo, ao lado da marca — e os dois estados (colapsada / ferramentas aberta)
  *  persistem entre sessões (localStorage), já que são preferência de layout, não algo que muda
  *  por partida. Rola internamente (overflowY) porque com tudo expandido não cabe numa tela baixa. */
-export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard, onToggleOpeningTraining, onToggleErrorTraining, onToggleReport, onGoHome, onAnalyzeClick, onMaintenanceClick, onTogglePositionEditor, trainingActive, boardActive, openingTrainingActive, errorTrainingActive, reportActive, positionEditorActive, searchActive }: SidebarProps) {
+export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard, onToggleOpeningTraining, onToggleErrorTraining, onToggleReport, onTogglePlayBot, onGoHome, onAnalyzeClick, onMaintenanceClick, onTogglePositionEditor, trainingActive, boardActive, openingTrainingActive, errorTrainingActive, reportActive, playBotActive, positionEditorActive, searchActive }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(() => {
     const saved = localStorage.getItem(COLLAPSED_KEY)
     // Sem preferência salva ainda: começa colapsada (só ícones) em telas estreitas, senão a
@@ -134,6 +136,14 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
       </div>
 
       <div style={{ height: 1, background: 'var(--color-gray-border)', marginBottom: 18 }} />
+
+      {/* Seção própria, acima de "Treino" — item novo de maior destaque (Sprint 4): jogar uma
+          partida real contra o Stockfish com força limitada, não um exercício com resposta
+          certa fixa como os treinos abaixo. Ícone reaproveita a capivara coroada da marca
+          (`BrandMarkIcon`) em vez de um ícone genérico — é literalmente "jogar contra ELA". */}
+      <NavSection label="Jogar" collapsed={collapsed}>
+        <NavItem icon={<BrandMarkIcon width={22} height={22} />} label="Jogar contra a Capivara" active={playBotActive} onClick={onTogglePlayBot} collapsed={collapsed} />
+      </NavSection>
 
       <NavSection label="Treino" collapsed={collapsed}>
         <NavItem icon={<TargetIcon width={22} height={22} />} label="Puzzles" active={trainingActive} onClick={onToggleTraining} collapsed={collapsed} />
