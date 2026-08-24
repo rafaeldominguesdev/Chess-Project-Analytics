@@ -138,11 +138,13 @@ export function ChessBoard({
   }
 
   // Setas desenhadas à mão (botão direito segurando e arrastando até outra casa, igual
-  // lichess/chess.com) — clique direito sem arrastar (solta na mesma casa) limpa todas de uma
-  // vez. Somem sozinhas quando a posição muda, junto com a seleção acima.
+  // lichess/chess.com) e círculos/realces de casa (botão direito SEM arrastar, solta na mesma
+  // casa — toggle igual lichess/chess.com: marca se não tinha, desmarca se já tinha). Somem
+  // sozinhos quando a posição muda (lance de verdade), junto com a seleção acima.
   const [drawnArrows, setDrawnArrows] = useState<{ from: string; to: string }[]>([])
+  const [drawnSquares, setDrawnSquares] = useState<string[]>([])
   const dragStartSquareRef = useRef<string | null>(null)
-  useEffect(() => setDrawnArrows([]), [fen])
+  useEffect(() => { setDrawnArrows([]); setDrawnSquares([]) }, [fen])
 
   // Detecta xeque/xeque-mate a partir da posição atual pra avisar visualmente — brilho vermelho
   // na casa do rei ameaçado, e um "#" ao lado se for mate mesmo (quem está em cheque é sempre
@@ -376,9 +378,9 @@ export function ChessBoard({
   }
 
   // Botão direito segura numa casa e solta em outra → desenha a seta (some sozinha na próxima
-  // jogada). Soltar na MESMA casa (clique direito sem arrastar) limpa todas de uma vez — mesmo
-  // comportamento do lichess/chess.com. Usa os callbacks `onSquareMouseDown/Up` da própria lib
-  // (dão a casa certinha, sem precisar calcular pixel↔casa na mão).
+  // jogada). Soltar na MESMA casa (clique direito sem arrastar) → círculo/realce naquela casa
+  // (toggle) — mesmo comportamento do lichess/chess.com. Usa os callbacks `onSquareMouseDown/Up`
+  // da própria lib (dão a casa certinha, sem precisar calcular pixel↔casa na mão).
   function handleSquareMouseDown({ square }: { square: string }, e: React.MouseEvent) {
     if (e.button !== 2) return
     dragStartSquareRef.current = square
@@ -389,7 +391,7 @@ export function ChessBoard({
     dragStartSquareRef.current = null
     if (!from) return
     if (to === from) {
-      setDrawnArrows([])
+      setDrawnSquares((prev) => (prev.includes(to) ? prev.filter((s) => s !== to) : [...prev, to]))
       return
     }
     setDrawnArrows((prev) => {
@@ -501,6 +503,34 @@ export function ChessBoard({
             </div>
           )
         })()}
+
+        {/* Círculos/realces de casa desenhados à mão (botão direito sem arrastar) — anel vazado,
+            mesma cor das setas do usuário, embaixo delas (zIndex menor) já que setas costumam
+            terminar em cima de uma casa marcada. */}
+        {drawnSquares.length > 0 && (
+          <svg
+            width={boardWidth}
+            height={boardWidth}
+            style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', zIndex: 4 }}
+          >
+            {drawnSquares.map((sq) => {
+              const o = squareOrigin(sq, boardOrientation, squareSize)
+              const cx = o.left + squareSize / 2
+              const cy = o.top + squareSize / 2
+              const r = squareSize / 2 - squareSize * 0.06
+              return (
+                <circle
+                  key={sq}
+                  cx={cx} cy={cy} r={r}
+                  fill="none"
+                  stroke={USER_ARROW_COLOR}
+                  strokeWidth={squareSize * 0.07}
+                  opacity={0.85}
+                />
+              )
+            })}
+          </svg>
+        )}
 
         {/* Setas "à mão" (topMoveArrows/extraArrows/desenhadas pelo usuário) — ver `customArrows`. */}
         {customArrows.length > 0 && (
