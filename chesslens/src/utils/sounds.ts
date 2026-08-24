@@ -31,12 +31,30 @@ export type SoundName = keyof typeof SOUND_FILES
 
 const cache = new Map<string, HTMLAudioElement>()
 
+// Baixa o tom de todo som de lance (qualquer tema) — pedido direto do usuário: "quero melhore som
+// do tabuleiro algo mais madeira algo mais grave". Nenhum tema pronto do catálogo do Lichess soa
+// como madeira de verdade (testado — "Woodland" é agudo, tema de floresta/pássaros, não bloco de
+// madeira grave), então em vez de trocar de tema, baixa o pitch do som ATUAL via `playbackRate`.
+// Detalhe que importa: por padrão, os navegadores modernos preservam o tom ao mudar
+// `playbackRate` (correção automática de pitch, pra não deixar vídeo em câmera lenta com voz
+// grave por acidente) — sem desligar isso (`preservesPitch = false`, mais os prefixos antigos de
+// Firefox/Safari), mudar `playbackRate` só deixaria o som mais LENTO, com o mesmo tom, não mais
+// grave. 0.85 é sutil o bastante pra não atrasar perceptivelmente um clique curto (~100-150ms)
+// mas já desce o tom de forma audível.
+const PITCH_RATE = 0.85
+
 function getAudio(theme: SoundTheme, name: SoundName): HTMLAudioElement {
   const key = `${theme}:${name}`
   let audio = cache.get(key)
   if (!audio) {
     audio = new Audio(`${SOUND_BASE}/${theme}/${SOUND_FILES[name]}`)
     audio.preload = 'auto'
+    audio.playbackRate = PITCH_RATE
+    type MediaElementWithPitchPrefixes = HTMLAudioElement & { mozPreservesPitch?: boolean; webkitPreservesPitch?: boolean }
+    const el = audio as MediaElementWithPitchPrefixes
+    el.preservesPitch = false
+    el.mozPreservesPitch = false
+    el.webkitPreservesPitch = false
     cache.set(key, audio)
   }
   return audio
