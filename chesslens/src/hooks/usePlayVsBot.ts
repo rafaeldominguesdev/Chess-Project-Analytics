@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Chess } from 'chess.js'
-import { BOT_LEVELS, pickBotMove } from '../analysis/botLevels'
+import { BOT_LEVELS, clampUciElo, pickBotMove } from '../analysis/botLevels'
 import type { BotLevel, EngineLineLike } from '../analysis/botLevels'
 import { useMoveSound } from './useMoveSound'
 
@@ -182,14 +182,18 @@ export function usePlayVsBot() {
 
   // Pede ao motor o próximo lance do bot na posição `fen`, configurando `UCI_LimitStrength` +
   // `UCI_Elo` + `MultiPV` da faixa escolhida antes de mandar `go` — ver `analysis/botLevels.ts`
-  // pro porquê do MultiPV (ruído na escolha entre as top-N linhas, não só o Elo cru do motor).
+  // pro porquê: nas faixas dentro do alcance nativo do motor, o `bestmove` que ele devolve já É o
+  // lance calibrado pro Elo pedido (não precisa de ruído por cima); `clampUciElo` garante que
+  // nunca mandamos um `UCI_Elo` fora do intervalo que o Stockfish documenta suportar (1320–3190)
+  // — as duas faixas mais fracas pedem um Elo "de vitrine" abaixo disso de propósito (ver
+  // `BotLevel.elo`), então sempre passam pelo clamp antes de virar `setoption`.
   const requestBotMove = useCallback((fen: string, botLevel: BotLevel) => {
     if (!worker.current) return
     requestGenRef.current = gameGenRef.current
     pendingLinesRef.current = Array(botLevel.multiPv).fill(null)
     setIsBotThinking(true)
     worker.current.postMessage('setoption name UCI_LimitStrength value true')
-    worker.current.postMessage(`setoption name UCI_Elo value ${botLevel.elo}`)
+    worker.current.postMessage(`setoption name UCI_Elo value ${clampUciElo(botLevel.elo)}`)
     worker.current.postMessage(`setoption name MultiPV value ${botLevel.multiPv}`)
     worker.current.postMessage(`position fen ${fen}`)
     worker.current.postMessage(`go movetime ${botLevel.movetimeMs}`)
