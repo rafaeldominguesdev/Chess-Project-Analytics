@@ -11,6 +11,40 @@ import { CoachComment } from './CoachComment'
 import { BoardControls } from '../Board/BoardControls'
 import { PlayMoveIcon } from '../Board/icons'
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion'
+import { useTheme } from '../../contexts/ThemeContext'
+import { BOARD_THEMES } from '../../utils/boardThemes'
+import { renderPositionSvg } from '../../utils/positionSvg'
+import { annotatePgnWithNags } from '../../analysis/pgnExport'
+import { findCriticalPosition } from '../../analysis/criticalPosition'
+
+// Baixa um arquivo de texto via Blob + <a download> — mesmo mecanismo que Configurações → Dados
+// já usa pro backup em JSON (`SettingsPanel.tsx`), só generalizado pra aceitar qualquer mime type
+// (aqui: PGN e SVG). Não existia um helper compartilhado pra isso ainda, então segue o mesmo
+// padrão local em vez de inventar um mecanismo novo.
+function downloadTextFile(filename: string, content: string, mime: string) {
+  const blob = new Blob([content], { type: mime })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+// Nome de arquivo seguro a partir de um texto livre (username de plataforma pode ter espaço,
+// acento etc.) — troca tudo que não é letra/número/hífen por "-".
+function slugForFilename(text: string): string {
+  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'partida'
+}
+
+function DownloadIcon(props: { width?: number; height?: number }) {
+  return (
+    <svg width={props.width ?? 13} height={props.height ?? 13} viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <rect x="4.5" y="18.5" width="15" height="2.2" rx="1" />
+      <path d="M12 3v12.2M12 15.2 7 10.3M12 15.2l5-4.9" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
 
 // Quantos lances de cada linha do motor mostrar como texto no painel "Motor" (prévia curta, não
 // a variante inteira) — mesma constante/princípio do painel equivalente do Tabuleiro de análise
@@ -255,6 +289,9 @@ interface ReviewPanelProps {
   gameInfo: GameInfo | null
   /** false = tela de resumo (fotos + precisão + White vs Black); true = lances com avaliação. */
   reviewStarted: boolean
+  /** PGN cru da partida carregada (`pgnRef.current` em App.tsx) — usado só pelo export de PGN
+   *  anotado (Sprint 5), pra inserir NAGs sem reescrever o resto do PGN original. */
+  pgn: string
   moves: ClassifiedMove[]
   currentMoveIndex: number
   onGoTo: (index: number) => void
@@ -290,7 +327,7 @@ interface ReviewPanelProps {
 }
 
 export function ReviewPanel({
-  gameInfo, reviewStarted,
+  gameInfo, reviewStarted, pgn,
   moves, currentMoveIndex, onGoTo, progress, evals,
   whiteAvatar, blackAvatar, onStartReview,
   isLoaded, onFirst, onPrev, onNext, onLast, onFlipBoard,
@@ -299,11 +336,36 @@ export function ReviewPanel({
 }: ReviewPanelProps) {
   const whiteName = gameInfo?.white ?? 'Brancas'
   const blackName = gameInfo?.black ?? 'Pretas'
+  const { theme } = useTheme()
 
   // Só usado pelo botão "Pular" do overlay de análise — guarda o `total` da análise que a pessoa
   // decidiu não esperar, pra saber que essa dispensa vale só pra essa partida (a próxima tem um
   // `total` de posições diferente quase sempre, então o overlay volta a aparecer normalmente).
   const [dismissedTotal, setDismissedTotal] = useState<number | null>(null)
+
+  // Export "PGN anotado com NAG + imagem da posição crítica" (Sprint 5, Polimento). Baixa dois
+  // arquivos: o PGN original com `$N` inserido depois de cada lance classificado (preserva
+  // headers/comentários — ver `pgnExport.ts`), e um SVG desenhado com as cores do tema de
+  // tabuleiro ATUAL do usuário (`chesslens-design`: nunca paleta hardcoded) da posição mais
+  // decisiva da partida (mate, se terminou assim; senão o lance com maior queda de chance de
+  // vitória — `criticalPosition.ts`). Não trava se a partida ainda não estiver 100% analisada:
+  // `annotatePgnWithNags` só anota o que já tem `classification`.
+  const handleExportAnnotatedPgn = () => {
+    const slug = `${slugForFilename(whiteName)}-vs-${slugForFilename(blackName)}`
+    const annotated = annotatePgnWithNags(pgn, moves)
+    downloadTextFile(`chesslens-${slug}.pgn`, annotated, 'application/x-chess-pgn')
+
+    const critical = findCriticalPosition(moves)
+    if (critical) {
+      const boardTheme = BOARD_THEMES[theme.boardTheme]
+      const svg = renderPositionSvg(critical.fen, boardTheme, {
+        highlightFrom: critical.move.from,
+        highlightTo: critical.move.to,
+        caption: critical.label,
+      })
+      downloadTextFile(`chesslens-${slug}-posicao-critica.svg`, svg, 'image/svg+xml')
+    }
+  }
 
   return (
     <>
@@ -409,6 +471,14 @@ export function ReviewPanel({
             <PlayMoveIcon width={13} height={13} />
             Jogar a partir daqui
           </button>
+          <button
+            onClick={handleExportAnnotatedPgn}
+            disabled={!pgn}
+            className="cl-btn cl-btn-ghost"
+            style={{ width: '100%', padding: '9px 0', fontSize: 12.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}
+          >
+            <DownloadIcon />
+            Exportar PGN anotado
           <BoardControls
             isLoaded={isLoaded}
             currentMoveIndex={currentMoveIndex}
