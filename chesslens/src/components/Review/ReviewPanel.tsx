@@ -9,6 +9,7 @@ import { MoveList } from '../Analysis/MoveList'
 import { Panel } from '../Panel'
 import { CoachComment } from './CoachComment'
 import { BoardControls } from '../Board/BoardControls'
+import { PlayMoveIcon } from '../Board/icons'
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion'
 
 // Quantos lances de cada linha do motor mostrar como texto no painel "Motor" (prévia curta, não
@@ -275,6 +276,10 @@ interface ReviewPanelProps {
   /** Se o motor está calculando a posição atual (vs. parado/pronto) — mesmo indicador do
    *  Tabuleiro de análise livre. */
   engineIsAnalyzing: boolean
+  /** "Jogar a partir daqui" (Sprint 4) — leva `currentFen` pro Tabuleiro de análise livre, mesmo
+   *  mecanismo que o Editor de Posição já usa (`pendingBoardFen` em App.tsx). Opcional só pra não
+   *  quebrar quem já usa `ReviewPanel` sem essa ação. */
+  onPlayFromHere?: (fen: string) => void
 }
 
 export function ReviewPanel({
@@ -282,7 +287,7 @@ export function ReviewPanel({
   moves, currentMoveIndex, onGoTo, progress, evals,
   whiteAvatar, blackAvatar, onStartReview,
   isLoaded, onFirst, onPrev, onNext, onLast, onFlipBoard,
-  currentFen, engineLines, engineIsAnalyzing,
+  currentFen, engineLines, engineIsAnalyzing, onPlayFromHere,
 }: ReviewPanelProps) {
   const whiteName = gameInfo?.white ?? 'Brancas'
   const blackName = gameInfo?.black ?? 'Pretas'
@@ -376,7 +381,23 @@ export function ReviewPanel({
       </div>
 
       {reviewStarted && (
-        <div style={{ paddingTop: 10, paddingRight: 2, flexShrink: 0 }}>
+        <div style={{ paddingTop: 10, paddingRight: 2, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {/* "Jogar a partir daqui" (Sprint 4) — continua a partir de QUALQUER posição da revisão,
+              não só do início. Usa `currentFen` (posição já resultante do lance selecionado, a
+              mesma que o painel "Motor" acima analisa) e o mesmo mecanismo de `pendingBoardFen`
+              que o Editor de Posição já usa pra abrir o Tabuleiro numa posição específica — ver
+              `onAnalyze` em PositionEditorView.tsx / `onTogglePositionEditor` em App.tsx. Fora da
+              área rolável, junto do rodapé de navegação, pra ficar sempre visível e associada à
+              posição que a pessoa está vendo agora, sem precisar rolar o painel até ela. */}
+          <button
+            onClick={() => onPlayFromHere?.(currentFen)}
+            disabled={!onPlayFromHere}
+            className="cl-btn"
+            style={{ width: '100%', padding: '9px 0', fontSize: 12.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}
+          >
+            <PlayMoveIcon width={13} height={13} />
+            Jogar a partir daqui
+          </button>
           <BoardControls
             isLoaded={isLoaded}
             currentMoveIndex={currentMoveIndex}
