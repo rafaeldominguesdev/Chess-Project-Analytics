@@ -12,6 +12,7 @@ import { SettingsPanel } from './components/Settings/SettingsPanel'
 import { TrainingView } from './components/Training/TrainingView'
 import { OpeningTrainerView } from './components/Training/OpeningTrainerView'
 import { ErrorTrainerView } from './components/Training/ErrorTrainerView'
+import { ReportView } from './components/Report/ReportView'
 import { AnalysisBoardView } from './components/Analysis/AnalysisBoardView'
 import { PositionEditorView } from './components/PositionEditor/PositionEditorView'
 import { PlayerCard } from './components/Theater/PlayerCard'
@@ -42,6 +43,8 @@ function AppInner() {
   const [openingTrainingMode, setOpeningTrainingMode] = useState(false)
   // Treino de Erros — mesmo esquema, mutuamente exclusivo com os outros modos.
   const [errorTrainingMode, setErrorTrainingMode] = useState(false)
+  // Relatório do jogador — mesmo esquema, mutuamente exclusivo com os outros modos.
+  const [reportMode, setReportMode] = useState(false)
   // Tabuleiro de análise livre (posição inicial, joga dos dois lados) — mesmo esquema do treino:
   // substitui o conteúdo principal, mutuamente exclusivo com ele e com a revisão de partida.
   const [boardMode, setBoardMode] = useState(false)
@@ -196,7 +199,7 @@ function AppInner() {
     onPrev: goPrev, onNext: goNext, onFirst: goFirst, onLast: goLast,
     // Desligado no tabuleiro de análise livre também — lá as setas navegariam por engano o
     // histórico da revisão escondida atrás, em vez do próprio jogo livre (que não usa teclado).
-    enabled: !settingsOpen && !updatesOpen && !trainingMode && !boardMode && !openingTrainingMode && !errorTrainingMode && !positionEditorMode,
+    enabled: !settingsOpen && !updatesOpen && !trainingMode && !boardMode && !openingTrainingMode && !errorTrainingMode && !reportMode && !positionEditorMode,
   })
 
   const handleAnalyzeGame = useCallback((pgn: string, url: string, color: 'w' | 'b') => {
@@ -220,6 +223,7 @@ function AppInner() {
     setBoardMode(false)
     setOpeningTrainingMode(false)
     setErrorTrainingMode(false)
+    setReportMode(false)
     setPositionEditorMode(false)
     setPendingBoardFen(undefined)
     setSearchPlatform(platform)
@@ -256,18 +260,20 @@ function AppInner() {
       <Sidebar
         onSettings={() => setSettingsOpen(true)}
         onUpdates={() => setUpdatesOpen(true)}
-        onToggleTraining={() => { setTrainingMode((v) => !v); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setPositionEditorMode(false); setSearchMode(false) }}
-        onToggleBoard={() => { setBoardMode((v) => !v); setTrainingMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setSearchMode(false) }}
-        onToggleOpeningTraining={() => { setOpeningTrainingMode((v) => !v); setTrainingMode(false); setBoardMode(false); setErrorTrainingMode(false); setPositionEditorMode(false); setSearchMode(false) }}
-        onToggleErrorTraining={() => { setErrorTrainingMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setPositionEditorMode(false); setSearchMode(false) }}
-        onGoHome={() => { setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setSearchMode(false); unloadGame(); setGameUrl(null) }}
+        onToggleTraining={() => { setTrainingMode((v) => !v); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setReportMode(false); setPositionEditorMode(false); setSearchMode(false) }}
+        onToggleBoard={() => { setBoardMode((v) => !v); setTrainingMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setReportMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setSearchMode(false) }}
+        onToggleOpeningTraining={() => { setOpeningTrainingMode((v) => !v); setTrainingMode(false); setBoardMode(false); setErrorTrainingMode(false); setReportMode(false); setPositionEditorMode(false); setSearchMode(false) }}
+        onToggleErrorTraining={() => { setErrorTrainingMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setReportMode(false); setPositionEditorMode(false); setSearchMode(false) }}
+        onToggleReport={() => { setReportMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setPositionEditorMode(false); setSearchMode(false) }}
+        onGoHome={() => { setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setReportMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setSearchMode(false); unloadGame(); setGameUrl(null) }}
         onAnalyzeClick={() => { unloadGame(); setGameUrl(null); openSearch() }}
         onMaintenanceClick={setMaintenanceFeature}
-        onTogglePositionEditor={() => { setPositionEditorMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setSearchMode(false) }}
+        onTogglePositionEditor={() => { setPositionEditorMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setReportMode(false); setSearchMode(false) }}
         trainingActive={trainingMode}
         boardActive={boardMode}
         openingTrainingActive={openingTrainingMode}
         errorTrainingActive={errorTrainingMode}
+        reportActive={reportMode}
         positionEditorActive={positionEditorMode}
         searchActive={searchMode}
       />
@@ -280,6 +286,12 @@ function AppInner() {
           <OpeningTrainerView boardWidth={boardWidth} containerRef={containerRef} />
         ) : errorTrainingMode ? (
           <ErrorTrainerView boardWidth={boardWidth} containerRef={containerRef} onGoToAnalyze={() => { unloadGame(); setGameUrl(null); openSearch() }} />
+        ) : reportMode ? (
+          <ReportView
+            onGoToErrorTraining={() => { setReportMode(false); setErrorTrainingMode(true) }}
+            onGoToOpeningTraining={() => { setReportMode(false); setOpeningTrainingMode(true) }}
+            onGoToAnalyze={() => { unloadGame(); setGameUrl(null); openSearch() }}
+          />
         ) : positionEditorMode ? (
           <PositionEditorView
             boardWidth={boardWidth}

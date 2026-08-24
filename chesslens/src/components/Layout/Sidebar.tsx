@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { AnalyzeNavIcon, BoardNavIcon, BookNavIcon, BrandMarkIcon, ChevronIcon, ErrorTrainNavIcon, GearIcon, PositionSetupIcon, SunNavIcon, TargetIcon, WrenchIcon } from './icons'
+import { AnalyzeNavIcon, BoardNavIcon, BookNavIcon, BrandMarkIcon, ChevronIcon, ErrorTrainNavIcon, GearIcon, PositionSetupIcon, ReportNavIcon, SunNavIcon, TargetIcon, WrenchIcon } from './icons'
 
 interface SidebarProps {
   onSettings: () => void
@@ -8,6 +8,7 @@ interface SidebarProps {
   onToggleBoard: () => void
   onToggleOpeningTraining: () => void
   onToggleErrorTraining: () => void
+  onToggleReport: () => void
   onGoHome: () => void
   onAnalyzeClick: () => void
   onMaintenanceClick: (feature: string) => void
@@ -16,6 +17,7 @@ interface SidebarProps {
   boardActive: boolean
   openingTrainingActive: boolean
   errorTrainingActive: boolean
+  reportActive: boolean
   positionEditorActive: boolean
   searchActive: boolean
 }
@@ -44,7 +46,7 @@ const TRAIN_PLACEHOLDERS: string[] = []
  *  fica colado no topo, ao lado da marca — e os dois estados (colapsada / ferramentas aberta)
  *  persistem entre sessões (localStorage), já que são preferência de layout, não algo que muda
  *  por partida. Rola internamente (overflowY) porque com tudo expandido não cabe numa tela baixa. */
-export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard, onToggleOpeningTraining, onToggleErrorTraining, onGoHome, onAnalyzeClick, onMaintenanceClick, onTogglePositionEditor, trainingActive, boardActive, openingTrainingActive, errorTrainingActive, positionEditorActive, searchActive }: SidebarProps) {
+export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard, onToggleOpeningTraining, onToggleErrorTraining, onToggleReport, onGoHome, onAnalyzeClick, onMaintenanceClick, onTogglePositionEditor, trainingActive, boardActive, openingTrainingActive, errorTrainingActive, reportActive, positionEditorActive, searchActive }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(() => {
     const saved = localStorage.getItem(COLLAPSED_KEY)
     // Sem preferência salva ainda: começa colapsada (só ícones) em telas estreitas, senão a
@@ -141,6 +143,12 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
           <NavItem key={label} icon={<WrenchIcon width={21} height={21} />} label={label} collapsed={collapsed} soon
             onClick={() => onMaintenanceClick(label)} />
         ))}
+      </NavSection>
+
+      {/* Seção própria (não dentro de "Treino") — é o item-âncora do print que a pessoa
+          compartilha (ver ROADMAP.md, Sprint 3), merece destaque visual separado. */}
+      <NavSection label="Relatório" collapsed={collapsed}>
+        <NavItem icon={<ReportNavIcon width={22} height={22} />} label="Relatório do Jogador" active={reportActive} onClick={onToggleReport} collapsed={collapsed} />
       </NavSection>
 
       {/* "Ferramentas" — grupo que abre/fecha (pasta de acordeão), não uma lista fixa como Treino.

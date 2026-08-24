@@ -4,6 +4,7 @@ import { useOpeningTrainer } from '../../hooks/useOpeningTrainer'
 import type { Side } from '../../hooks/useOpeningTrainer'
 import { getFamilyRootFen } from '../../analysis/openingRepertoire'
 import type { OpeningFamily } from '../../analysis/openingRepertoire'
+import { masteryColor } from '../../analysis/masteryStats'
 import { ChessBoard, BOARD_ROW_CHROME_WIDTH } from '../Board/ChessBoard'
 import { MiniBoard } from '../Board/MiniBoard'
 import { FirstMoveIcon, PrevMoveIcon, NextMoveIcon, LastMoveIcon } from '../Board/icons'
@@ -66,13 +67,6 @@ const STATUS_META: Record<string, { text: string; color: string }> = {
   'their-turn': { text: 'Adversário pensando…', color: 'var(--color-gray-muted)' },
   done: { text: 'Linha terminou — fora de teoria conhecida', color: 'var(--color-success)' },
 }
-
-function masteryColor(m: number): string {
-  if (m >= 80) return 'var(--color-success)'
-  if (m >= 50) return QUALITY_YELLOW
-  return 'var(--color-error)'
-}
-const QUALITY_YELLOW = '#F0C548'
 
 /**
  * Treino de Aberturas: escolhe uma família (ex: Siciliana) + lado (Brancas/Pretas), toca sozinho

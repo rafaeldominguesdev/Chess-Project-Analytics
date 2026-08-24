@@ -112,6 +112,17 @@ export function ErrorTrainNavIcon(props: IconProps) {
   )
 }
 
+/** Gráfico de barras crescente — Relatório do jogador (estatísticas agregadas das partidas). */
+export function ReportNavIcon(props: IconProps) {
+  return (
+    <svg {...base(props)} fill="currentColor" stroke="none">
+      <rect x="3" y="13" width="4" height="8" rx="1" />
+      <rect x="10" y="8" width="4" height="13" rx="1" />
+      <rect x="17" y="3" width="4" height="18" rx="1" />
+    </svg>
+  )
+}
+
 /** Seta simples — usada no botão de encolher/expandir a sidebar, gira via CSS conforme o estado. */
 export function ChevronIcon(props: IconProps) {
   return (
