@@ -129,6 +129,14 @@ body {
   100% { transform: translateX(0); opacity: 1; }
 }
 
+/* Flyout de submenu (ver `NavGroup` em `Sidebar.tsx`, grupos "Treino"/"Ferramentas" que abrem ao
+   passar o mouse) — "abre feito dobradiça" (ease-hinge), pequeno deslize a partir do gatilho em
+   vez de cair de cima, porque o painel nasce ao LADO do botão, não acima dele. */
+@keyframes cl-flyout-in {
+  0% { transform: translateX(-6px) scale(0.97); opacity: 0; }
+  100% { transform: translateX(0) scale(1); opacity: 1; }
+}
+
 /* Entradas: curva "snap" (início rápido, assentamento suave), ~200ms. Só rodam se o usuário não
    pediu menos movimento (achado da auditoria da Fase 2) — sem a guarda, o elemento aparece direto
    no estado final (opacity/transform normais), sem o `both` puxando ele pra um estado inicial
@@ -138,6 +146,7 @@ body {
   .cl-fade-in { animation: cl-fade-in var(--dur-enter) var(--ease-snap) both; }
   .cl-stat-pop { animation: cl-stat-pop var(--dur-enter) var(--ease-snap) both; }
   .cl-row-in { animation: cl-row-in var(--dur-enter) var(--ease-snap) both; }
+  .cl-flyout-in { animation: cl-flyout-in 220ms var(--ease-hinge) both; }
 }
 
 .cl-game-row { transition: border-color var(--dur-tap) var(--ease-tap), transform var(--dur-tap) var(--ease-tap); }
@@ -259,6 +268,38 @@ body {
     0 1px 0 0 var(--color-shadow-btn) !important;
 }
 .cl-btn-sm.cl-btn-selected { transform: translateY(2px); }
+
+/* Variante "gordinha" do `.cl-btn`, só pros botões de navegação da sidebar (`NavItem`/`NavGroup`
+   em `Sidebar.tsx`, inclusive as linhas dentro dos flyouts de "Treino"/"Ferramentas") — pedido
+   direto do usuário depois de ver a sidebar nova: "quero deixe os botões mais gordinhos pra cima
+   e mais arredondados com uma sombra embaixo em destaque". Cantos maiores (`--radius-lg` em vez
+   do `--radius-md` padrão do `.cl-btn`) e sombra de assento mais funda/visível (pescoço 4px→6-7px,
+   sombra ambiente mais opaca e mais espalhada). A altura em si (padding vertical) é ajustada
+   direto no componente, não aqui — inline style já define `padding` como shorthand, e uma regra
+   CSS externa sem `!important` não vence um shorthand inline (as duas metades, top/bottom, já
+   ficam "fechadas" pelo inline mesmo que eu só mexesse no longhand aqui).
+   Ajuste LOCAL (só sidebar) de propósito — mudar isso direto em `.cl-btn` afetaria botões em
+   telas que já estavam bons (CTAs de card, "Desistir"/"Sair da partida" etc.), sem pedido pra
+   mudar esses também. Mesma especificidade de `.cl-btn`/`.cl-btn:hover` (uma classe + pseudo-
+   classes) — como estas regras vêm DEPOIS no arquivo, ganham do `.cl-btn` em empate de
+   especificidade pros elementos que têm as duas classes. Não mexe no estado pressionado/
+   selecionado (`:active`/`.cl-btn-selected`) — esses já devem parecer "afundados", não teria
+   sentido dar uma sombra de "levantado" neles. */
+.cl-nav-btn {
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.35),
+    0 6px 0 0 var(--color-shadow-btn),
+    0 14px 22px -6px rgba(0, 0, 0, 0.65);
+}
+.cl-nav-btn:hover:not(:disabled) {
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.35),
+    0 7px 0 0 var(--color-shadow-btn),
+    0 16px 26px -6px rgba(0, 0, 0, 0.7);
+}
 
 /* Card "soquete" — painéis e superfícies elevadas (ver também componente Panel) */
 .cl-card {

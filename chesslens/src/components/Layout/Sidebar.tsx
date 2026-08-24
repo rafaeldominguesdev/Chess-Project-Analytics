@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from 'react'
-import { AnalyzeNavIcon, BoardNavIcon, BookNavIcon, ChevronIcon, EndgameNavIcon, ErrorTrainNavIcon, GearIcon, PlayBotNavIcon, PositionSetupIcon, ReportNavIcon, SunNavIcon, TargetIcon, WrenchIcon } from './icons'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { AnalyzeNavIcon, BoardNavIcon, BookNavIcon, ChevronIcon, EndgameNavIcon, ErrorTrainNavIcon, GearIcon, PlayBotNavIcon, PositionSetupIcon, SunNavIcon, TargetIcon, WrenchIcon } from './icons'
 
 interface SidebarProps {
   onSettings: () => void
@@ -27,41 +27,40 @@ interface SidebarProps {
 }
 
 const COLLAPSED_KEY = 'chesslens-sidebar-collapsed'
-const TOOLS_OPEN_KEY = 'chesslens-sidebar-tools-open'
 // Aumentado a pedido direto do usuário: "deixe maior a sidebar e os icones e texto esta
 // apertado" — eram 254/60, ícones 19-20px e fonte 10-12px, ficando apertado visualmente.
 const WIDTH_EXPANDED = 278
-const WIDTH_COLLAPSED = 68
+// Aumentado de novo (68→80) depois que os ícones de imagem (Treino/Ferramentas/Relatório, ver
+// `icon-treino.png` etc.) subiram pra 36px — 68px só deixava ~48px de largura útil (menos o
+// padding da `<nav>`), quase sem folga ao redor de um ícone de 36px, ficando "espremido" contra
+// as bordas do botão colapsado. Pedido direto do usuário: "quando sidebar diminuir dá uma
+// aumentada na largura porque se não distorce o ícone".
+const WIDTH_COLLAPSED = 80
 
 // Estrutura de menu inspirada na sidebar do chessigma.com (Treino / Ferramentas), sem a parte
 // comercial deles (preço, loja, blog) — não faz sentido num projeto pessoal. Lista enxuta, só o
 // que tem chance real de virar funcionalidade — o resto dos itens do chessigma (Woodpecker,
 // Blunder Shield, Sparring, Treino de Conversão, Próximo Lance, Calculadora de Elo) foi tirado.
-// "Treino de Aberturas" e "Treino de Erros" saíram daqui — viraram funcionalidade de verdade,
-// cada um com `NavItem` próprio abaixo.
 const TRAIN_PLACEHOLDERS: string[] = []
 
-/** Sidebar fixa à esquerda: marca e navegação principal. "Treino" é uma lista simples (Puzzles +
- *  placeholders); "Ferramentas" é um grupo que expande/recolhe (Analisar, Tabuleiro, Definir
- *  Posição) — igual pasta de acordeão, clica no cabeçalho pra abrir/fechar, começa aberto quando
- *  alguma ferramenta de dentro tá ativa (senão o usuário perderia a navegação principal escondida).
- *  Itens "em breve" aparecem cinzas com a etiqueta e abrem um aviso de manutenção ao clicar, em
- *  vez de não fazer nada. Pode encolher a sidebar inteira pra só ícones (like ChatGPT) — o botão
- *  fica colado no topo, ao lado da marca — e os dois estados (colapsada / ferramentas aberta)
- *  persistem entre sessões (localStorage), já que são preferência de layout, não algo que muda
- *  por partida. Rola internamente (overflowY) porque com tudo expandido não cabe numa tela baixa. */
+/** Sidebar fixa à esquerda: marca e navegação principal. "Jogar" e "Relatório" continuam como
+ *  item único (não vale a pena um submenu pra 1 item só). "Treino" e "Ferramentas" viraram
+ *  `NavGroup` — um botão-gatilho que abre um flyout ao passar o mouse (ou focar via teclado),
+ *  igual sidebar do chessigma — pedido direto do usuário depois de ver o menu antigo: "aí tem um
+ *  ícone no Treino, aí quando passar mouse em cima fica assim [as opções]". Antes "Treino" era só
+ *  uma lista fixa e "Ferramentas" era uma pasta que abria/fechava por clique (estado persistido);
+ *  os dois agora usam o MESMO padrão de interação (consistência entre os dois grupos de múltiplos
+ *  itens — ver decisão documentada em `NavGroup`), então o antigo `toolsOpen`/localStorage de
+ *  "Ferramentas" saiu. Pode encolher a sidebar inteira pra só ícones (like ChatGPT) — o botão fica
+ *  colado no topo, ao lado da marca — e esse estado persiste entre sessões (localStorage), já que
+ *  é preferência de layout, não algo que muda por partida. Rola internamente (overflowY) porque
+ *  com tudo expandido não cabe numa tela baixa. */
 export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard, onToggleOpeningTraining, onToggleErrorTraining, onToggleEndgameTraining, onToggleReport, onTogglePlayBot, onGoHome, onAnalyzeClick, onMaintenanceClick, onTogglePositionEditor, trainingActive, boardActive, openingTrainingActive, errorTrainingActive, endgameTrainingActive, reportActive, playBotActive, positionEditorActive, searchActive }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(() => {
     const saved = localStorage.getItem(COLLAPSED_KEY)
     // Sem preferência salva ainda: começa colapsada (só ícones) em telas estreitas, senão a
     // sidebar expandida sozinha já ocupa a maior parte de uma tela de celular.
     return saved !== null ? saved === '1' : window.innerWidth < 640
-  })
-  const [toolsOpen, setToolsOpen] = useState(() => {
-    const saved = localStorage.getItem(TOOLS_OPEN_KEY)
-    // Sem preferência salva ainda: começa aberto se alguma ferramenta de dentro já tá ativa
-    // (Analisar é a tela padrão do app), senão o usuário perde a navegação principal de cara.
-    return saved !== null ? saved === '1' : !trainingActive
   })
 
   function toggleCollapsed() {
@@ -72,13 +71,22 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
     })
   }
 
-  function toggleTools() {
-    setToolsOpen(prev => {
-      const next = !prev
-      localStorage.setItem(TOOLS_OPEN_KEY, next ? '1' : '0')
-      return next
-    })
-  }
+  const trainItems: GroupItem[] = [
+    { icon: <TargetIcon width={20} height={20} />, label: 'Puzzles', active: trainingActive, onClick: onToggleTraining },
+    { icon: <BookNavIcon width={20} height={20} />, label: 'Treino de Aberturas', active: openingTrainingActive, onClick: onToggleOpeningTraining },
+    { icon: <ErrorTrainNavIcon width={20} height={20} />, label: 'Treino de Erros', active: errorTrainingActive, onClick: onToggleErrorTraining },
+    { icon: <EndgameNavIcon width={20} height={20} />, label: 'Treino de Finais', active: endgameTrainingActive, onClick: onToggleEndgameTraining },
+    ...TRAIN_PLACEHOLDERS.map((label) => ({
+      icon: <WrenchIcon width={19} height={19} />, label, active: false, soon: true,
+      onClick: () => onMaintenanceClick(label),
+    })),
+  ]
+
+  const toolItems: GroupItem[] = [
+    { icon: <AnalyzeNavIcon width={20} height={20} />, label: 'Analisar', active: searchActive, onClick: onAnalyzeClick },
+    { icon: <BoardNavIcon width={20} height={20} />, label: 'Tabuleiro', active: boardActive, onClick: onToggleBoard },
+    { icon: <PositionSetupIcon width={20} height={20} />, label: 'Definir Posição', active: positionEditorActive, onClick: onTogglePositionEditor },
+  ]
 
   return (
     <nav
@@ -148,59 +156,25 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
       {/* Seção própria, acima de "Treino" — item novo de maior destaque (Sprint 4): jogar uma
           partida real contra o Stockfish com força limitada, não um exercício com resposta
           certa fixa como os treinos abaixo. Ícone genérico de peão (não a mascote) — o avatar da
-          capivara já aparece dentro da própria tela de jogo, por faixa de força. */}
+          capivara já aparece dentro da própria tela de jogo, por faixa de força. Item único —
+          continua `NavItem` simples, não vira `NavGroup` (um submenu pra 1 item só não faz sentido). */}
       <NavSection label="Jogar" collapsed={collapsed}>
         <NavItem icon={<PlayBotNavIcon width={22} height={22} />} label="Jogar contra a Capivara" active={playBotActive} onClick={onTogglePlayBot} collapsed={collapsed} />
       </NavSection>
 
-      <NavSection label="Treino" collapsed={collapsed}>
-        <NavItem icon={<TargetIcon width={22} height={22} />} label="Puzzles" active={trainingActive} onClick={onToggleTraining} collapsed={collapsed} />
-        <NavItem icon={<BookNavIcon width={22} height={22} />} label="Treino de Aberturas" active={openingTrainingActive} onClick={onToggleOpeningTraining} collapsed={collapsed} />
-        <NavItem icon={<ErrorTrainNavIcon width={22} height={22} />} label="Treino de Erros" active={errorTrainingActive} onClick={onToggleErrorTraining} collapsed={collapsed} />
-        <NavItem icon={<EndgameNavIcon width={22} height={22} />} label="Treino de Finais" active={endgameTrainingActive} onClick={onToggleEndgameTraining} collapsed={collapsed} />
-        {TRAIN_PLACEHOLDERS.map((label) => (
-          <NavItem key={label} icon={<WrenchIcon width={21} height={21} />} label={label} collapsed={collapsed} soon
-            onClick={() => onMaintenanceClick(label)} />
-        ))}
-      </NavSection>
+      <div style={{ marginBottom: 16 }}>
+        <NavGroup icon={<img src="/icon-treino.png" alt="" width={36} height={36} style={{ flexShrink: 0, display: 'block', aspectRatio: '1' }} />} label="Treino" collapsed={collapsed} items={trainItems} />
+      </div>
 
       {/* Seção própria (não dentro de "Treino") — é o item-âncora do print que a pessoa
-          compartilha (ver ROADMAP.md, Sprint 3), merece destaque visual separado. */}
+          compartilha (ver ROADMAP.md, Sprint 3), merece destaque visual separado. Item único —
+          mesmo raciocínio de "Jogar" acima. */}
       <NavSection label="Relatório" collapsed={collapsed}>
-        <NavItem icon={<ReportNavIcon width={22} height={22} />} label="Relatório do Jogador" active={reportActive} onClick={onToggleReport} collapsed={collapsed} />
+        <NavItem icon={<img src="/icon-relatorio.png" alt="" width={36} height={36} style={{ flexShrink: 0, display: 'block', aspectRatio: '1' }} />} label="Relatório do Jogador" active={reportActive} onClick={onToggleReport} collapsed={collapsed} />
       </NavSection>
 
-      {/* "Ferramentas" — grupo que abre/fecha (pasta de acordeão), não uma lista fixa como Treino.
-          Colapsada, os 3 ícones aparecem direto, sem cabeçalho (não tem texto pra clicar mesmo). */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 16 }}>
-        {!collapsed && (
-          <button
-            onClick={toggleTools}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6, width: '100%',
-              background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
-              padding: '0 6px', marginBottom: 5,
-            }}
-          >
-            <span style={{
-              fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
-              color: 'var(--color-gray-muted)', whiteSpace: 'nowrap', flex: 1,
-            }}>
-              Ferramentas
-            </span>
-            <ChevronIcon width={12} height={12} style={{
-              color: 'var(--color-gray-muted)', transform: toolsOpen ? 'rotate(-90deg)' : 'rotate(-180deg)',
-              transition: 'transform var(--dur-tap) var(--ease-tap)', flexShrink: 0,
-            }} />
-          </button>
-        )}
-        {(collapsed || toolsOpen) && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <NavItem icon={<AnalyzeNavIcon width={22} height={22} />} label="Analisar" active={searchActive} onClick={onAnalyzeClick} collapsed={collapsed} />
-            <NavItem icon={<BoardNavIcon width={22} height={22} />} label="Tabuleiro" active={boardActive} onClick={onToggleBoard} collapsed={collapsed} />
-            <NavItem icon={<PositionSetupIcon width={22} height={22} />} label="Definir Posição" active={positionEditorActive} onClick={onTogglePositionEditor} collapsed={collapsed} />
-          </div>
-        )}
+      <div style={{ marginBottom: 16 }}>
+        <NavGroup icon={<img src="/icon-ferramentas.png" alt="" width={36} height={36} style={{ flexShrink: 0, display: 'block', aspectRatio: '1' }} />} label="Ferramentas" collapsed={collapsed} items={toolItems} />
       </div>
 
       <div style={{ flex: 1, minHeight: 12 }} />
@@ -229,6 +203,157 @@ function NavSection({ label, collapsed, children }: { label: string; collapsed: 
   )
 }
 
+interface GroupItem {
+  icon: ReactNode
+  label: string
+  active: boolean
+  soon?: boolean
+  onClick: () => void
+}
+
+const FLYOUT_CLOSE_DELAY_MS = 220
+
+/** Botão-gatilho de um grupo com múltiplos itens ("Treino", "Ferramentas") — abre um flyout ao
+ *  lado (não embaixo, não é acordeão) ao passar o mouse ou focar via teclado, igual sidebar do
+ *  chessigma. Decisão de aplicar o MESMO padrão aos dois grupos (não só "Treino", que foi o
+ *  pedido original): "Ferramentas" antes era uma pasta que abria/fechava por clique dentro do
+ *  próprio fluxo da sidebar — ter um grupo em hover-flyout e outro em clique-acordeão lado a lado
+ *  ficaria inconsistente (mesma forma visual de botão, dois comportamentos diferentes), então os
+ *  dois grupos de múltiplos itens migraram juntos.
+ *
+ *  Posicionamento: `position: fixed` calculado a partir do `getBoundingClientRect()` do próprio
+ *  botão (não `position: absolute` dentro da sidebar) — a `<nav>` tem `overflow-x: hidden` (evita
+ *  scrollbar horizontal durante a transição de largura colapsar/expandir), que cortaria um flyout
+ *  posicionado `absolute` saindo pra fora da faixa da sidebar. Elemento `fixed` escapa do corte de
+ *  `overflow: hidden` de um ancestral (desde que nenhum ancestral tenha `transform`/`filter` — não
+ *  é o caso aqui), então o painel aparece por cima de tudo sem precisar de portal.
+ *  Isso também mantém a ordem do DOM igual à ordem visual (o flyout é filho do próprio grupo, não
+ *  teleportado pro fim do `<body>`), o que ajuda a navegação por Tab a continuar previsível.
+ *
+ *  Teclado: Enter/Espaço no gatilho abre e mantém aberto; seta-baixo foca o 1º item; Esc fecha e
+ *  devolve o foco pro gatilho. Não é uma implementação completa do padrão ARIA `menu` (roving
+ *  tabindex, `menuitem` em cada linha) — pros itens continuarem funcionando como botões normais
+ *  fora do flyout (reuso do mesmo `NavItem`), ficou uma versão simplificada; documentado aqui
+ *  como limitação conhecida, não uma omissão. */
+function NavGroup({ icon, label, collapsed, items }: { icon: ReactNode; label: string; collapsed: boolean; items: GroupItem[] }) {
+  const [open, setOpen] = useState(false)
+  const [pos, setPos] = useState({ top: 0, left: 0 })
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const closeTimer = useRef<number | null>(null)
+
+  const activeAny = items.some(i => i.active)
+
+  function cancelClose() {
+    if (closeTimer.current !== null) {
+      window.clearTimeout(closeTimer.current)
+      closeTimer.current = null
+    }
+  }
+
+  function computePos() {
+    const rect = triggerRef.current?.getBoundingClientRect()
+    if (rect) setPos({ top: rect.top, left: rect.right + 8 })
+  }
+
+  function openNow() {
+    cancelClose()
+    computePos()
+    setOpen(true)
+  }
+
+  function scheduleClose() {
+    cancelClose()
+    closeTimer.current = window.setTimeout(() => setOpen(false), FLYOUT_CLOSE_DELAY_MS)
+  }
+
+  // Fecha ao clicar fora (necessário pro toque/clique em telas sem hover de verdade, já que ali
+  // o `open` só entra pelo clique no próprio gatilho) e reposiciona se a janela for redimensionada
+  // enquanto o flyout está aberto (a sidebar não some, mas o layout ao redor pode mudar).
+  useEffect(() => {
+    if (!open) return
+    function handlePointerDown(e: MouseEvent) {
+      if (!wrapperRef.current?.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handlePointerDown)
+    window.addEventListener('resize', computePos)
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown)
+      window.removeEventListener('resize', computePos)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
+
+  useEffect(() => () => cancelClose(), [])
+
+  return (
+    <div ref={wrapperRef} onMouseLeave={scheduleClose}>
+      <button
+        ref={triggerRef}
+        onMouseEnter={openNow}
+        onFocus={openNow}
+        onClick={() => (open ? setOpen(false) : openNow())}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowDown') { e.preventDefault(); openNow() }
+          if (e.key === 'Escape') setOpen(false)
+        }}
+        title={collapsed ? label : undefined}
+        aria-label={collapsed ? label : undefined}
+        aria-haspopup="true"
+        aria-expanded={open}
+        className={`cl-btn cl-nav-btn${activeAny ? ' cl-btn-selected' : ''}`}
+        style={{
+          justifyContent: collapsed ? 'center' : 'flex-start', gap: 11, width: '100%',
+          padding: collapsed ? '16px 0' : '16px 13px', fontSize: 13.5, letterSpacing: '0.3px',
+        }}
+      >
+        {icon}
+        {!collapsed && (
+          <span style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flex: 1 }}>
+            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1, textAlign: 'left' }}>{label}</span>
+            {/* Indica "abre um submenu ao lado" — aponta pra direita (rotate 180 no `<` padrão),
+                não pra baixo, porque o flyout nasce ao lado do botão, não embaixo dele. */}
+            <ChevronIcon width={12} height={12} style={{ color: 'var(--color-gray-muted)', transform: 'rotate(180deg)', flexShrink: 0, opacity: 0.7 }} />
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div
+          onMouseEnter={openNow}
+          onMouseLeave={scheduleClose}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') { setOpen(false); triggerRef.current?.focus() }
+          }}
+          className="cl-card cl-flyout-in"
+          style={{
+            position: 'fixed', top: pos.top, left: pos.left, zIndex: 100,
+            minWidth: 232, padding: 6, display: 'flex', flexDirection: 'column', gap: 3,
+          }}
+        >
+          <span style={{
+            fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
+            color: 'var(--color-gray-muted)', padding: '4px 7px 6px', whiteSpace: 'nowrap',
+          }}>
+            {label}
+          </span>
+          {items.map((item) => (
+            <NavItem
+              key={item.label}
+              icon={item.icon}
+              label={item.label}
+              active={item.active}
+              collapsed={false}
+              soon={item.soon}
+              onClick={() => { item.onClick(); setOpen(false) }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function NavItem({ icon, label, active = false, collapsed, soon = false, onClick }: {
   icon: ReactNode; label: string; active?: boolean; collapsed: boolean; soon?: boolean; onClick: () => void
 }) {
@@ -238,10 +363,10 @@ function NavItem({ icon, label, active = false, collapsed, soon = false, onClick
       title={collapsed ? label + (soon ? ' (em breve)' : '') : undefined}
       aria-label={collapsed ? label + (soon ? ' (em breve)' : '') : undefined}
       aria-current={active ? 'page' : undefined}
-      className={`cl-btn${active ? ' cl-btn-selected' : ''}`}
+      className={`cl-btn cl-nav-btn${active ? ' cl-btn-selected' : ''}`}
       style={{
         justifyContent: collapsed ? 'center' : 'flex-start', gap: 11, width: '100%',
-        padding: collapsed ? '12px 0' : '12px 13px', fontSize: soon ? 12.5 : 13.5, letterSpacing: '0.3px',
+        padding: collapsed ? '16px 0' : '16px 13px', fontSize: soon ? 12.5 : 13.5, letterSpacing: '0.3px',
         opacity: soon ? 0.55 : 1,
       }}
     >
