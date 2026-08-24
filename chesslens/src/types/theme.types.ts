@@ -29,6 +29,10 @@ export interface ThemeConfig {
   pieceSet: PieceSetName
   uiTheme: UIThemeName
   showCoordinates: boolean
+  /** Estilo da notação quando `showCoordinates` está ligado: `false` (padrão) desenha letras/
+   *  números DENTRO da casa (comportamento original); `true` abre uma margem ao redor do
+   *  tabuleiro e desenha ali fora, como lichess/chess.com clássico. */
+  coordinatesOutside: boolean
   showLegalMoves: boolean
   showLastMove: boolean
   showArrows: boolean
