@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { AnalyzeNavIcon, BoardNavIcon, BookNavIcon, BrandMarkIcon, ChevronIcon, ErrorTrainNavIcon, GearIcon, PositionSetupIcon, ReportNavIcon, SunNavIcon, TargetIcon, WrenchIcon } from './icons'
+import { AnalyzeNavIcon, BoardNavIcon, BookNavIcon, BrandMarkIcon, ChevronIcon, EndgameNavIcon, ErrorTrainNavIcon, GearIcon, PositionSetupIcon, ReportNavIcon, SunNavIcon, TargetIcon, WrenchIcon } from './icons'
 
 interface SidebarProps {
   onSettings: () => void
@@ -8,6 +8,7 @@ interface SidebarProps {
   onToggleBoard: () => void
   onToggleOpeningTraining: () => void
   onToggleErrorTraining: () => void
+  onToggleEndgameTraining: () => void
   onToggleReport: () => void
   onGoHome: () => void
   onAnalyzeClick: () => void
@@ -17,6 +18,7 @@ interface SidebarProps {
   boardActive: boolean
   openingTrainingActive: boolean
   errorTrainingActive: boolean
+  endgameTrainingActive: boolean
   reportActive: boolean
   positionEditorActive: boolean
   searchActive: boolean
@@ -46,7 +48,7 @@ const TRAIN_PLACEHOLDERS: string[] = []
  *  fica colado no topo, ao lado da marca — e os dois estados (colapsada / ferramentas aberta)
  *  persistem entre sessões (localStorage), já que são preferência de layout, não algo que muda
  *  por partida. Rola internamente (overflowY) porque com tudo expandido não cabe numa tela baixa. */
-export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard, onToggleOpeningTraining, onToggleErrorTraining, onToggleReport, onGoHome, onAnalyzeClick, onMaintenanceClick, onTogglePositionEditor, trainingActive, boardActive, openingTrainingActive, errorTrainingActive, reportActive, positionEditorActive, searchActive }: SidebarProps) {
+export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard, onToggleOpeningTraining, onToggleErrorTraining, onToggleEndgameTraining, onToggleReport, onGoHome, onAnalyzeClick, onMaintenanceClick, onTogglePositionEditor, trainingActive, boardActive, openingTrainingActive, errorTrainingActive, endgameTrainingActive, reportActive, positionEditorActive, searchActive }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(() => {
     const saved = localStorage.getItem(COLLAPSED_KEY)
     // Sem preferência salva ainda: começa colapsada (só ícones) em telas estreitas, senão a
@@ -139,6 +141,7 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
         <NavItem icon={<TargetIcon width={22} height={22} />} label="Puzzles" active={trainingActive} onClick={onToggleTraining} collapsed={collapsed} />
         <NavItem icon={<BookNavIcon width={22} height={22} />} label="Treino de Aberturas" active={openingTrainingActive} onClick={onToggleOpeningTraining} collapsed={collapsed} />
         <NavItem icon={<ErrorTrainNavIcon width={22} height={22} />} label="Treino de Erros" active={errorTrainingActive} onClick={onToggleErrorTraining} collapsed={collapsed} />
+        <NavItem icon={<EndgameNavIcon width={22} height={22} />} label="Treino de Finais" active={endgameTrainingActive} onClick={onToggleEndgameTraining} collapsed={collapsed} />
         {TRAIN_PLACEHOLDERS.map((label) => (
           <NavItem key={label} icon={<WrenchIcon width={21} height={21} />} label={label} collapsed={collapsed} soon
             onClick={() => onMaintenanceClick(label)} />
