@@ -243,6 +243,15 @@ function AppInner() {
     goFirst()
   }, [goFirst])
 
+  // "Jogar a partir daqui" (Sprint 4, Revisão) — mesmo mecanismo que o Editor de Posição já usa
+  // (`onAnalyze` acima, linha ~315): guarda o FEN em `pendingBoardFen` e abre o Tabuleiro já
+  // nessa posição. Não precisa desligar os outros modos aqui porque a Revisão só é renderizada
+  // quando todos eles já estão desligados (ver condição de `boardMode` mais abaixo).
+  const handlePlayFromHere = useCallback((fen: string) => {
+    setPendingBoardFen(fen)
+    setBoardMode(true)
+  }, [])
+
   const flipBoard = useCallback(() => {
     setBoardOrientation((o) => (o === 'white' ? 'black' : 'white'))
   }, [])
@@ -367,6 +376,7 @@ function AppInner() {
               currentFen={currentFen}
               engineLines={engineLines}
               engineIsAnalyzing={engineIsAnalyzing}
+              onPlayFromHere={handlePlayFromHere}
             />
           </>
         )}
