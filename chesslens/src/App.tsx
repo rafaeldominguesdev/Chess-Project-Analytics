@@ -11,7 +11,9 @@ import { ReviewPanel } from './components/Review/ReviewPanel'
 import { SettingsPanel } from './components/Settings/SettingsPanel'
 import { TrainingView } from './components/Training/TrainingView'
 import { OpeningTrainerView } from './components/Training/OpeningTrainerView'
+import type { Side } from './hooks/useOpeningTrainer'
 import { ErrorTrainerView } from './components/Training/ErrorTrainerView'
+import type { MistakeReason } from './analysis/mistakeReasons'
 import { ReportView } from './components/Report/ReportView'
 import { AnalysisBoardView } from './components/Analysis/AnalysisBoardView'
 import { PositionEditorView } from './components/PositionEditor/PositionEditorView'
@@ -54,6 +56,12 @@ function AppInner() {
   // FEN vindo do editor de posição, aguardando o Tabuleiro montar já nessa posição — some (volta
   // pro padrão) assim que o Tabuleiro é aberto por qualquer outro caminho.
   const [pendingBoardFen, setPendingBoardFen] = useState<string | undefined>(undefined)
+  // Alvo vindo do Relatório do jogador ("treinar essa abertura agora") — família+lado aguardando
+  // o Treino de Aberturas montar já treinando essa linha. Mesmo esquema de `pendingBoardFen`:
+  // some assim que o modo é aberto por qualquer outro caminho (sidebar, sem alvo específico).
+  const [pendingOpeningTarget, setPendingOpeningTarget] = useState<{ familyKey: string; side: Side } | null>(null)
+  // Idem, pro Treino de Erros ("treinar isso agora" num vazamento específico).
+  const [pendingErrorReason, setPendingErrorReason] = useState<MistakeReason | null>(null)
   // Nome da função clicada num item de menu "em manutenção" (ver Sidebar) — null = fechado.
   const [maintenanceFeature, setMaintenanceFeature] = useState<string | null>(null)
   // Tela de "Analisar" (busca de jogador) — página própria, separada da Home, com prioridade
@@ -262,10 +270,10 @@ function AppInner() {
         onUpdates={() => setUpdatesOpen(true)}
         onToggleTraining={() => { setTrainingMode((v) => !v); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setReportMode(false); setPositionEditorMode(false); setSearchMode(false) }}
         onToggleBoard={() => { setBoardMode((v) => !v); setTrainingMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setReportMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setSearchMode(false) }}
-        onToggleOpeningTraining={() => { setOpeningTrainingMode((v) => !v); setTrainingMode(false); setBoardMode(false); setErrorTrainingMode(false); setReportMode(false); setPositionEditorMode(false); setSearchMode(false) }}
-        onToggleErrorTraining={() => { setErrorTrainingMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setReportMode(false); setPositionEditorMode(false); setSearchMode(false) }}
+        onToggleOpeningTraining={() => { setOpeningTrainingMode((v) => !v); setTrainingMode(false); setBoardMode(false); setErrorTrainingMode(false); setReportMode(false); setPositionEditorMode(false); setPendingOpeningTarget(null); setSearchMode(false) }}
+        onToggleErrorTraining={() => { setErrorTrainingMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setReportMode(false); setPositionEditorMode(false); setPendingErrorReason(null); setSearchMode(false) }}
         onToggleReport={() => { setReportMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setPositionEditorMode(false); setSearchMode(false) }}
-        onGoHome={() => { setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setReportMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setSearchMode(false); unloadGame(); setGameUrl(null) }}
+        onGoHome={() => { setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setReportMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setPendingOpeningTarget(null); setPendingErrorReason(null); setSearchMode(false); unloadGame(); setGameUrl(null) }}
         onAnalyzeClick={() => { unloadGame(); setGameUrl(null); openSearch() }}
         onMaintenanceClick={setMaintenanceFeature}
         onTogglePositionEditor={() => { setPositionEditorMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setReportMode(false); setSearchMode(false) }}
@@ -283,13 +291,21 @@ function AppInner() {
         {trainingMode ? (
           <TrainingView boardWidth={boardWidth} containerRef={containerRef} />
         ) : openingTrainingMode ? (
-          <OpeningTrainerView boardWidth={boardWidth} containerRef={containerRef} />
+          <OpeningTrainerView
+            boardWidth={boardWidth} containerRef={containerRef}
+            initialFamilyKey={pendingOpeningTarget?.familyKey}
+            initialSide={pendingOpeningTarget?.side}
+          />
         ) : errorTrainingMode ? (
-          <ErrorTrainerView boardWidth={boardWidth} containerRef={containerRef} onGoToAnalyze={() => { unloadGame(); setGameUrl(null); openSearch() }} />
+          <ErrorTrainerView
+            boardWidth={boardWidth} containerRef={containerRef}
+            onGoToAnalyze={() => { unloadGame(); setGameUrl(null); openSearch() }}
+            initialReasonFilter={pendingErrorReason ?? undefined}
+          />
         ) : reportMode ? (
           <ReportView
-            onGoToErrorTraining={() => { setReportMode(false); setErrorTrainingMode(true) }}
-            onGoToOpeningTraining={() => { setReportMode(false); setOpeningTrainingMode(true) }}
+            onGoToErrorTraining={(reason) => { setPendingErrorReason(reason); setReportMode(false); setErrorTrainingMode(true) }}
+            onGoToOpeningTraining={(familyKey, side) => { setPendingOpeningTarget({ familyKey, side }); setReportMode(false); setOpeningTrainingMode(true) }}
             onGoToAnalyze={() => { unloadGame(); setGameUrl(null); openSearch() }}
           />
         ) : positionEditorMode ? (

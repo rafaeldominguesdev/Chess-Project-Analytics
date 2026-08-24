@@ -72,14 +72,17 @@ function buildQueue(all: TrainingItem[], stats: Record<string, MasteryStats>): T
  * Placar de domínio por motivo no localStorage (mesma aproximação do Treino de Aberturas — média
  * móvel entre sessões, não repetição espaçada de verdade).
  */
-export function useErrorTrainer() {
+export function useErrorTrainer(initialReasonFilter?: MistakeReason) {
   const [status, setStatus] = useState<ErrorTrainerStatus>('loading')
   // Distingue "ainda não terminou o scan" (allItems=[] só porque nunca populou) de "terminou e
   // não achou nada" (allItems=[] de verdade) — sem isso, uma conta genuinamente vazia ficaria
   // presa em 'loading' pra sempre, já que os dois casos têm o mesmo `allItems.length === 0`.
   const [extracted, setExtracted] = useState(false)
   const [allItems, setAllItems] = useState<TrainingItem[]>([])
-  const [reasonFilter, setReasonFilter] = useState<MistakeReason | 'all'>('all')
+  // Deep-link vindo do Relatório do jogador (Sprint 3e, "treinar isso agora") — seed do filtro
+  // inicial. Diferente do `startLine` do Treino de Aberturas, não precisa de efeito: é só o
+  // valor inicial de um `useState`, sem side-effect nenhum atrelado a ele.
+  const [reasonFilter, setReasonFilter] = useState<MistakeReason | 'all'>(initialReasonFilter ?? 'all')
   const [stats, setStats] = useState<Record<string, MasteryStats>>(() => loadJsonRecord(ERROR_STATS_KEY))
   const [queueIndex, setQueueIndex] = useState(0)
   const [fen, setFen] = useState('')

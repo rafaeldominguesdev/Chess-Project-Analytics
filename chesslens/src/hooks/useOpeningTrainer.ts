@@ -55,7 +55,7 @@ interface TouchedLine { eco: string; name: string }
  * verdade — sem intervalo por enquanto — só um placar de domínio que pesa mais as sessões
  * recentes, usado pra ordenar/destacar o que precisa de mais prática na tela de escolha).
  */
-export function useOpeningTrainer() {
+export function useOpeningTrainer(initialFamilyKey?: string, initialSide?: Side) {
   const families = useMemo(() => getOpeningFamilies(), [])
   const [stats, setStats] = useState<Record<string, MasteryStats>>(() => loadJsonRecord(STATS_KEY))
   const [lineStats, setLineStats] = useState<Record<string, MasteryStats>>(() => loadJsonRecord(LINE_STATS_KEY))
@@ -253,6 +253,16 @@ export function useOpeningTrainer() {
 
     continueFrom(played.length)
   }, [families, continueFrom, recordNamedNode])
+
+  // Deep-link vindo do Relatório do jogador (Sprint 3e, "treinar essa linha agora") — dispara
+  // `startLine` uma vez ao montar quando um alvo já vem definido de fora, pulando a tela de
+  // escolha. Deps vazias de propósito: `initialFamilyKey`/`initialSide` só importam no valor que
+  // tinham quando a tela abriu, não devem re-disparar a linha se mudarem depois (não mudam, mas
+  // mesmo que mudassem não deveriam reiniciar o treino sozinhas).
+  useEffect(() => {
+    if (initialFamilyKey) startLine(initialFamilyKey, initialSide ?? 'white')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const nextLine = useCallback(() => {
     if (!familyKey) return

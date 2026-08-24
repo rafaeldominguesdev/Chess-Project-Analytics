@@ -13,6 +13,10 @@ import { CoachComment } from '../Review/CoachComment'
 interface OpeningTrainerViewProps {
   boardWidth: number
   containerRef: RefCallback<HTMLDivElement>
+  /** Deep-link vindo do Relatório do jogador (Sprint 3e) — quando preenchido, pula a tela de
+   *  escolha e já começa treinando essa família+lado. */
+  initialFamilyKey?: string
+  initialSide?: Side
 }
 
 function iconBase(props: SVGProps<SVGSVGElement>): SVGProps<SVGSVGElement> {
@@ -78,7 +82,7 @@ const STATUS_META: Record<string, { text: string; color: string }> = {
  * por família+lado persistido no localStorage (não é repetição espaçada de verdade, sem
  * intervalo — só prioriza visualmente o que precisa de mais prática).
  */
-export function OpeningTrainerView({ boardWidth, containerRef }: OpeningTrainerViewProps) {
+export function OpeningTrainerView({ boardWidth, containerRef, initialFamilyKey, initialSide }: OpeningTrainerViewProps) {
   const {
     families, stats, lineStats, family, side, status,
     fen, lastMove, touchedLines, isLive, viewIndex, totalPly,
@@ -86,7 +90,7 @@ export function OpeningTrainerView({ boardWidth, containerRef }: OpeningTrainerV
     engineEval, wrongClassifiedMove,
     startLine, nextLine, backToPicker, attemptMove, retry, showHint, showMoveHint,
     goFirst, goPrev, goNext, goLive,
-  } = useOpeningTrainer()
+  } = useOpeningTrainer(initialFamilyKey, initialSide)
 
   const [search, setSearch] = useState('')
 

@@ -12,6 +12,9 @@ interface ErrorTrainerViewProps {
   /** CTA da tela vazia ("Analisar uma partida") — mesmo callback que o item "Analisar" da
    *  sidebar já usa, sem precisar de lógica nova no App.tsx. */
   onGoToAnalyze: () => void
+  /** Deep-link vindo do Relatório do jogador (Sprint 3e, "treinar isso agora") — filtro inicial
+   *  da fila, pulando direto pro motivo que a pessoa clicou. */
+  initialReasonFilter?: MistakeReason
 }
 
 const REASON_FILTERS: (MistakeReason | 'all')[] = ['all', 'hanging_piece', 'missed_fork', 'pin', 'back_rank', 'generic']
@@ -71,12 +74,12 @@ function MoveArrowIcon(props: SVGProps<SVGSVGElement>) {
  * motivo de cada um (peça pendurada/garfo/cravada/back-rank/genérico) e treina um lance por vez
  * — mesmo layout de coluna central + painel lateral dos outros dois treinos (Puzzles/Aberturas).
  */
-export function ErrorTrainerView({ boardWidth, containerRef, onGoToAnalyze }: ErrorTrainerViewProps) {
+export function ErrorTrainerView({ boardWidth, containerRef, onGoToAnalyze, initialReasonFilter }: ErrorTrainerViewProps) {
   const {
     status, current, reason, fen, lastMove, wrongAttempts, hintStage, hintSquare, hintMove,
     reasonFilter, setReasonFilter, stats, totalInQueue,
     attemptMove, nextItem, retry, showReasonHint, showPieceHint, showMoveHint,
-  } = useErrorTrainer()
+  } = useErrorTrainer(initialReasonFilter)
 
   const [filterMenuOpen, setFilterMenuOpen] = useState(false)
   const meta = STATUS_META[status]

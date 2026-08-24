@@ -1,6 +1,8 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { useReportData } from '../../hooks/useReportData'
 import { masteryColor } from '../../analysis/masteryStats'
+import type { MistakeReason } from '../../analysis/mistakeReasons'
+import type { Side } from '../../hooks/useOpeningTrainer'
 import { AccuracyTrendChart } from './AccuracyTrendChart'
 
 // Mesmo recorte do rosto da capivara usado em `CoachComment.tsx` (a partir da hero image da
@@ -22,10 +24,10 @@ function capybaraAvatarStyle(size: number): CSSProperties {
 }
 
 interface ReportViewProps {
-  /** Navegação a partir do Relatório — por ora troca de modo sem alvo específico (a 3e adiciona
-   *  o deep-link real: motivo pré-filtrado no Treino de Erros, família+lado no Treino de Aberturas). */
-  onGoToErrorTraining: () => void
-  onGoToOpeningTraining: () => void
+  /** Leva pro Treino de Erros já filtrado por esse motivo ("treinar isso agora" num vazamento). */
+  onGoToErrorTraining: (reason: MistakeReason) => void
+  /** Leva pro Treino de Aberturas já treinando essa família+lado (clicar numa linha da tabela). */
+  onGoToOpeningTraining: (familyKey: string, side: Side) => void
   onGoToAnalyze: () => void
 }
 
@@ -95,7 +97,7 @@ export function ReportView({ onGoToErrorTraining, onGoToOpeningTraining, onGoToA
                           {leak.count} vez{leak.count === 1 ? '' : 'es'} · {leak.gamesAffected} partida{leak.gamesAffected === 1 ? '' : 's'}
                         </div>
                       </div>
-                      <button onClick={onGoToErrorTraining} className="cl-btn cl-btn-accent cl-btn-sm" style={{ width: 'auto', height: 'auto', padding: '7px 14px', fontSize: 12, alignSelf: 'flex-start' }}>
+                      <button onClick={() => onGoToErrorTraining(leak.reason)} className="cl-btn cl-btn-accent cl-btn-sm" style={{ width: 'auto', height: 'auto', padding: '7px 14px', fontSize: 12, alignSelf: 'flex-start' }}>
                         Treinar isso agora
                       </button>
                     </div>
@@ -145,7 +147,7 @@ export function ReportView({ onGoToErrorTraining, onGoToOpeningTraining, onGoToA
                   {openingPerformance.map((op) => (
                     <button
                       key={`${op.familyKey}|${op.side}`}
-                      onClick={onGoToOpeningTraining}
+                      onClick={() => onGoToOpeningTraining(op.familyKey, op.side === 'w' ? 'white' : 'black')}
                       className="cl-btn cl-btn-ghost"
                       style={{
                         justifyContent: 'space-between', width: '100%', height: 'auto',
