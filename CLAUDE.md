@@ -1,4 +1,4 @@
-# CLAUDE.md — ChessLens
+# CLAUDE.md — ChessCap
 
 Instruções operacionais pra trabalhar neste repositório. Escrito pra guiar o Claude Code (ou
 qualquer assistente) — não é o README (esse é voltado pra humanos, veja `chesslens/README.md`
@@ -6,7 +6,7 @@ e o `README.md` da raiz, que é o portfólio).
 
 ## O que é o projeto
 
-ChessLens é um analisador de partidas de xadrez: importa uma partida (chess.com/Lichess/PGN
+ChessCap é um analisador de partidas de xadrez: importa uma partida (chess.com/Lichess/PGN
 colado), roda o motor Stockfish real (WASM, num Web Worker, 100% no navegador — sem backend),
 classifica cada lance, mostra gráfico de avaliação, e tem modos de treino (aberturas, puzzles
 táticos) e um editor de posição. A mascote — uma capivara com lupa — é a imagem central da Home
@@ -31,7 +31,7 @@ corporativo com processo formal de aprovação.
   `depth`/`multiPv` como parâmetro de uma função existente é diferente de mexer no wrapper.
 - **Não copiar visualmente chess.com, Chessigma ou Lichess.** Princípios de UX podem inspirar
   (densidade de informação do motor, por exemplo), mas a paleta/tipografia/composição são
-  próprias do ChessLens — ver skill `chesslens-design`.
+  próprias do ChessCap — ver skill `chesslens-design`.
 - **Preservar dados, integrações e nomes de função existentes** ao refatorar, a menos que o
   usuário peça a mudança especificamente. Isso inclui os hooks de API (chess.com/Lichess), o
   formato dos dados salvos em `localStorage`, e o banco ECO/puzzles em `chesslens/src/data/`.

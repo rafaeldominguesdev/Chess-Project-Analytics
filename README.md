@@ -15,7 +15,7 @@ projeto aqui é uma oportunidade de praticar e evoluir.
 
 ## 📂 Projetos
 
-### ♟️ [ChessLens](./chesslens) — Analisador de partidas de xadrez
+### ♟️ [ChessCap](./chesslens) — Analisador de partidas de xadrez
 Um web app para importar, revisar e treinar partidas de xadrez, com análise do
 engine **Stockfish**, avaliação de cada lance, modos de treino e de jogo contra
 o computador.
