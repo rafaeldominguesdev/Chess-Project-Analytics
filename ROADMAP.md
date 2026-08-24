@@ -157,7 +157,10 @@ Um item por sessão do Claude Code, cada um em seu próprio commit:
       leitor de tela (`title` sozinho não é confiável em elemento não-interativo). `role="img"
       aria-label` no `MoveQualityBadge`/`SquareQualityMarker`, `aria-hidden` no ícone/símbolo
       interno pra não duplicar a leitura.
-- [ ] Retry inline na Revisão ("ache o lance melhor" antes de revelar).
+- [x] Retry inline na Revisão ("ache o lance melhor" antes de revelar) — **feito em 2026-08-24**.
+      Em mistake/miss/blunder ainda não visto, o tabuleiro mostra `fenBefore` e vira interativo; o
+      coach pede pra achar o lance melhor antes de revelar. Valida contra `bestMove` exato (não
+      "qualquer lance que preserva"). Botão "Revelar" sempre disponível.
 - [ ] Explicação em linguagem natural do erro, gerada a partir do motivo do Sprint 2b.
 - [ ] Export: PGN anotado com NAG + imagem da posição crítica.
 - [ ] PWA offline — coerente com o motor rodar no navegador.
