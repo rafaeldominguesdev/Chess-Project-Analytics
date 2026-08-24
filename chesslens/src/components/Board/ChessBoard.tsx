@@ -234,8 +234,16 @@ export function ChessBoard({
       }
     }
 
+    // Casas marcadas à mão (botão direito sem arrastar) — casa INTEIRA tingida de vermelho, não
+    // um anel vazado (pedido direto do usuário: "quero casa toda fique meio vermelhada porque
+    // circulizinho é feinho"). `color-mix` em vez de rgba literal pra continuar em cima do token
+    // de cor (`--color-error`), não um hex novo.
+    for (const sq of drawnSquares) {
+      styles[sq] = { ...styles[sq], backgroundColor: 'color-mix(in srgb, var(--color-error) 55%, transparent)' }
+    }
+
     return styles
-  }, [lastMove, theme.showLastMove, bt, currentQuality, hintSquare, selectedSquare, legalTargets, checkInfo, reducedMotion])
+  }, [lastMove, theme.showLastMove, bt, currentQuality, hintSquare, selectedSquare, legalTargets, checkInfo, reducedMotion, drawnSquares])
 
   const customPieces = useMemo(() => buildCustomPieces(theme.pieceSet), [theme.pieceSet])
 
@@ -405,9 +413,12 @@ export function ChessBoard({
   }
 
   // Botão direito segura numa casa e solta em outra → desenha a seta (some sozinha na próxima
-  // jogada). Soltar na MESMA casa (clique direito sem arrastar) → círculo/realce naquela casa
-  // (toggle) — mesmo comportamento do lichess/chess.com. Usa os callbacks `onSquareMouseDown/Up`
-  // da própria lib (dão a casa certinha, sem precisar calcular pixel↔casa na mão).
+  // jogada). Soltar na MESMA casa (clique direito sem arrastar) → marca a casa inteira de
+  // vermelho; clicar DE NOVO numa casa que já estava marcada limpa TODAS de uma vez (pedido
+  // direto do usuário — "quando clicar 2 vezes direito, desselecionar todas... pra ficar legal a
+  // mecânica") — diferente do toggle individual do lichess/chess.com, mas dá um jeito rápido de
+  // limpar tudo sem precisar clicar casa por casa. Usa os callbacks `onSquareMouseDown/Up` da
+  // própria lib (dão a casa certinha, sem precisar calcular pixel↔casa na mão).
   function handleSquareMouseDown({ square }: { square: string }, e: React.MouseEvent) {
     if (e.button !== 2) return
     dragStartSquareRef.current = square
@@ -418,7 +429,7 @@ export function ChessBoard({
     dragStartSquareRef.current = null
     if (!from) return
     if (to === from) {
-      setDrawnSquares((prev) => (prev.includes(to) ? prev.filter((s) => s !== to) : [...prev, to]))
+      setDrawnSquares((prev) => (prev.includes(to) ? [] : [...prev, to]))
       return
     }
     setDrawnArrows((prev) => {
@@ -579,37 +590,6 @@ export function ChessBoard({
             </div>
           )
         })()}
-
-        {/* Círculos/realces de casa desenhados à mão (botão direito sem arrastar) — anel vazado,
-            mesma cor das setas do usuário, embaixo delas (zIndex menor) já que setas costumam
-            terminar em cima de uma casa marcada. */}
-        {drawnSquares.length > 0 && (
-          <svg
-            width={boardWidth}
-            height={boardWidth}
-            style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', zIndex: 4 }}
-          >
-            {drawnSquares.map((sq) => {
-              const o = squareOrigin(sq, boardOrientation, squareSize)
-              // + boardInset: o quadriculado começa em (boardInset, 0) dentro do container quando
-              // o estilo "fora" está ativo (ver comentário de `boardInset` mais acima) — sem isso,
-              // o círculo desalinhava da casa real nesse modo.
-              const cx = o.left + boardInset + squareSize / 2
-              const cy = o.top + squareSize / 2
-              const r = squareSize / 2 - squareSize * 0.06
-              return (
-                <circle
-                  key={sq}
-                  cx={cx} cy={cy} r={r}
-                  fill="none"
-                  stroke={USER_ARROW_COLOR}
-                  strokeWidth={squareSize * 0.07}
-                  opacity={0.85}
-                />
-              )
-            })}
-          </svg>
-        )}
 
         {/* Setas "à mão" (topMoveArrows/extraArrows/desenhadas pelo usuário) — ver `customArrows`. */}
         {customArrows.length > 0 && (
