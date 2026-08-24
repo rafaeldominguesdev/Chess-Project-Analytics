@@ -132,20 +132,3 @@ export function ChevronIcon(props: IconProps) {
   )
 }
 
-/** Logo do site: a capivara mascote (a mesma de `hero-capybara.png` na Home) coroada — pedido
- *  direto do usuário: "procure a logo do site pra fazer muito legal, tipo um rei com uma
- *  capivara". Era um peão genérico antes; a capivara já é a mascote estabelecida do app (Home,
- *  avatar do "coach" na Revisão), então virar a peça de rei dela é mais ownable que qualquer
- *  peça de xadrez genérica. Cabeça larga e focinho robusto (proporção característica da capivara,
- *  não um focinho fino de outro roedor) + orelhinhas pequenas arredondadas, coroa de 3 pontas
- *  encaixada por cima. Silhueta única (mesmo estilo do ícone antigo — sem contorno, só preenchida). */
-export function BrandMarkIcon(props: IconProps) {
-  return (
-    <svg {...base(props)} fill="currentColor" stroke="none">
-      <path d="M7 11.4 7.9 6.1 10.3 8.6 12 5.2 13.7 8.6 16.1 6.1 17 11.4Z" />
-      <circle cx="6.1" cy="12.6" r="1.65" />
-      <circle cx="17.9" cy="12.6" r="1.65" />
-      <ellipse cx="12" cy="16.9" rx="6.6" ry="5.1" />
-    </svg>
-  )
-}

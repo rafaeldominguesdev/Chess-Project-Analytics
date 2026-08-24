@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { AnalyzeNavIcon, BoardNavIcon, BookNavIcon, BrandMarkIcon, ChevronIcon, ErrorTrainNavIcon, GearIcon, PositionSetupIcon, ReportNavIcon, SunNavIcon, TargetIcon, WrenchIcon } from './icons'
+import { AnalyzeNavIcon, BoardNavIcon, BookNavIcon, ChevronIcon, ErrorTrainNavIcon, GearIcon, PositionSetupIcon, ReportNavIcon, SunNavIcon, TargetIcon, WrenchIcon } from './icons'
 
 interface SidebarProps {
   onSettings: () => void
@@ -109,9 +109,15 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
               padding: '0 4px',
             }}
           >
-            <span style={{ color: 'var(--color-blue-bright)', display: 'flex', flexShrink: 0 }}>
-              <BrandMarkIcon width={27} height={27} />
-            </span>
+            {/* Logo oficial do site (mesma imagem do favicon, `public/logo.png`) — substitui o
+                ícone vetorial genérico que tinha aqui antes, a pedido direto do usuário. */}
+            <img
+              src="/logo.png"
+              alt=""
+              width={27}
+              height={27}
+              style={{ borderRadius: 6, flexShrink: 0, display: 'block' }}
+            />
             <span className="cl-display" style={{ fontSize: 15.5, fontWeight: 800, color: 'var(--color-text-on-dark)', whiteSpace: 'nowrap' }}>ChessLens</span>
           </button>
         )}
