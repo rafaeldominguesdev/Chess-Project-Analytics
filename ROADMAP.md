@@ -146,9 +146,12 @@ Um item por sessão do Claude Code, cada um em seu próprio commit:
       Revisão/Home), funciona mesmo com as setas desligadas. `Espaço` (play/pause do autoplay)
       ficou de fora — o estado `isPlaying` é local a `BoardControls.tsx`, precisa de um refactor
       pequeno pra expor ao teclado; registrado como pendência.
-- [ ] Setas/círculos com botão direito + seta do melhor lance e da ameaça — setas desenhadas à
-      mão já existem (`ChessBoard.tsx`); confirmar se "seta da ameaça" (não só do melhor lance)
-      já está coberta.
+- [x] Setas/círculos com botão direito — **feito em 2026-08-24**. Setas (arrastar) já existiam;
+      círculo de casa (clique direito sem arrastar, toggle) era o que faltava — antes só limpava
+      tudo. Auditoria confirmou que "seta da ameaça" NÃO está coberta: o que existe é só a seta do
+      melhor lance (vermelha quando o lance jogado foi ruim), não uma ameaça de verdade do
+      adversário — isso precisaria de uma 2ª instância do Stockfish (análise "null move"), fora do
+      escopo de um item de polimento; fica como pendência separada.
 - [x] Ícone + rótulo textual nas classificações (acessibilidade — hoje é só cor) — **feito em
       2026-08-24**. Já tinha ícone por classificação; faltava nome acessível de verdade pra
       leitor de tela (`title` sozinho não é confiável em elemento não-interativo). `role="img"
