@@ -270,7 +270,32 @@ export function ChessBoard({
   const evalCp = lastEvalRef.current.cp
   const evalMate = lastEvalRef.current.mate
 
-  const squareSize = boardWidth / 8
+  // Estilo "fora": mantém o footprint EXTERNO do componente (boardWidth x boardWidth, o <div>
+  // mais externo abaixo) idêntico nos dois estilos — nenhum consumidor de `boardWidth`/
+  // `BOARD_ROW_CHROME_WIDTH` precisa mudar. Em vez de crescer o componente, ENCOLHE o
+  // quadriculado (as 8x8 casas de verdade) por dentro desse mesmo footprint, abrindo uma margem
+  // (`boardInset`, usada como largura da trilha à esquerda E altura da trilha embaixo) — mesmo
+  // canto onde a notação "dentro" já ficava, só que fora do quadriculado. Todo overlay abaixo que
+  // posiciona algo em absoluto a partir do CONTAINER externo (setas, marcador de qualidade,
+  // xeque-mate, seletor de promoção) soma `boardInset` no `.left` devolvido por `squareOrigin`
+  // (que é sempre relativo ao quadriculado, começando em (boardInset, 0) dentro do container
+  // quando a margem está aberta), senão desalinha da casa real com o estilo "fora" ativo.
+  const coordinatesOutside = theme.showCoordinates && theme.coordinatesOutside
+  const boardInset = coordinatesOutside ? Math.round(Math.min(34, Math.max(20, boardWidth * 0.055))) : 0
+  const squareSize = (boardWidth - boardInset) / 8
+
+  // Ordem dos rótulos da trilha externa (números 1-8 à esquerda, letras a-h embaixo) — mesma
+  // lógica de flip por `boardOrientation` que `squareOrigin` já usa pra virar o tabuleiro.
+  const numberLabels = useMemo(
+    () => Array.from({ length: 8 }, (_, row) => (boardOrientation === 'white' ? 8 - row : row + 1)),
+    [boardOrientation],
+  )
+  const fileLabels = useMemo(
+    () => Array.from({ length: 8 }, (_, col) => (boardOrientation === 'white' ? FILES[col] : FILES[7 - col])),
+    [boardOrientation],
+  )
+  const railFontSize = Math.round(Math.min(16, Math.max(10, boardInset * 0.48)))
+
   // Tamanho da fonte da notação (a-h/1-8) escala com a casa — o padrão da lib é um
   // 13px fixo, que fica minúsculo num tabuleiro grande.
   const notationFontSize = Math.round(Math.min(30, Math.max(18, squareSize * 0.23)))
@@ -283,13 +308,15 @@ export function ChessBoard({
 
   const qualityMarkerOrigin = useMemo(() => {
     if (!currentQuality || !lastMove) return null
-    return squareOrigin(lastMove.to, boardOrientation, squareSize)
-  }, [currentQuality, lastMove, boardOrientation, squareSize])
+    const o = squareOrigin(lastMove.to, boardOrientation, squareSize)
+    return { left: o.left + boardInset, top: o.top }
+  }, [currentQuality, lastMove, boardOrientation, squareSize, boardInset])
 
   const checkmateOrigin = useMemo(() => {
     if (!checkInfo?.isMate) return null
-    return squareOrigin(checkInfo.square, boardOrientation, squareSize)
-  }, [checkInfo, boardOrientation, squareSize])
+    const o = squareOrigin(checkInfo.square, boardOrientation, squareSize)
+    return { left: o.left + boardInset, top: o.top }
+  }, [checkInfo, boardOrientation, squareSize, boardInset])
 
   // Junta as três fontes de seta num só array antes de calcular a geometria: as sugestões do
   // engine (`topMoveArrows`, prop), as de contexto (`extraArrows` — sugestão/dica dos treinos) e
@@ -328,7 +355,7 @@ export function ChessBoard({
 
     const center = (square: string) => {
       const o = squareOrigin(square, boardOrientation, squareSize)
-      return { x: o.left + squareSize / 2, y: o.top + squareSize / 2 }
+      return { x: o.left + boardInset + squareSize / 2, y: o.top + squareSize / 2 }
     }
 
     return arrowSpecs.map((a, i) => {
@@ -362,7 +389,7 @@ export function ChessBoard({
         opacity: a.opacity ?? 0.85,
       }
     })
-  }, [arrowSpecs, boardOrientation, squareSize])
+  }, [arrowSpecs, boardOrientation, squareSize, boardInset])
 
   // Clicar numa peça seleciona (mostra as bolinhas); clicar numa casa de destino legal já
   // destacada joga o lance ali; qualquer outro clique cancela a seleção. Começar a arrastar
@@ -415,7 +442,8 @@ export function ChessBoard({
           <div
             aria-hidden
             style={{
-              position: 'absolute', inset: 0, borderRadius: '4px', overflow: 'hidden',
+              position: 'absolute', left: boardInset, top: 0, borderRadius: '4px', overflow: 'hidden',
+              width: boardWidth - boardInset, height: boardWidth - boardInset,
               backgroundImage: `url(${bt.image})`, backgroundSize: '100% 100%',
             }}
           />
@@ -429,10 +457,13 @@ export function ChessBoard({
             arrows: topMoveArrows ? [] : arrowsOption,
             boardOrientation,
             boardStyle: {
+              position: 'absolute',
+              left: boardInset,
+              top: 0,
               borderRadius: '4px',
               boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
-              width: boardWidth,
-              height: boardWidth,
+              width: boardWidth - boardInset,
+              height: boardWidth - boardInset,
             },
             darkSquareStyle: { backgroundColor: bt.image ? 'transparent' : bt.dark },
             lightSquareStyle: { backgroundColor: bt.image ? 'transparent' : bt.light },
@@ -442,7 +473,9 @@ export function ChessBoard({
             numericNotationStyle: notationStyles.numeric,
             allowDragging: interactive,
             allowDrawingArrows: false,
-            showNotation: theme.showCoordinates,
+            // Estilo "fora": a lib não desenha nada dentro da casa — a trilha de números/letras
+            // ao redor do quadriculado é desenhada à mão logo abaixo (ver `coordinatesOutside`).
+            showNotation: theme.showCoordinates && !coordinatesOutside,
             animationDurationInMs: ANIMATION_MS[theme.animationSpeed] ?? 150,
             pieces: customPieces,
             // Setas manuais (botão direito arrastando) — independente de `interactive`, dá pra
@@ -457,11 +490,54 @@ export function ChessBoard({
           }}
         />
 
+        {/* Trilha de notação "fora das casas" (números 1-8 à esquerda, letras a-h embaixo) —
+            desenhada à mão na margem aberta por `boardInset`, alinhada ao centro de cada
+            linha/coluna do quadriculado real (mesmo `squareSize` dos overlays acima). */}
+        {coordinatesOutside && (
+          <>
+            <div
+              aria-hidden
+              style={{ position: 'absolute', left: 0, top: 0, width: boardInset, height: boardWidth - boardInset, pointerEvents: 'none' }}
+            >
+              {numberLabels.map((rank, row) => (
+                <div
+                  key={rank}
+                  style={{
+                    position: 'absolute', left: 0, top: row * squareSize, width: boardInset, height: squareSize,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: railFontSize, fontWeight: 700, color: 'var(--color-gray-muted)', userSelect: 'none',
+                  }}
+                >
+                  {rank}
+                </div>
+              ))}
+            </div>
+            <div
+              aria-hidden
+              style={{ position: 'absolute', left: boardInset, top: boardWidth - boardInset, width: boardWidth - boardInset, height: boardInset, pointerEvents: 'none' }}
+            >
+              {fileLabels.map((file, col) => (
+                <div
+                  key={file}
+                  style={{
+                    position: 'absolute', left: col * squareSize, top: 0, width: squareSize, height: boardInset,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: railFontSize, fontWeight: 700, color: 'var(--color-gray-muted)', userSelect: 'none',
+                  }}
+                >
+                  {file}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
         {/* Seletor de peça de promoção — some ao escolher, ao clicar fora ou com Esc (cancela o
             lance nos três casos). Foco vai pra 1ª opção ao abrir (ver efeito acima) e Tab circula
             só entre as 4 opções, já que são as únicas coisas interativas dentro do diálogo. */}
         {pendingPromotion && (() => {
-          const origin = squareOrigin(pendingPromotion.to, boardOrientation, squareSize)
+          const o = squareOrigin(pendingPromotion.to, boardOrientation, squareSize)
+          const origin = { left: o.left + boardInset, top: o.top }
           const goingDown = origin.top === 0
           return (
             <div

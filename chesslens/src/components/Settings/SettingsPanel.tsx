@@ -85,7 +85,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
   const {
     theme,
     setBoardTheme, setPieceSet,
-    setShowCoordinates, setShowArrows, setShowLegalMoves, setShowLastMove,
+    setShowCoordinates, setCoordinatesOutside, setShowArrows, setShowLegalMoves, setShowLastMove,
     setBoardSize, setAnimationSpeed, setSoundEnabled, setSoundTheme,
   } = useTheme()
   const [category, setCategory] = useState<CategoryId>('board')
@@ -310,6 +310,13 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
             {active?.id === 'appearance' && (
               <Section label="Destaques no tabuleiro">
                 <Toggle label="Mostrar coordenadas" description="Letras e números nas bordas" checked={theme.showCoordinates} onChange={setShowCoordinates} />
+                <Toggle
+                  label="Notação fora das casas"
+                  description="Números e letras numa margem ao redor do tabuleiro, em vez de dentro das casas"
+                  checked={theme.coordinatesOutside}
+                  onChange={setCoordinatesOutside}
+                  disabled={!theme.showCoordinates}
+                />
                 <Toggle label="Última jogada" description="Destaca as casas de origem e destino" checked={theme.showLastMove} onChange={setShowLastMove} />
                 <Toggle label="Setas de análise" description="Melhor lance do Stockfish" checked={theme.showArrows} onChange={setShowArrows} />
                 <Toggle label="Lances legais" description="Highlight ao clicar numa peça" checked={theme.showLegalMoves} onChange={setShowLegalMoves} />
@@ -545,16 +552,17 @@ function SizeButton({ label, isSelected, onClick }: { label: string; isSelected:
   )
 }
 
-function Toggle({ label, description, checked, onChange }: { label: string; description: string; checked: boolean; onChange: (v: boolean) => void }) {
+function Toggle({ label, description, checked, onChange, disabled }: { label: string; description: string; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
     <div
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '11px 10px', margin: '0 -10px', borderRadius: 'var(--radius-sm)',
-        cursor: 'pointer', transition: 'background var(--dur-tap) var(--ease-tap)',
+        cursor: disabled ? 'default' : 'pointer', transition: 'background var(--dur-tap) var(--ease-tap)',
+        opacity: disabled ? 0.5 : 1,
       }}
-      onClick={() => onChange(!checked)}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--color-bg-panel)' }}
+      onClick={() => { if (!disabled) onChange(!checked) }}
+      onMouseEnter={(e) => { if (!disabled) (e.currentTarget as HTMLElement).style.background = 'var(--color-bg-panel)' }}
       onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
     >
       <div>

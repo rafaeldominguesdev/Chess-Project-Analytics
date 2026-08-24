@@ -13,6 +13,7 @@ const DEFAULT_THEME: ThemeConfig = {
   pieceSet: 'dubrovny-noir',
   uiTheme: 'amber-noir',
   showCoordinates: true,
+  coordinatesOutside: false,
   showLegalMoves: true,
   showLastMove: true,
   showArrows: true,
@@ -38,6 +39,7 @@ interface ThemeContextValue {
   setPieceSet: (t: PieceSetName) => void
   setUITheme: (t: UIThemeName) => void
   setShowCoordinates: (v: boolean) => void
+  setCoordinatesOutside: (v: boolean) => void
   setShowLegalMoves: (v: boolean) => void
   setShowLastMove: (v: boolean) => void
   setShowArrows: (v: boolean) => void
@@ -113,6 +115,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setPieceSet: (t) => update({ pieceSet: t }),
       setUITheme: (t) => update({ uiTheme: t }),
       setShowCoordinates: (v) => update({ showCoordinates: v }),
+      setCoordinatesOutside: (v) => update({ coordinatesOutside: v }),
       setShowLegalMoves: (v) => update({ showLegalMoves: v }),
       setShowLastMove: (v) => update({ showLastMove: v }),
       setShowArrows: (v) => update({ showArrows: v }),
