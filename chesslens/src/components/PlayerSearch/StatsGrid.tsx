@@ -6,16 +6,16 @@ export const TIME_CLASS_META: Record<string, { label: string; icon: typeof Bulle
   chess_bullet: { label: 'Bullet', icon: BulletTimeIcon, accent: '#E3AA24' },
   chess_blitz: { label: 'Blitz', icon: BlitzTimeIcon, accent: '#F0B429' },
   chess_rapid: { label: 'Rápida', icon: RapidTimeIcon, accent: '#4CAF50' },
-  chess_daily: { label: 'Daily', icon: DailyTimeIcon, accent: '#6BBF7B' },
+  chess_daily: { label: 'Daily', icon: DailyTimeIcon, accent: '#F5D742' },
   chess960_daily: { label: 'Chess960', icon: VariantTimeIcon, accent: '#B08CE0' },
   chess_daily960: { label: 'Chess960', icon: VariantTimeIcon, accent: '#B08CE0' },
   // Chaves "cruas" (speed do Lichess) — mesmos ícones, pra RecentGames reconhecer partidas de lá também.
   bullet: { label: 'Bullet', icon: BulletTimeIcon, accent: '#E3AA24' },
   blitz: { label: 'Blitz', icon: BlitzTimeIcon, accent: '#F0B429' },
   rapid: { label: 'Rápida', icon: RapidTimeIcon, accent: '#4CAF50' },
-  daily: { label: 'Daily', icon: DailyTimeIcon, accent: '#6BBF7B' },
+  daily: { label: 'Daily', icon: DailyTimeIcon, accent: '#F5D742' },
   classical: { label: 'Clássica', icon: RapidTimeIcon, accent: '#4CAF50' },
-  correspondence: { label: 'Correspondência', icon: DailyTimeIcon, accent: '#6BBF7B' },
+  correspondence: { label: 'Correspondência', icon: DailyTimeIcon, accent: '#F5D742' },
   ultraBullet: { label: 'Ultra Bullet', icon: BulletTimeIcon, accent: '#E3AA24' },
 }
 
