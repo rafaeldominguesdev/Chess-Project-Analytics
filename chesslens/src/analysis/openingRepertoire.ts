@@ -192,6 +192,17 @@ export function pickBestChild(node: OpeningNode): OpeningNode | null {
   return best
 }
 
+/**
+ * Acha a `OpeningFamily` de um nome de abertura vindo de `openingsDatabase.ts`/`identifyOpening()`
+ * (ex: `"Sicilian Defense: Najdorf Variation"`) — usado pelo Relatório do jogador (Sprint 3) pra
+ * agrupar desempenho por família e linkar de volta pro Treino de Aberturas daquela linha. Mesma
+ * convenção de chave usada em `getOpeningFamilies()`: tudo antes do primeiro `:`.
+ */
+export function findFamilyForOpening(openingName: string): OpeningFamily | null {
+  const key = openingName.split(':')[0].trim()
+  return getOpeningFamilies().find((f) => f.key === key) ?? null
+}
+
 /** FEN da posição depois dos lances-raiz de uma família — usado pra mostrar a miniatura do
  *  tabuleiro na lista de escolha do Treino de Aberturas. */
 export function getFamilyRootFen(family: OpeningFamily): string {

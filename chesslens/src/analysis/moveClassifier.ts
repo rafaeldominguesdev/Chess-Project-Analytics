@@ -151,6 +151,18 @@ function moveAccuracy(winDrop: number): number {
 }
 
 /**
+ * Precisão de UM lance isolado (0-100) — mesma fórmula usada por `calcAccuracy` internamente,
+ * exposta à parte porque o Relatório do jogador (Sprint 3) precisa agregar precisão por fase/
+ * abertura/tendência lance a lance, não só por partida inteira.
+ */
+export function moveAccuracyScore(evalBefore: number, evalAfter: number, color: 'w' | 'b'): number {
+  const before = color === 'w' ? evalBefore : -evalBefore
+  const after = color === 'w' ? evalAfter : -evalAfter
+  const winDrop = Math.max(0, winPercent(before) - winPercent(after)) * CALIBRATION_MULTIPLIER
+  return moveAccuracy(winDrop)
+}
+
+/**
  * Precisão da partida pra um lado. Não é mais uma média de "pesos fixos por categoria" (ex: todo
  * lance "Excelente" valia 100, todo "Erro" valia 40, sem distinguir um erro de 25 de chance de
  * vitória de um de 45) — motivado por calibração real do usuário: uma partida do Magnus Carlsen
@@ -172,12 +184,7 @@ export function calcAccuracy(
 ): number {
   const own = moves.filter((m) => m.color === color && m.evalBefore !== null && m.evalAfter !== null)
   if (own.length === 0) return 100
-  const perMove = own.map((m) => {
-    const before = color === 'w' ? m.evalBefore! : -m.evalBefore!
-    const after = color === 'w' ? m.evalAfter! : -m.evalAfter!
-    const winDrop = Math.max(0, winPercent(before) - winPercent(after)) * CALIBRATION_MULTIPLIER
-    return moveAccuracy(winDrop)
-  })
+  const perMove = own.map((m) => moveAccuracyScore(m.evalBefore!, m.evalAfter!, color))
   const arithmeticMean = perMove.reduce((a, b) => a + b, 0) / perMove.length
   // Math.max(1, a) no denominador só evita divisão por zero num lance de precisão exatamente 0.
   const harmonicMean = perMove.length / perMove.reduce((acc, a) => acc + 1 / Math.max(1, a), 0)
