@@ -280,6 +280,13 @@ interface ReviewPanelProps {
    *  mecanismo que o Editor de Posição já usa (`pendingBoardFen` em App.tsx). Opcional só pra não
    *  quebrar quem já usa `ReviewPanel` sem essa ação. */
   onPlayFromHere?: (fen: string) => void
+  /** Retry inline (Sprint 5): true quando o lance atual é mistake/miss/blunder e ainda não foi
+   *  revelado/resolvido — o tabuleiro central (fora deste painel, em App.tsx) já está mostrando
+   *  `fenBefore` e interativo; aqui só controla o que o `CoachComment` mostra (desafio vs.
+   *  comentário) e o botão de revelar. */
+  retryActive?: boolean
+  retryWrongAttempts?: number
+  onRetryReveal?: () => void
 }
 
 export function ReviewPanel({
@@ -288,6 +295,7 @@ export function ReviewPanel({
   whiteAvatar, blackAvatar, onStartReview,
   isLoaded, onFirst, onPrev, onNext, onLast, onFlipBoard,
   currentFen, engineLines, engineIsAnalyzing, onPlayFromHere,
+  retryActive, retryWrongAttempts, onRetryReveal,
 }: ReviewPanelProps) {
   const whiteName = gameInfo?.white ?? 'Brancas'
   const blackName = gameInfo?.black ?? 'Pretas'
@@ -358,7 +366,10 @@ export function ReviewPanel({
           <div key="review" className="cl-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {/* Tela de revisão: comentário do coach + motor + gráfico + lances com avaliação por lance */}
             <div className="cl-row-in" style={{ animationDelay: '10ms' }}>
-              <CoachComment move={currentMoveIndex >= 0 ? moves[currentMoveIndex] ?? null : null} />
+              <CoachComment
+                move={currentMoveIndex >= 0 ? moves[currentMoveIndex] ?? null : null}
+                retry={retryActive ? { wrongAttempts: retryWrongAttempts ?? 0, onReveal: onRetryReveal ?? (() => {}) } : null}
+              />
             </div>
 
             <div className="cl-row-in" style={{ animationDelay: '25ms' }}>

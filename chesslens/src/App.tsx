@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { Chess } from 'chess.js'
 import './index.css'
 import { ThemeProvider, useTheme } from './contexts/ThemeContext'
 import { useChessGame } from './hooks/useChessGame'
@@ -83,6 +84,12 @@ function AppInner() {
   // enquanto o Stockfish analisa em segundo plano) ou a lista de lances com avaliação por lance.
   // A análise em si roda sempre em segundo plano, independente desse flag.
   const [reviewStarted, setReviewStarted] = useState(false)
+  // Retry inline (Sprint 5) — índices de lance onde a pessoa já resolveu (ou clicou "Revelar") o
+  // desafio "ache o lance melhor", pra não pedir de novo se ela voltar num lance que já viu. Um
+  // `Set` porque a navegação entre lances é livre (não sequencial) — qualquer índice pode já ter
+  // sido revelado antes de outro mais adiante.
+  const [retryRevealed, setRetryRevealed] = useState<Set<number>>(new Set())
+  const [retryWrongAttempts, setRetryWrongAttempts] = useState(0)
 
   const {
     currentFen, currentMoveIndex, moves, fens, gameInfo, isLoaded,
@@ -115,7 +122,7 @@ function AppInner() {
   // `RecentGames.tsx`) — salvo junto com a partida pro Relatório do jogador (Sprint 3) saber de
   // quem são as estatísticas sem precisar adivinhar pelo nome depois.
   const [gamePerspectiveColor, setGamePerspectiveColor] = useState<'w' | 'b' | undefined>(undefined)
-  const { playForSan } = useMoveSound()
+  const { playForSan, play } = useMoveSound()
 
   // Som de lance ao navegar entre posições (review).
   const prevMoveIndexRef = useRef(currentMoveIndex)
@@ -291,6 +298,55 @@ function AppInner() {
   const turn = currentFen.split(' ')[1] === 'b' ? 'black' : 'white'
   const currentQuality = currentMoveIndex >= 0 ? moves[currentMoveIndex]?.classification ?? null : null
 
+  // Retry inline (Sprint 5, Revisão): "ache o lance melhor" antes do coach revelar o comentário —
+  // só faz sentido pra classificações onde havia claramente algo melhor pra jogar (mistake/miss/
+  // blunder; não inaccuracy, que é mais discutível, nem as boas, que não têm o que "achar").
+  // Enquanto ativo, o tabuleiro central mostra `fenBefore` (a posição ANTES do lance ruim, não o
+  // resultado dele) e vira interativo — ver `handleRetryAttempt`/JSX do tabuleiro mais abaixo.
+  const currentClassifiedMove = currentMoveIndex >= 0 ? moves[currentMoveIndex] ?? null : null
+  const isRetryCandidate = !!currentClassifiedMove && (
+    currentClassifiedMove.classification === 'mistake'
+    || currentClassifiedMove.classification === 'miss'
+    || currentClassifiedMove.classification === 'blunder'
+  )
+  const isRetryActive = reviewStarted && isRetryCandidate && !retryRevealed.has(currentMoveIndex)
+
+  // Zera as tentativas erradas ao trocar de lance (não faz sentido "carregar" o contador de um
+  // lance pro outro) — não zera `retryRevealed` aqui, isso só reseta numa partida nova (abaixo).
+  useEffect(() => { setRetryWrongAttempts(0) }, [currentMoveIndex])
+  // Partida nova (troca de `gameUrl`) — desafios revelados são por partida, não devem "vazar"
+  // pra próxima partida carregada.
+  useEffect(() => { setRetryRevealed(new Set()); setRetryWrongAttempts(0) }, [gameUrl])
+
+  const handleRetryReveal = useCallback(() => {
+    setRetryRevealed((prev) => new Set(prev).add(currentMoveIndex))
+  }, [currentMoveIndex])
+
+  // Tentativa de lance no desafio de retry — compara contra `bestMove` (UCI) já calculado na
+  // classificação da partida, não faz busca nova no motor. Só aceita o ÚNICO melhor lance (não
+  // "qualquer lance que preserva o resultado", diferente do Treino de Finais) — aqui é sobre
+  // achar EXATAMENTE o que o motor consideraria melhor, igual o recurso equivalente do chess.com.
+  const handleRetryAttempt = useCallback(({ sourceSquare, targetSquare, promotion }: { sourceSquare: string; targetSquare: string | null; promotion?: string }): boolean => {
+    if (!targetSquare || !currentClassifiedMove) return false
+    const chess = new Chess(currentClassifiedMove.fenBefore)
+    let result: ReturnType<Chess['move']>
+    try {
+      result = chess.move({ from: sourceSquare, to: targetSquare, promotion: promotion ?? 'q' })
+    } catch {
+      return false // lance ilegal — o tabuleiro volta a peça sozinho
+    }
+    const playedUci = result.from + result.to + (result.promotion ?? '')
+    const isCorrect = !!currentClassifiedMove.bestMove && playedUci === currentClassifiedMove.bestMove
+    if (isCorrect) {
+      playForSan(result.san)
+      setRetryRevealed((prev) => new Set(prev).add(currentMoveIndex))
+      return true
+    }
+    setRetryWrongAttempts((n) => n + 1)
+    play('error')
+    return false
+  }, [currentClassifiedMove, currentMoveIndex, playForSan, play])
+
   // Relógio de cada lado na posição atual da revisão — o último lance DESSA cor até aqui, direto
   // do PGN (`{[%clk ...]}`). `null` antes do primeiro lance daquela cor, ou se o PGN não tinha
   // esse dado (partida sem controle de tempo, ou fonte que não anota relógio).
@@ -381,9 +437,13 @@ function AppInner() {
                 )}
               </div>
               <ChessBoard
-                fen={currentFen} lastMove={lastMove} evaluation={evaluation} boardWidth={boardWidth}
-                currentQuality={currentQuality}
+                fen={isRetryActive ? currentClassifiedMove!.fenBefore : currentFen}
+                lastMove={isRetryActive ? null : lastMove}
+                evaluation={evaluation} boardWidth={boardWidth}
+                currentQuality={isRetryActive ? null : currentQuality}
                 boardOrientation={boardOrientation}
+                interactive={isRetryActive}
+                onPieceDrop={isRetryActive ? handleRetryAttempt : undefined}
               />
               <div style={{ width: boardWidth + BOARD_ROW_CHROME_WIDTH }}>
                 {boardOrientation === 'white' ? (
@@ -416,6 +476,9 @@ function AppInner() {
               engineLines={engineLines}
               engineIsAnalyzing={engineIsAnalyzing}
               onPlayFromHere={handlePlayFromHere}
+              retryActive={isRetryActive}
+              retryWrongAttempts={retryWrongAttempts}
+              onRetryReveal={handleRetryReveal}
             />
           </>
         )}
