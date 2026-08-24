@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -50,13 +50,19 @@
   --board-highlight: #E8A93C;
   --board-highlight-dark: #C68A22;
 
-  /* Tipografia (trocada a pedido direto do usuário, "quero uma tipografia legal pro site" — era
-     Onest/Syne/Spline Sans Mono): interface geral (Inter, o padrão de fato pra UI limpa e bem
-     legível em qualquer tamanho), destaque/título (Space Grotesk, geométrica e mais marcante,
-     boa presença em título grande sem ficar "gritando"), dados numéricos (JetBrains Mono, ótimos
-     numerais tabulares — feita pra código/dados, não "dança" de largura ao trocar dígito). */
-  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  /* Tipografia (2ª troca, pedido direto do usuário: "quero troque a fonte do site, deixa algo
+     melhor, chamativo, confortável, mas sem nada exuberante" — Inter/Space Grotesk tinham virado
+     a escolha "segura" demais de qualquer produto de tech, sem personalidade própria). Interface
+     geral (Manrope: geométrica com terminações levemente arredondadas, x-height alto — sensação
+     mais quente/confortável que Inter em texto denso — labels, blurbs, painel de análise — sem
+     perder neutralidade em corpo de texto longo), destaque/título (Bricolage Grotesque: grotesca
+     variável com personalidade real — curvas ligeiramente irregulares nos traços, presença forte
+     em título grande e na marca "ChessCap" — sem cair pro lado decorativo/serifado que fugiria
+     do tom sério de um analisador de motor), dados numéricos (JetBrains Mono mantido — já era uma
+     escolha sólida pro papel, ótimos numerais tabulares, não "dança" de largura ao trocar dígito,
+     trocar só por trocar não agregaria). */
+  --font-body: 'Manrope', system-ui, -apple-system, sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Manrope', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
 
   /* Raios — cantos discretos, estilo tecla física (menos arredondado que antes) */
