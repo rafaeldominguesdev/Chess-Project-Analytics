@@ -113,8 +113,8 @@ export function ErrorTrainNavIcon(props: IconProps) {
 }
 
 /** Coroa de rei simplificada — Treino de Finais (poucas peças no tabuleiro, o rei vira
- *  protagonista). Diferente da capivara coroada de `BrandMarkIcon` (marca do site inteiro) — aqui
- *  é só o símbolo genérico de rei, no mesmo estilo de traço fino dos outros ícones de nav. */
+ *  protagonista) — só o símbolo genérico de rei, no mesmo estilo de traço fino dos outros ícones
+ *  de nav. */
 export function EndgameNavIcon(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -123,6 +123,19 @@ export function EndgameNavIcon(props: IconProps) {
       <path d="M5.8 12c.5-1.7 1.9-2.8 3.5-2.8 1 0 1.9.5 2.4 1.3.5-.8 1.4-1.3 2.4-1.3 1.6 0 3 1.1 3.5 2.8" />
       <path d="M6.5 20 5.3 12h13.4L17.5 20Z" />
       <path d="M5 20h14" />
+    </svg>
+  )
+}
+
+/** Peão simples — "Jogar" (partida real contra a capivara com força limitada). Ícone genérico de
+ *  peça, não a mascote — o avatar da capivara já aparece dentro da própria tela de jogo, recortado
+ *  do mesmo jeito que o "coach" da Revisão (ver skill `chesslens-design`), não como ícone de nav. */
+export function PlayBotNavIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <circle cx="12" cy="6.3" r="2.6" />
+      <path d="M9 11.3c.4-1 1.5-1.7 3-1.7s2.6.7 3 1.7l1.2 7.7H7.8Z" />
+      <path d="M6 20.5h12" />
     </svg>
   )
 }
