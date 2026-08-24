@@ -141,8 +141,11 @@ pra saber com certeza.
 
 Um item por sessão do Claude Code, cada um em seu próprio commit:
 
-- [ ] Atalhos de teclado (setas, `F`, `Espaço`, `Esc`) — parte disso já existe (`useKeyboard.ts`
-      cobre navegação de lance); revisar o que falta (F pra flip, Espaço, Esc por tela).
+- [x] Atalhos de teclado (setas, `F`, `Esc`) — **feito em 2026-08-24**. `F` inverte o tabuleiro na
+      Revisão; `Esc` sai da ferramenta/modo atual (fecha modal aberto primeiro, senão volta pra
+      Revisão/Home), funciona mesmo com as setas desligadas. `Espaço` (play/pause do autoplay)
+      ficou de fora — o estado `isPlaying` é local a `BoardControls.tsx`, precisa de um refactor
+      pequeno pra expor ao teclado; registrado como pendência.
 - [ ] Setas/círculos com botão direito + seta do melhor lance e da ameaça — setas desenhadas à
       mão já existem (`ChessBoard.tsx`); confirmar se "seta da ameaça" (não só do melhor lance)
       já está coberta.
