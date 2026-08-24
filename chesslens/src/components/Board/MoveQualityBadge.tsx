@@ -31,6 +31,13 @@ const BOOK_ICON_SCALE = 1.3
 
 // Só o ícone/símbolo, sem caixinha ao redor (era um chip com fundo+borda antes — pedido pra
 // ficar "como se fosse só ele", sem parecer emoji dentro de quadrado).
+//
+// `role="img" aria-label={cfg.label}` (não só `title`): `title` sozinho não é confiável em
+// elemento não-interativo pra leitor de tela/teclado em vários navegadores/AT — o nome acessível
+// de verdade tem que vir de `aria-label`. `title` continua junto só pelo tooltip nativo do mouse
+// pra quem enxerga. O ícone/símbolo interno leva `aria-hidden` porque o nome já está no
+// `aria-label` do wrapper — sem isso, o texto cru do símbolo (`??`, `?!`) vazaria pro nome
+// acessível do `<button>` que costuma envolver este badge (lista de lances), duplicando a leitura.
 export function MoveQualityBadge({ quality, size = 'sm' }: MoveQualityBadgeProps) {
   const cfg = QUALITY_CONFIG[quality]
   const Icon = QUALITY_ICONS[quality]
@@ -39,6 +46,8 @@ export function MoveQualityBadge({ quality, size = 'sm' }: MoveQualityBadgeProps
 
   return (
     <span
+      role="img"
+      aria-label={cfg.label}
       title={cfg.label}
       style={{
         fontSize: s.fontSize,
@@ -52,7 +61,7 @@ export function MoveQualityBadge({ quality, size = 'sm' }: MoveQualityBadgeProps
         filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))',
       }}
     >
-      {Icon ? <Icon width={iconSize} height={iconSize} /> : cfg.symbol}
+      {Icon ? <Icon width={iconSize} height={iconSize} aria-hidden="true" /> : <span aria-hidden="true">{cfg.symbol}</span>}
     </span>
   )
 }
@@ -79,9 +88,12 @@ export function SquareQualityMarker({ quality, size }: SquareQualityMarkerProps)
   // As cores de categoria vão de amarelo/verde claros (imprecisão, bom, ótimo, melhor) a tons
   // escuros (livro, brilhante) — texto/ícone fixo em branco ficava ilegível nas claras.
   const fg = textOnColor(cfg.color)
+  const iconSize = size * 0.58 * (quality === 'book' ? 1.15 : 1)
 
   return (
     <span
+      role="img"
+      aria-label={cfg.label}
       title={cfg.label}
       style={{
         width: size,
@@ -99,7 +111,7 @@ export function SquareQualityMarker({ quality, size }: SquareQualityMarkerProps)
         justifyContent: 'center',
       }}
     >
-      {Icon ? <Icon width={size * 0.58 * (quality === 'book' ? 1.15 : 1)} height={size * 0.58 * (quality === 'book' ? 1.15 : 1)} /> : cfg.symbol}
+      {Icon ? <Icon width={iconSize} height={iconSize} aria-hidden="true" /> : <span aria-hidden="true">{cfg.symbol}</span>}
     </span>
   )
 }
