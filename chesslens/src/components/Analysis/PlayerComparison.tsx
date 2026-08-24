@@ -228,9 +228,11 @@ export function PlayerComparison({ moves, whiteName, blackName, whiteAvatar, bla
             >
               <span className="cl-mono" style={{ textAlign: 'right', fontWeight: 800, color: 'var(--color-text-on-dark)' }}>{w}</span>
               <span style={{ textAlign: 'center', color: cfg.color, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
+                {/* já tem rótulo visível (cfg.label) logo ao lado — ícone/símbolo é só decoração aqui,
+                    aria-hidden evita leitura duplicada/redundante em leitor de tela */}
                 {Icon
-                  ? <Icon width={19} height={19} style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }} />
-                  : <span style={{ fontSize: 14 }}>{cfg.symbol}</span>}
+                  ? <Icon width={19} height={19} aria-hidden="true" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }} />
+                  : <span aria-hidden="true" style={{ fontSize: 14 }}>{cfg.symbol}</span>}
                 <span style={{ fontSize: 13.5 }}>{cfg.label}</span>
               </span>
               <span className="cl-mono" style={{ textAlign: 'left', fontWeight: 800, color: 'var(--color-text-on-dark)' }}>{b}</span>
