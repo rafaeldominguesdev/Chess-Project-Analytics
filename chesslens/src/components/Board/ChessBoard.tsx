@@ -591,7 +591,10 @@ export function ChessBoard({
           >
             {drawnSquares.map((sq) => {
               const o = squareOrigin(sq, boardOrientation, squareSize)
-              const cx = o.left + squareSize / 2
+              // + boardInset: o quadriculado começa em (boardInset, 0) dentro do container quando
+              // o estilo "fora" está ativo (ver comentário de `boardInset` mais acima) — sem isso,
+              // o círculo desalinhava da casa real nesse modo.
+              const cx = o.left + boardInset + squareSize / 2
               const cy = o.top + squareSize / 2
               const r = squareSize / 2 - squareSize * 0.06
               return (
