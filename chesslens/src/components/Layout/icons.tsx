@@ -112,6 +112,21 @@ export function ErrorTrainNavIcon(props: IconProps) {
   )
 }
 
+/** Coroa de rei simplificada — Treino de Finais (poucas peças no tabuleiro, o rei vira
+ *  protagonista). Diferente da capivara coroada de `BrandMarkIcon` (marca do site inteiro) — aqui
+ *  é só o símbolo genérico de rei, no mesmo estilo de traço fino dos outros ícones de nav. */
+export function EndgameNavIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M12 3v3.6" />
+      <circle cx="12" cy="2.3" r="1.1" fill="currentColor" stroke="none" />
+      <path d="M5.8 12c.5-1.7 1.9-2.8 3.5-2.8 1 0 1.9.5 2.4 1.3.5-.8 1.4-1.3 2.4-1.3 1.6 0 3 1.1 3.5 2.8" />
+      <path d="M6.5 20 5.3 12h13.4L17.5 20Z" />
+      <path d="M5 20h14" />
+    </svg>
+  )
+}
+
 /** Gráfico de barras crescente — Relatório do jogador (estatísticas agregadas das partidas). */
 export function ReportNavIcon(props: IconProps) {
   return (

@@ -1,0 +1,15 @@
+[
+  ["kp-e-file-white", "8/8/8/4k3/4P3/4K3/8/8 w - - 0 1", "kp_vs_k", "Rei e peão vs rei — oposição frontal (peão e4)"],
+  ["kp-d-file-black", "8/8/8/3k4/3P4/3K4/8/8 b - - 0 1", "kp_vs_k", "Rei e peão vs rei — defensor com o lance (peão d4)"],
+  ["kp-b-file-edge", "8/8/8/8/8/1k6/1P6/1K6 w - - 0 1", "kp_vs_k", "Rei e peão vs rei — peão quase promovendo perto da borda"],
+  ["kr-basic-center", "8/8/8/8/4k3/8/8/R3K3 w - - 0 1", "kr_vs_k", "Rei e torre vs rei — corte de rei no centro"],
+  ["kr-basic-black-move", "8/8/8/3k4/8/8/8/R3K3 b - - 0 1", "kr_vs_k", "Rei e torre vs rei — defensor com o lance"],
+  ["kr-edge-mate", "6k1/8/6K1/8/8/8/8/4R3 w - - 0 1", "kr_vs_k", "Rei e torre vs rei — rei preso na borda, mate perto"],
+  ["kq-basic-center", "8/8/8/4k3/8/8/8/3QK3 w - - 0 1", "kq_vs_k", "Rei e dama vs rei — dama controlando o centro"],
+  ["kq-edge-mate", "6k1/8/5K2/8/8/8/8/3Q4 w - - 0 1", "kq_vs_k", "Rei e dama vs rei — rei preso na borda, mate perto"],
+  ["rook-vs-pawn-promoting", "7R/8/8/8/8/1k6/1p6/1K6 w - - 0 1", "rook_vs_pawn", "Torre vs peão — peão quase promovendo, torre precisa correr"],
+  ["rook-vs-pawn-reversed", "6r1/8/8/8/8/1k6/1P6/1K6 w - - 0 1", "rook_vs_pawn", "Torre vs peão — peão tentando promover contra a torre"],
+  ["pawn-race", "4k3/7p/8/8/8/8/P7/4K3 w - - 0 1", "pawn_endgame", "Final de peões — corrida de peões passados em lados opostos"],
+  ["pawn-connected-passers", "4k3/8/8/3PP3/8/8/8/4K3 w - - 0 1", "pawn_endgame", "Final de peões — peões passados conectados vs rei sozinho"],
+  ["pawn-outside-passer", "8/8/4k3/P6p/8/4K3/8/8 w - - 0 1", "pawn_endgame", "Final de peões — peão passado exterior decidindo a partida"]
+]
