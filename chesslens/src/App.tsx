@@ -209,12 +209,37 @@ function AppInner() {
     return () => { cancelled = true }
   }, [fens, isLoaded, analyzeGame, cancelAnalysis, gameUrl, gameInfo, gamePerspectiveColor])
 
+  const flipBoard = useCallback(() => {
+    setBoardOrientation((o) => (o === 'white' ? 'black' : 'white'))
+  }, [])
+
+  // Esc — sai da ferramenta/modo atual pra tela por baixo (Revisão se tiver partida carregada,
+  // senão Home). Prioriza fechar modal/aviso aberto (Configurações, Atualizações, "em
+  // manutenção") antes de sair de um modo de tela cheia — só um desses por vez pode estar aberto,
+  // mas a ordem importa pra sempre fechar "de fora pra dentro". Diferente do "ChessLens" no topo
+  // da sidebar (onGoHome): não descarrega a partida nem fecha a busca, é só "volta uma tela".
+  const handleEscape = useCallback(() => {
+    if (settingsOpen) { setSettingsOpen(false); return }
+    if (updatesOpen) { setUpdatesOpen(false); return }
+    if (maintenanceFeature) { setMaintenanceFeature(null); return }
+    setTrainingMode(false)
+    setBoardMode(false)
+    setOpeningTrainingMode(false)
+    setErrorTrainingMode(false)
+    setEndgameTrainingMode(false)
+    setReportMode(false)
+    setPlayBotMode(false)
+    setPositionEditorMode(false)
+    setSearchMode(false)
+  }, [settingsOpen, updatesOpen, maintenanceFeature])
+
   useKeyboard({
-    onPrev: goPrev, onNext: goNext, onFirst: goFirst, onLast: goLast,
+    onPrev: goPrev, onNext: goNext, onFirst: goFirst, onLast: goLast, onFlip: flipBoard, onEscape: handleEscape,
     // Desligado no tabuleiro de análise livre também — lá as setas navegariam por engano o
     // histórico da revisão escondida atrás, em vez do próprio jogo livre (que não usa teclado).
     // Desligado também em "Jogar contra a Capivara" pelo mesmo motivo — não há histórico de
-    // revisão pra navegar ali, é uma partida ao vivo.
+    // revisão pra navegar ali, é uma partida ao vivo. `onEscape` continua funcionando mesmo com
+    // isso tudo desligado (ver comentário em `useKeyboard.ts`) — é o que fecha essas telas.
     enabled: !settingsOpen && !updatesOpen && !trainingMode && !boardMode && !openingTrainingMode && !errorTrainingMode && !endgameTrainingMode && !reportMode && !positionEditorMode && !playBotMode,
   })
 
@@ -260,10 +285,6 @@ function AppInner() {
   const handlePlayFromHere = useCallback((fen: string) => {
     setPendingBoardFen(fen)
     setBoardMode(true)
-  }, [])
-
-  const flipBoard = useCallback(() => {
-    setBoardOrientation((o) => (o === 'white' ? 'black' : 'white'))
   }, [])
 
   const profiles = usePlayerProfiles(gameInfo?.white, gameInfo?.black)
