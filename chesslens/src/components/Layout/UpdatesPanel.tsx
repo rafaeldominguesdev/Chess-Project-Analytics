@@ -97,7 +97,7 @@ export function UpdatesPanel({ open, onClose }: UpdatesPanelProps) {
 
           <div className="settings-scroll" style={{ flex: 1, overflowY: 'auto', padding: '18px 24px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
             <p style={{ fontSize: 12.5, color: 'var(--color-gray-muted)', lineHeight: 1.5, margin: 0 }}>
-              O que mudou recentemente no ChessLens — mais novo primeiro.
+              O que mudou recentemente no ChessCap — mais novo primeiro.
             </p>
             {UPDATES.map((item) => (
               <div key={item.title} style={{ display: 'flex', gap: 12 }}>

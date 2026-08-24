@@ -114,7 +114,7 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
         {!collapsed && (
           <button
             onClick={onGoHome}
-            title="ChessLens"
+            title="ChessCap"
             style={{
               display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0,
               background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
@@ -130,7 +130,7 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
               height={27}
               style={{ borderRadius: 6, flexShrink: 0, display: 'block' }}
             />
-            <span className="cl-display" style={{ fontSize: 15.5, fontWeight: 800, color: 'var(--color-text-on-dark)', whiteSpace: 'nowrap' }}>ChessLens</span>
+            <span className="cl-display" style={{ fontSize: 15.5, fontWeight: 800, color: 'var(--color-text-on-dark)', whiteSpace: 'nowrap' }}>ChessCap</span>
           </button>
         )}
         <button

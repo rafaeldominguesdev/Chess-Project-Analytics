@@ -1,4 +1,4 @@
-# Roadmap — ChessLens
+# Roadmap — ChessCap
 
 Plano de evolução em sprints curtos, cada um entregando algo funcional. A ordem importa: os
 dois primeiros sprints criam a base de dados que todo o resto consome — pular direto pro Treino
