@@ -223,7 +223,7 @@ function AppInner() {
   // Esc — sai da ferramenta/modo atual pra tela por baixo (Revisão se tiver partida carregada,
   // senão Home). Prioriza fechar modal/aviso aberto (Configurações, Atualizações, "em
   // manutenção") antes de sair de um modo de tela cheia — só um desses por vez pode estar aberto,
-  // mas a ordem importa pra sempre fechar "de fora pra dentro". Diferente do "ChessLens" no topo
+  // mas a ordem importa pra sempre fechar "de fora pra dentro". Diferente do "ChessCap" no topo
   // da sidebar (onGoHome): não descarrega a partida nem fecha a busca, é só "volta uma tela".
   const handleEscape = useCallback(() => {
     if (settingsOpen) { setSettingsOpen(false); return }

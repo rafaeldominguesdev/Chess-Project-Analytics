@@ -4,7 +4,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  /* Identidade visual "ChessLens Cinza Azulado": fundo cinza NEUTRO (sem matiz de nenhuma cor —
+  /* Identidade visual "ChessCap Cinza Azulado": fundo cinza NEUTRO (sem matiz de nenhuma cor —
      pedido direto do usuário depois da 1ª troca de paleta, "não quero o site meio azulado, quero
      cinza e o azul só nos botões e em textos chamativos"; a 1ª versão desses tokens usava cinzas
      ligeiramente puxados pro azul, e isso "vazava" a sensação de azul pro site inteiro mesmo com

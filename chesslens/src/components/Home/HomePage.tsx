@@ -113,7 +113,7 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
                   letterSpacing: '-0.02em', color: 'var(--color-text-on-dark)',
                   textShadow: '0 2px 16px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.9)',
                 }}>
-                  Chess<span style={{ color: 'var(--color-blue-bright)' }}>Lens</span>
+                  Chess<span style={{ color: 'var(--color-blue-bright)' }}>Cap</span>
                 </h1>
                 <p style={{
                   fontSize: 15, color: 'var(--color-text-on-dark)', lineHeight: 1.6,

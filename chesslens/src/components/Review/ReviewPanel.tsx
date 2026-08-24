@@ -353,7 +353,7 @@ export function ReviewPanel({
   const handleExportAnnotatedPgn = () => {
     const slug = `${slugForFilename(whiteName)}-vs-${slugForFilename(blackName)}`
     const annotated = annotatePgnWithNags(pgn, moves)
-    downloadTextFile(`chesslens-${slug}.pgn`, annotated, 'application/x-chess-pgn')
+    downloadTextFile(`chesscap-${slug}.pgn`, annotated, 'application/x-chess-pgn')
 
     const critical = findCriticalPosition(moves)
     if (critical) {
@@ -363,7 +363,7 @@ export function ReviewPanel({
         highlightTo: critical.move.to,
         caption: critical.label,
       })
-      downloadTextFile(`chesslens-${slug}-posicao-critica.svg`, svg, 'image/svg+xml')
+      downloadTextFile(`chesscap-${slug}-posicao-critica.svg`, svg, 'image/svg+xml')
     }
   }
 

@@ -99,7 +99,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `chesslens-backup-${new Date().toISOString().slice(0, 10)}.json`
+    a.download = `chesscap-backup-${new Date().toISOString().slice(0, 10)}.json`
     a.click()
     URL.revokeObjectURL(url)
     setDataStatus(`${data.games.length} partidas e ${data.analyses.length} análises exportadas.`)
@@ -114,7 +114,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
         + (result.skipped > 0 ? `, ${result.skipped} item(ns) ignorado(s).` : '.'),
       )
     } catch {
-      setDataStatus('Arquivo inválido — não foi possível ler como backup do ChessLens.')
+      setDataStatus('Arquivo inválido — não foi possível ler como backup do ChessCap.')
     }
   }
 

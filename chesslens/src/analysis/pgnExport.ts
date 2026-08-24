@@ -2,9 +2,9 @@ import type { ClassifiedMove } from './types'
 import type { MoveQuality } from './moveClassifier'
 
 /**
- * Mapeamento das categorias do ChessLens pros NAGs (Numeric Annotation Glyph) padrão da
+ * Mapeamento das categorias do ChessCap pros NAGs (Numeric Annotation Glyph) padrão da
  * especificação PGN — assim qualquer leitor de PGN (lichess, chess.com, ChessBase...) entende a
- * anotação sem precisar conhecer o ChessLens. Só os NAGs de "força do lance" (não os de avaliação
+ * anotação sem precisar conhecer o ChessCap. Só os NAGs de "força do lance" (não os de avaliação
  * de posição, tipo $10 "posição de empate") interessam aqui:
  *   $1 = ! (bom lance)      $2 = ? (erro)             $3 = !! (lance excelente/brilhante)
  *   $4 = ?? (erro grave)    $5 = !? (interessante)    $6 = ?! (duvidoso/impreciso)
