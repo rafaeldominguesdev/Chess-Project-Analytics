@@ -121,7 +121,17 @@ export function usePlayVsBot() {
         const parts = line.split(' ')
         const rawBestMove = parts[1] && parts[1] !== '(none)' ? parts[1] : null
         const currentLevel = levelRef.current
-        const chosen = currentLevel
+        // BUG real que sobrou da reinvestigação (achado na revisão, antes de mergear): mesmo nas
+        // faixas que já confiam no motor (`noiseDecay <= 0`), este código ainda chamava
+        // `pickBotMove` com as linhas `info ... multipv 1 ...` (força TOTAL, ver comentário
+        // grande no topo de `botLevels.ts`) em vez do `bestmove` de fechamento (o lance JÁ
+        // calibrado pro Elo pedido, via `Skill::pick_best`) — ou seja, aprendiz/experiente/
+        // veterana/mestra ainda jogariam sempre a linha de força total, sem NENHUMA diferença de
+        // força entre elas, exatamente o bug que a reinvestigação pretendia corrigir. Só usa
+        // `pickBotMove` (ruído sobre as linhas) quando a faixa pediu ruído de propósito
+        // (`noiseDecay > 0`, as duas faixas abaixo do piso nativo do `UCI_Elo`) — todas as outras
+        // vão direto no `bestmove` real do motor.
+        const chosen = currentLevel && currentLevel.noiseDecay > 0
           ? (pickBotMove(pendingLinesRef.current, currentLevel.noiseDecay) ?? rawBestMove)
           : rawBestMove
         applyMove(chosen)
