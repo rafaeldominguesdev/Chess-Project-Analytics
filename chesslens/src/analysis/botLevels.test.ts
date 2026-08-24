@@ -1,5 +1,20 @@
 import { describe, it, expect } from 'vitest'
-import { BOT_LEVELS, pickBotMove } from './botLevels'
+import { BOT_LEVELS, MAX_UCI_ELO, MIN_UCI_ELO, clampUciElo, pickBotMove } from './botLevels'
+
+describe('clampUciElo', () => {
+  it('mantém valores já dentro do intervalo suportado pelo motor', () => {
+    expect(clampUciElo(1600)).toBe(1600)
+  })
+
+  it('sobe valores abaixo do piso do motor (1320) — as faixas mais fracas pedem um Elo "de vitrine" mais baixo', () => {
+    expect(clampUciElo(800)).toBe(MIN_UCI_ELO)
+    expect(clampUciElo(1000)).toBe(MIN_UCI_ELO)
+  })
+
+  it('desce valores acima do teto do motor (3190)', () => {
+    expect(clampUciElo(4000)).toBe(MAX_UCI_ELO)
+  })
+})
 
 describe('BOT_LEVELS', () => {
   it('tem elo estritamente crescente (faixas ordenadas de mais fraca pra mais forte)', () => {
