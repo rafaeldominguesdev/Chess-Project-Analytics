@@ -162,8 +162,22 @@ Um item por sessão do Claude Code, cada um em seu próprio commit:
       coach pede pra achar o lance melhor antes de revelar. Valida contra `bestMove` exato (não
       "qualquer lance que preserva"). Botão "Revelar" sempre disponível.
 - [ ] Explicação em linguagem natural do erro, gerada a partir do motivo do Sprint 2b.
-- [ ] Export: PGN anotado com NAG + imagem da posição crítica.
+- [x] Export: PGN anotado com NAG + imagem da posição crítica — **feito em 2026-08-24**.
+      `pgnExport.ts` insere `$N` depois de cada lance classificado (mistake→$2, blunder/miss→$4,
+      inaccuracy→$6, excellent→$1, brilliant→$3); `criticalPosition.ts` acha o mate final ou a
+      maior queda de chance de vitória; `positionSvg.ts` desenha a posição em SVG com o tema de
+      tabuleiro atual (sem lib nova). Botão "Exportar PGN anotado" na Revisão. Testado ao vivo com
+      partida real: NAGs batem exatamente com a lista de lances, SVG identifica a jogada crítica
+      certa ("9. Qb3 — Capivarada").
 - [ ] PWA offline — coerente com o motor rodar no navegador.
+- [x] Notação fora das casas (opcional) — **feito em 2026-08-24**, pedido direto do usuário fora
+      do roadmap original. Toggle novo em Configurações > Aparência, junto de "Mostrar
+      coordenadas" — escolhe entre número/letra dentro da casa (padrão) ou numa margem ao redor
+      do tabuleiro, estilo lichess/chess.com clássico.
+- [x] Som do tabuleiro mais grave — **feito em 2026-08-24**, pedido direto do usuário fora do
+      roadmap original. Nenhum tema pronto do Lichess soava como madeira de verdade (testado com
+      FFT); em vez disso, baixa o pitch de qualquer tema escolhido via `playbackRate` +
+      `preservesPitch=false`.
 
 ## Sprint 6 — Retenção
 
