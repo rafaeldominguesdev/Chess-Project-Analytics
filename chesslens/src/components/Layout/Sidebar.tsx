@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { AnalyzeNavIcon, BoardNavIcon, BookNavIcon, ChevronIcon, CloseIcon, EndgameNavIcon, ErrorTrainNavIcon, GearIcon, PlayBotNavIcon, PositionSetupIcon, SunNavIcon, TargetIcon, WrenchIcon } from './icons'
+import { AnalyzeNavIcon, BoardNavIcon, BookNavIcon, ChevronIcon, CloseIcon, EndgameNavIcon, ErrorTrainNavIcon, GearIcon, PositionSetupIcon, SunNavIcon, TargetIcon, WrenchIcon } from './icons'
 
 // Abaixo desta largura a sidebar sai do fluxo e vira menu-gaveta (ver `isMobile` abaixo) — mesmo
 // breakpoint já usado em outros pontos de `index.css` pra "tela estreita", reaproveitado aqui em
@@ -228,7 +228,7 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
             capivara já aparece dentro da própria tela de jogo, por faixa de força. Item único —
             continua `NavItem` simples, não vira `NavGroup` (um submenu pra 1 item só não faz sentido). */}
         <NavSection label="Jogar" collapsed={effectiveCollapsed}>
-          <NavItem icon={<PlayBotNavIcon width={22} height={22} />} label="Jogar contra a Capivara" active={playBotActive} onClick={closeAnd(onTogglePlayBot)} collapsed={effectiveCollapsed} />
+          <NavItem icon={<img src="/icon-jogar.png" alt="" width={36} height={36} style={{ flexShrink: 0, display: 'block', aspectRatio: '1' }} />} label="Jogar contra a Capivara" active={playBotActive} onClick={closeAnd(onTogglePlayBot)} collapsed={effectiveCollapsed} />
         </NavSection>
 
         <div style={{ marginBottom: 16 }}>
