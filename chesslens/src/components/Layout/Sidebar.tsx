@@ -234,7 +234,7 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
             capivara já aparece dentro da própria tela de jogo, por faixa de força. Item único —
             continua `NavItem` simples, não vira `NavGroup` (um submenu pra 1 item só não faz sentido). */}
         <NavSection label="Jogar" collapsed={effectiveCollapsed}>
-          <NavItem icon={<img src="/icon-jogar.png" alt="" width={44} height={44} style={{ flexShrink: 0, display: 'block', aspectRatio: '1' }} />} label="Jogar contra a Capivara" active={playBotActive} onClick={closeAnd(onTogglePlayBot)} collapsed={effectiveCollapsed} />
+          <NavItem icon={<img src="/icon-jogar.png" alt="" width={48} height={48} style={{ flexShrink: 0, display: 'block', aspectRatio: '1' }} />} label="Jogar contra a Capivara" active={playBotActive} onClick={closeAnd(onTogglePlayBot)} collapsed={effectiveCollapsed} />
         </NavSection>
 
         <div style={{ marginBottom: 16 }}>
