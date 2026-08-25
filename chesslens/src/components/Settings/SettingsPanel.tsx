@@ -153,7 +153,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
           aria-label="Configurações"
           onClick={(e) => e.stopPropagation()}
           style={{
-            width: 760, maxWidth: '94vw', height: 'min(660px, 88vh)',
+            width: 900, maxWidth: '95vw', height: 'min(760px, 90vh)',
             background: 'var(--color-bg-panel)',
             border: '1px solid var(--color-gray-border)',
             borderRadius: 'var(--radius-lg)',
@@ -438,7 +438,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
 function PreviewRow() {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
-      <MiniBoard fen={PREVIEW_FEN} size={104} />
+      <MiniBoard fen={PREVIEW_FEN} size={180} />
     </div>
   )
 }
