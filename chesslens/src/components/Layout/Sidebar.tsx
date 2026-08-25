@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { AnalyzeNavIcon, BoardNavIcon, BookNavIcon, ChevronIcon, CloseIcon, EndgameNavIcon, ErrorTrainNavIcon, GearIcon, PositionSetupIcon, SunNavIcon, TargetIcon, WrenchIcon } from './icons'
+import { ChevronIcon, CloseIcon, ErrorTrainNavIcon, GearIcon, SunNavIcon, WrenchIcon } from './icons'
 
 // Abaixo desta largura a sidebar sai do fluxo e vira menu-gaveta (ver `isMobile` abaixo) — mesmo
 // breakpoint já usado em outros pontos de `index.css` pra "tela estreita", reaproveitado aqui em
@@ -119,11 +119,17 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
     return () => { fn(); onCloseMobile() }
   }
 
+  // Ícones dos sub-itens de Treino/Ferramentas — estilo "objeto 3D isolado" (chave inglesa,
+  // peça de quebra-cabeça etc.), pedido direto do usuário depois de ver referências (não quis
+  // que os ícones virassem a mascote, "quero cada ícone seja próprio"). `subIconStyle` deixa o
+  // objeto renderizar um pouco maior que o SVG de traço fino que ele substitui (24px em vez de
+  // 20px) — um render fotográfico "lê" pior muito pequeno do que um traço vetorial simples.
+  const subIconStyle = { flexShrink: 0, display: 'block' as const, aspectRatio: '1' as const }
   const trainItems: GroupItem[] = [
-    { icon: <TargetIcon width={20} height={20} />, label: 'Puzzles', active: trainingActive, onClick: closeAnd(onToggleTraining) },
-    { icon: <BookNavIcon width={20} height={20} />, label: 'Treino de Aberturas', active: openingTrainingActive, onClick: closeAnd(onToggleOpeningTraining) },
+    { icon: <img src="/icon-puzzles.png" alt="" width={24} height={24} style={subIconStyle} />, label: 'Puzzles', active: trainingActive, onClick: closeAnd(onToggleTraining) },
+    { icon: <img src="/icon-aberturas.png" alt="" width={24} height={24} style={subIconStyle} />, label: 'Treino de Aberturas', active: openingTrainingActive, onClick: closeAnd(onToggleOpeningTraining) },
     { icon: <ErrorTrainNavIcon width={20} height={20} />, label: 'Treino de Erros', active: errorTrainingActive, onClick: closeAnd(onToggleErrorTraining) },
-    { icon: <EndgameNavIcon width={20} height={20} />, label: 'Treino de Finais', active: endgameTrainingActive, onClick: closeAnd(onToggleEndgameTraining) },
+    { icon: <img src="/icon-finais.png" alt="" width={24} height={24} style={subIconStyle} />, label: 'Treino de Finais', active: endgameTrainingActive, onClick: closeAnd(onToggleEndgameTraining) },
     ...TRAIN_PLACEHOLDERS.map((label) => ({
       icon: <WrenchIcon width={19} height={19} />, label, active: false, soon: true,
       onClick: closeAnd(() => onMaintenanceClick(label)),
@@ -131,9 +137,9 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
   ]
 
   const toolItems: GroupItem[] = [
-    { icon: <AnalyzeNavIcon width={20} height={20} />, label: 'Analisar', active: searchActive, onClick: closeAnd(onAnalyzeClick) },
-    { icon: <BoardNavIcon width={20} height={20} />, label: 'Tabuleiro', active: boardActive, onClick: closeAnd(onToggleBoard) },
-    { icon: <PositionSetupIcon width={20} height={20} />, label: 'Definir Posição', active: positionEditorActive, onClick: closeAnd(onTogglePositionEditor) },
+    { icon: <img src="/icon-analisar.png" alt="" width={24} height={24} style={subIconStyle} />, label: 'Analisar', active: searchActive, onClick: closeAnd(onAnalyzeClick) },
+    { icon: <img src="/icon-tabuleiro.png" alt="" width={24} height={24} style={subIconStyle} />, label: 'Tabuleiro', active: boardActive, onClick: closeAnd(onToggleBoard) },
+    { icon: <img src="/icon-posicao.png" alt="" width={24} height={24} style={subIconStyle} />, label: 'Definir Posição', active: positionEditorActive, onClick: closeAnd(onTogglePositionEditor) },
   ]
 
   return (
