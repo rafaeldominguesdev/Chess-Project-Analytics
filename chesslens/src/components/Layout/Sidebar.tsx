@@ -363,7 +363,7 @@ function NavGroup({ icon, label, collapsed, items, inline = false }: { icon: Rea
           aria-haspopup="true"
           aria-expanded={open}
           className={`cl-btn cl-nav-btn${activeAny ? ' cl-btn-selected' : ''}`}
-          style={{ justifyContent: 'flex-start', gap: 11, width: '100%', padding: '11px 13px', fontSize: 13.5, letterSpacing: 0 }}
+          style={{ justifyContent: 'flex-start', gap: 11, width: '100%', padding: '8px 13px', fontSize: 14.5, letterSpacing: 0 }}
         >
           {icon}
           <span style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flex: 1 }}>
@@ -414,7 +414,7 @@ function NavGroup({ icon, label, collapsed, items, inline = false }: { icon: Rea
         className={`cl-btn cl-nav-btn${activeAny ? ' cl-btn-selected' : ''}`}
         style={{
           justifyContent: collapsed ? 'center' : 'flex-start', gap: 11, width: '100%',
-          padding: collapsed ? '11px 0' : '11px 13px', fontSize: 13.5, letterSpacing: 0,
+          padding: collapsed ? '8px 0' : '8px 13px', fontSize: 14.5, letterSpacing: 0,
         }}
       >
         {icon}
@@ -476,7 +476,7 @@ function NavItem({ icon, label, active = false, collapsed, soon = false, onClick
       className={`cl-btn cl-nav-btn${active ? ' cl-btn-selected' : ''}`}
       style={{
         justifyContent: collapsed ? 'center' : 'flex-start', gap: 11, width: '100%',
-        padding: collapsed ? '11px 0' : '11px 13px', fontSize: soon ? 12.5 : 13.5, letterSpacing: 0,
+        padding: collapsed ? '8px 0' : '8px 13px', fontSize: soon ? 13 : 14.5, letterSpacing: 0,
         opacity: soon ? 0.55 : 1,
       }}
     >
