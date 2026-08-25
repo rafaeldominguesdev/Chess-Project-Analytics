@@ -56,10 +56,11 @@ export function LichessPlayerCard({ profile, totalGames }: LichessPlayerCardProp
     }}>
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: 'linear-gradient(90deg, #2b2b2b, #6b6b6b)' }} />
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+      <div className="cl-profile-header">
         <div
+          className="cl-profile-avatar"
           style={{
-            width: 100, height: 100, borderRadius: '50%', flexShrink: 0,
+            borderRadius: '50%', flexShrink: 0,
             background: bg,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: '#fff', fontWeight: 800, fontSize: 38,

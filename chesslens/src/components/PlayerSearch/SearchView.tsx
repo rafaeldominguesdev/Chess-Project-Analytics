@@ -228,8 +228,8 @@ function LoadingSkeleton() {
   }
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-        <div style={{ ...shimmer, width: 96, height: 96, borderRadius: '50%', flexShrink: 0 }} />
+      <div className="cl-profile-header">
+        <div className="cl-profile-avatar" style={{ ...shimmer, borderRadius: '50%', flexShrink: 0 }} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ ...shimmer, width: 180, height: 20 }} />
           <div style={{ ...shimmer, width: 120, height: 12 }} />

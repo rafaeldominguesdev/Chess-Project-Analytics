@@ -61,17 +61,19 @@ export function PlayerCard({ profile }: { profile: ChessComProfile }) {
     }}>
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: 'linear-gradient(90deg, #3a6b1f, #81b64c)' }} />
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+      <div className="cl-profile-header">
         {profile.avatar ? (
           <img
+            className="cl-profile-avatar"
             src={profile.avatar}
             alt={profile.username}
-            style={{ width: 100, height: 100, borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--color-gray-border)', flexShrink: 0 }}
+            style={{ borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--color-gray-border)', flexShrink: 0 }}
           />
         ) : (
           <div
+            className="cl-profile-avatar"
             style={{
-              width: 100, height: 100, borderRadius: '50%', flexShrink: 0,
+              borderRadius: '50%', flexShrink: 0,
               background: bg,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#fff', fontWeight: 800, fontSize: 38,

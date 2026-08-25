@@ -396,6 +396,18 @@ body {
   .cl-main-shell { min-height: 0; }
 }
 
+/* Cabeçalho de perfil (PlayerCard chess.com/Lichess em PlayerSearch/ + o skeleton de loading em
+   SearchView.tsx) — os três compartilham o mesmo layout: avatar redondo fixo + coluna de texto ao
+   lado. Em 100px fixo + gap 20px, numa tela de ~390px sobra pouquíssima largura pra coluna de
+   texto (username chegava a quebrar letra por letra, reproduzido ao vivo) — abaixo de 480px o
+   avatar encolhe e o cabeçalho empilha em coluna em vez de espremer os dois lado a lado. */
+.cl-profile-header { display: flex; align-items: center; gap: 20px; }
+.cl-profile-avatar { width: 100px; height: 100px; }
+@media (max-width: 480px) {
+  .cl-profile-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .cl-profile-avatar { width: 72px; height: 72px; }
+}
+
 /* Variante com um rodapé FIXO fora da área rolável (hoje só a Revisão de partida usa, pra
    pinar `BoardControls` — ver ReviewPanel.tsx). Pedido direto do usuário: a navegação de lances
    ficava abaixo da dobra sempre que o conteúdo acima (coach + motor + avaliação + lances) fosse
