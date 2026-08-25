@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   buildGameReportRows, computeAccuracyByPhase, computeErrorRateByClock,
   computeOpeningPerformance, computeAccuracyTrend, computeTopLeaks,
+  computeResultStats, computeAccuracyBySide,
 } from './playerReportStats'
 import type { GameReportRow } from './playerReportStats'
 import type { ExtractedMove, ErrorCandidate } from './errorExtraction'
@@ -119,6 +120,34 @@ describe('computeAccuracyTrend', () => {
     ]
     const trend = computeAccuracyTrend(rows, 20)
     expect(trend.map((t) => t.gameUrl)).toEqual(['g1', 'g2'])
+  })
+})
+
+describe('computeResultStats', () => {
+  it('resolve vitória/empate/derrota relativo ao lado do jogador e ignora partida sem resultado reconhecido', () => {
+    const rows: GameReportRow[] = [
+      { gameUrl: 'g1', gameInfo: gameInfo({ result: '1-0' }), savedAt: 1, playerColor: 'w', accuracy: 90, familyKey: null, eco: null, ownMoves: [] }, // vitória
+      { gameUrl: 'g2', gameInfo: gameInfo({ result: '1-0' }), savedAt: 2, playerColor: 'b', accuracy: 70, familyKey: null, eco: null, ownMoves: [] }, // derrota (brancas ganharam, eu era preto)
+      { gameUrl: 'g3', gameInfo: gameInfo({ result: '1/2-1/2' }), savedAt: 3, playerColor: 'w', accuracy: 80, familyKey: null, eco: null, ownMoves: [] }, // empate
+      { gameUrl: 'g4', gameInfo: gameInfo({ result: '*' }), savedAt: 4, playerColor: 'w', accuracy: 50, familyKey: null, eco: null, ownMoves: [] }, // em andamento, ignora
+    ]
+    const stats = computeResultStats(rows)
+    expect(stats).toEqual({ wins: 1, draws: 1, losses: 1, winRate: 33.3 })
+  })
+})
+
+describe('computeAccuracyBySide', () => {
+  it('agrupa a precisão média separadamente por lado jogado', () => {
+    const rows: GameReportRow[] = [
+      { gameUrl: 'g1', gameInfo: gameInfo(), savedAt: 1, playerColor: 'w', accuracy: 90, familyKey: null, eco: null, ownMoves: [] },
+      { gameUrl: 'g2', gameInfo: gameInfo(), savedAt: 2, playerColor: 'w', accuracy: 80, familyKey: null, eco: null, ownMoves: [] },
+      { gameUrl: 'g3', gameInfo: gameInfo(), savedAt: 3, playerColor: 'b', accuracy: 60, familyKey: null, eco: null, ownMoves: [] },
+    ]
+    const result = computeAccuracyBySide(rows)
+    const white = result.find((r) => r.side === 'w')!
+    const black = result.find((r) => r.side === 'b')!
+    expect(white).toEqual({ side: 'w', accuracy: 85, games: 2 })
+    expect(black).toEqual({ side: 'b', accuracy: 60, games: 1 })
   })
 })
 

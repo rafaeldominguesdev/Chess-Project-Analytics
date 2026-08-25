@@ -4,8 +4,9 @@ import { loadAllGames } from '../persistence/gamesRepo'
 import {
   buildGameReportRows, computeAccuracyByPhase, computeErrorRateByClock,
   computeOpeningPerformance, computeAccuracyTrend, computeTopLeaks,
+  computeResultStats, computeAccuracyBySide,
 } from '../analysis/playerReportStats'
-import type { PhaseAccuracy, ClockBucket, OpeningPerformance, TrendPoint, TopLeak } from '../analysis/playerReportStats'
+import type { PhaseAccuracy, ClockBucket, OpeningPerformance, TrendPoint, TopLeak, ResultStats, AccuracyBySide } from '../analysis/playerReportStats'
 import { reportComment } from '../analysis/reportComments'
 import type { CoachMessage } from '../analysis/coachComments'
 
@@ -19,12 +20,17 @@ interface ReportStats {
   openingPerformance: OpeningPerformance[]
   trend: TrendPoint[]
   topLeaks: TopLeak[]
+  resultStats: ResultStats
+  accuracyBySide: AccuracyBySide[]
   comment: CoachMessage | null
 }
 
+const EMPTY_RESULT_STATS: ResultStats = { wins: 0, draws: 0, losses: 0, winRate: 0 }
+
 const EMPTY_STATS: ReportStats = {
   overallAccuracy: 0, gamesCount: 0, phaseAccuracy: [], clockBuckets: [],
-  openingPerformance: [], trend: [], topLeaks: [], comment: null,
+  openingPerformance: [], trend: [], topLeaks: [], resultStats: EMPTY_RESULT_STATS,
+  accuracyBySide: [], comment: null,
 }
 
 /**
@@ -64,6 +70,8 @@ export function useReportData(): { status: ReportStatus } & ReportStats {
         openingPerformance: computeOpeningPerformance(rows),
         trend: computeAccuracyTrend(rows),
         topLeaks,
+        resultStats: computeResultStats(rows),
+        accuracyBySide: computeAccuracyBySide(rows),
         comment: reportComment({ overallAccuracy, topLeak: topLeaks[0] ?? null }),
       })
       setStatus('ready')
