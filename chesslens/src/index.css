@@ -158,6 +158,25 @@ body {
 .cl-game-row { transition: border-color var(--dur-tap) var(--ease-tap), transform var(--dur-tap) var(--ease-tap); }
 .cl-game-row:hover { border-color: var(--color-blue-bright); transform: translateX(2px); }
 
+/* Linha de partida recente (RecentGames.tsx) — resultado + link + botão "Analisar" (larguras
+   fixas, ~140px somados) sozinhos na linha principal não deixavam quase nada pra coluna de nome
+   do oponente (`flex:1 minWidth:0`) numa tela de ~390px — reproduzido ao vivo: nome real
+   truncando pra "V..". Abaixo de 480px esse trio (agrupado em `.cl-game-row-meta`) vira uma 2ª
+   linha própria alinhada à direita, dando à coluna de nome a linha inteira pra si. */
+@media (max-width: 480px) {
+  .cl-game-row { flex-wrap: wrap; row-gap: 6px; }
+  .cl-game-row-meta { flex-basis: 100%; justify-content: flex-end; }
+}
+
+/* Card de categoria do Treino de Finais (EndgameTrainerView.tsx) — mesma causa raiz do
+   `.cl-game-row` acima: bloco de resultado à direita (largura fixa por causa do badge "EMPATE
+   TEÓRICO"/"VITÓRIA TEÓRICA") sozinho na linha principal não deixava quase nada pro nome da
+   categoria numa tela de ~390px. */
+@media (max-width: 480px) {
+  .cl-endgame-card { flex-wrap: wrap; row-gap: 6px; }
+  .cl-endgame-card-meta { flex-basis: 100%; flex-direction: row !important; justify-content: flex-end !important; align-items: center !important; }
+}
+
 .cl-search-btn { transition: transform var(--dur-tap) var(--ease-tap), filter var(--dur-tap) var(--ease-tap); }
 .cl-search-btn:active { transform: scale(0.97); }
 

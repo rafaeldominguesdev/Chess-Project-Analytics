@@ -218,7 +218,12 @@ function EndgameCard({ categoryLabel, positionLabel, mastery, resultLabel }: {
   resultLabel: string | null
 }) {
   return (
-    <div className="cl-card" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px' }}>
+    // `.cl-endgame-card`/`-meta` (ver index.css) — o bloco de resultado à direita
+    // (`marginLeft:'auto'`, largura fixa por causa do badge "EMPATE TEÓRICO"/"VITÓRIA TEÓRICA")
+    // sozinho na linha principal não deixava quase nada pro nome da categoria (`.cl-mono`,
+    // `whiteSpace:'nowrap'`) numa tela de ~390px — reproduzido ao vivo: "Rei e peão vs rei"
+    // truncando pra "Rei e peão vs r…". Abaixo de 480px o bloco de resultado vira uma 2ª linha.
+    <div className="cl-card cl-endgame-card" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px' }}>
       <span style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         width: 38, height: 38, borderRadius: 'var(--radius-sm)', flexShrink: 0,
@@ -234,7 +239,7 @@ function EndgameCard({ categoryLabel, positionLabel, mastery, resultLabel }: {
           {categoryLabel}
         </span>
       </div>
-      <div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+      <div className="cl-endgame-card-meta" style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
         {resultLabel && (
           <span style={{
             fontSize: 10.5, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',

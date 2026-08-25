@@ -93,29 +93,37 @@ export function RecentGames({ games, loading, onAnalyze }: RecentGamesProps) {
               </div>
             </div>
 
-            <span style={{ fontSize: 11, fontWeight: 700, color: outcome.color, flexShrink: 0 }}>{outcome.label}</span>
+            {/* Trio agrupado (não solto na linha) — abaixo de 480px (ver .cl-game-row-meta em
+                index.css) vira uma 2ª linha própria, alinhada à direita. Sozinho na linha
+                principal, esse trio de larguras fixas (rótulo de resultado + ícone de link +
+                botão "Analisar") não deixava quase nada pra coluna de nome (`flex:1 minWidth:0`
+                logo acima) numa tela de ~390px — reproduzido ao vivo: nome de oponente real
+                truncando pra "V..". */}
+            <div className="cl-game-row-meta" style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: outcome.color, flexShrink: 0 }}>{outcome.label}</span>
 
-            <a
-              href={g.url}
-              target="_blank"
-              rel="noreferrer"
-              title="Ver partida original"
-              aria-label="Ver partida original (abre em nova aba)"
-              style={{ color: 'var(--color-gray-muted)', display: 'flex', flexShrink: 0 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <ExternalLinkIcon width={14} height={14} />
-            </a>
+              <a
+                href={g.url}
+                target="_blank"
+                rel="noreferrer"
+                title="Ver partida original"
+                aria-label="Ver partida original (abre em nova aba)"
+                style={{ color: 'var(--color-gray-muted)', display: 'flex', flexShrink: 0 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <ExternalLinkIcon width={14} height={14} />
+              </a>
 
-            <button
-              onClick={() => onAnalyze(g.pgn, g.url, g.color === 'white' ? 'w' : 'b')}
-              title="Analisar esta partida"
-              className="cl-btn cl-btn-accent cl-btn-sm"
-              style={{ gap: 5, flexShrink: 0, width: 'auto', height: 'auto', padding: '6px 12px', fontSize: 11.5, whiteSpace: 'nowrap' }}
-            >
-              <AnalyzeIcon width={13} height={13} />
-              Analisar
-            </button>
+              <button
+                onClick={() => onAnalyze(g.pgn, g.url, g.color === 'white' ? 'w' : 'b')}
+                title="Analisar esta partida"
+                className="cl-btn cl-btn-accent cl-btn-sm"
+                style={{ gap: 5, flexShrink: 0, width: 'auto', height: 'auto', padding: '6px 12px', fontSize: 11.5, whiteSpace: 'nowrap' }}
+              >
+                <AnalyzeIcon width={13} height={13} />
+                Analisar
+              </button>
+            </div>
           </div>
         )
       })}
