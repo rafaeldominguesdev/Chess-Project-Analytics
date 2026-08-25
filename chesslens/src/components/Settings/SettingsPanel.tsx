@@ -58,7 +58,7 @@ function normalize(s: string) {
 function BoardPreview({ light, dark, image, isSelected }: { light: string; dark: string; image?: string; isSelected: boolean }) {
   return (
     <div style={{
-      width: 40, height: 40,
+      width: 52, height: 52,
       display: image ? 'block' : 'grid',
       gridTemplateColumns: '1fr 1fr',
       gridTemplateRows: '1fr 1fr',
@@ -255,7 +255,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
 
           {/* Conteúdo da categoria selecionada */}
           <div className="settings-scroll" style={{ flex: 1, overflowY: 'auto', padding: '4px 22px 24px' }}>
-           <div style={{ maxWidth: 760, margin: '0 auto' }}>
+           <div style={{ maxWidth: 960, margin: '0 auto' }}>
             {active && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
                 <span style={{
@@ -440,7 +440,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
 function PreviewRow() {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
-      <MiniBoard fen={PREVIEW_FEN} size={180} />
+      <MiniBoard fen={PREVIEW_FEN} size={260} />
     </div>
   )
 }
@@ -478,8 +478,8 @@ function ThemeRow({ label, isSelected, onClick, children }: { label: string; isS
     <button
       onClick={onClick}
       style={{
-        display: 'flex', alignItems: 'center', gap: 10,
-        padding: '7px 9px',
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '11px 13px',
         background: isSelected ? 'color-mix(in srgb, var(--color-blue-bright) 14%, var(--color-bg-panel))' : 'transparent',
         border: isSelected ? '1.5px solid var(--color-blue-bright)' : '1.5px solid transparent',
         borderRadius: 'var(--radius-sm)', cursor: 'pointer',
@@ -503,10 +503,10 @@ function ThemeRow({ label, isSelected, onClick, children }: { label: string; isS
       }}
     >
       {children}
-      <span style={{ fontSize: 13, color: isSelected ? 'var(--color-text-on-dark)' : 'var(--color-gray-muted)', fontWeight: isSelected ? 700 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <span style={{ fontSize: 15, color: isSelected ? 'var(--color-text-on-dark)' : 'var(--color-gray-muted)', fontWeight: isSelected ? 700 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {label}
       </span>
-      {isSelected && <span style={{ marginLeft: 'auto', color: 'var(--color-blue-bright)', fontSize: 14, flexShrink: 0 }}>✓</span>}
+      {isSelected && <span style={{ marginLeft: 'auto', color: 'var(--color-blue-bright)', fontSize: 16, flexShrink: 0 }}>✓</span>}
     </button>
   )
 }
@@ -516,8 +516,8 @@ function PieceSetButton({ label, pieceSetKey, isSelected, onClick }: { label: st
     <button
       onClick={onClick}
       style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-        padding: '9px 4px',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+        padding: '14px 6px',
         background: isSelected ? 'color-mix(in srgb, var(--color-blue-bright) 16%, var(--color-bg-panel))' : 'var(--color-bg-panel)',
         border: isSelected ? '1.5px solid var(--color-blue-bright)' : '1px solid var(--color-gray-border)',
         borderRadius: 'var(--radius-sm)', cursor: 'pointer', transition: KEYCAP_TRANSITION,
@@ -542,10 +542,10 @@ function PieceSetButton({ label, pieceSetKey, isSelected, onClick }: { label: st
       <img
         src={`https://lichess1.org/assets/piece/${PIECE_SETS[pieceSetKey]?.src ?? pieceSetKey}/bQ.svg`}
         style={{ maxWidth: '100%', height: 'auto', ...(PIECE_COLOR_FILTER[pieceSetKey] ? { filter: PIECE_COLOR_FILTER[pieceSetKey] } : undefined) }}
-        width={32} height={32} alt={label}
+        width={44} height={44} alt={label}
         onError={(e) => { (e.target as HTMLImageElement).style.visibility = 'hidden' }}
       />
-      <span style={{ fontSize: 10, color: isSelected ? 'var(--color-text-on-dark)' : 'var(--color-gray-muted)', fontWeight: isSelected ? 700 : 400, textAlign: 'center', lineHeight: 1.2 }}>
+      <span style={{ fontSize: 12, color: isSelected ? 'var(--color-text-on-dark)' : 'var(--color-gray-muted)', fontWeight: isSelected ? 700 : 400, textAlign: 'center', lineHeight: 1.2 }}>
         {label}
       </span>
     </button>
@@ -557,11 +557,11 @@ function SizeButton({ label, isSelected, onClick }: { label: string; isSelected:
     <button
       onClick={onClick}
       style={{
-        padding: '7px 4px',
+        padding: '13px 6px',
         background: isSelected ? 'var(--color-blue-bright)' : 'var(--color-bg-panel)',
         border: isSelected ? '1.5px solid var(--color-blue-primary)' : '1px solid var(--color-gray-border)',
         borderRadius: 'var(--radius-sm)', cursor: 'pointer',
-        fontSize: 11, color: isSelected ? 'var(--color-text-on-light)' : 'var(--color-gray-muted)',
+        fontSize: 13, color: isSelected ? 'var(--color-text-on-light)' : 'var(--color-gray-muted)',
         fontWeight: isSelected ? 700 : 400,
         boxShadow: isSelected ? 'inset 0 2px 4px 0 rgba(0,0,0,0.25), 0 1px 0 0 var(--color-blue-primary)' : KEYCAP_IDLE_SHADOW,
         transform: isSelected ? 'translateY(2px)' : 'translateY(0)',
@@ -592,7 +592,7 @@ function Toggle({ label, description, checked, onChange, disabled }: { label: st
     <div
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '11px 10px', margin: '0 -10px', borderRadius: 'var(--radius-sm)',
+        padding: '14px 12px', margin: '0 -12px', borderRadius: 'var(--radius-sm)',
         cursor: disabled ? 'default' : 'pointer', transition: 'background var(--dur-tap) var(--ease-tap)',
         opacity: disabled ? 0.5 : 1,
       }}
@@ -601,19 +601,19 @@ function Toggle({ label, description, checked, onChange, disabled }: { label: st
       onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
     >
       <div>
-        <div style={{ fontSize: 13, color: 'var(--color-text-on-dark)', fontWeight: 600 }}>{label}</div>
-        <div style={{ fontSize: 11, color: 'var(--color-gray-muted)', marginTop: 1 }}>{description}</div>
+        <div style={{ fontSize: 15, color: 'var(--color-text-on-dark)', fontWeight: 600 }}>{label}</div>
+        <div style={{ fontSize: 12.5, color: 'var(--color-gray-muted)', marginTop: 2 }}>{description}</div>
       </div>
       {/* Trilho recessado (entalhe) — o polegar "pop up" da calha como uma peça física */}
       <div style={{
-        width: 36, height: 20,
+        width: 44, height: 24,
         background: checked ? 'color-mix(in srgb, var(--color-blue-bright) 55%, var(--color-bg-main))' : 'var(--color-bg-main)',
         border: '1px solid var(--color-gray-border)', borderRadius: 'var(--radius-sm)', position: 'relative',
         boxShadow: 'inset 0 2px 4px 0 rgba(0,0,0,0.45), inset 0 1px 0 0 rgba(0,0,0,0.3)',
         transition: 'background var(--dur-tap) var(--ease-tap)', flexShrink: 0,
       }}>
         <div style={{
-          position: 'absolute', top: 2, left: checked ? 17 : 2, width: 14, height: 14, borderRadius: '50%',
+          position: 'absolute', top: 3, left: checked ? 22 : 3, width: 16, height: 16, borderRadius: '50%',
           background: checked ? 'var(--color-blue-light)' : 'var(--color-gray-muted)',
           boxShadow: '0 1px 3px 0 rgba(0,0,0,0.6), inset 0 1px 0 0 rgba(255,255,255,0.3)',
           transition: 'left var(--dur-tap) var(--ease-tap), background var(--dur-tap) var(--ease-tap)',
