@@ -176,6 +176,52 @@ export function computeAccuracyTrend(rows: GameReportRow[], lastN = 20): TrendPo
     .map((r) => ({ gameUrl: r.gameUrl, savedAt: r.savedAt, accuracy: r.accuracy }))
 }
 
+export interface ResultStats {
+  wins: number
+  draws: number
+  losses: number
+  /** % de vitórias sobre partidas com resultado reconhecido (exclui `'*'`/em andamento). */
+  winRate: number
+}
+
+/** Vitória/empate/derrota relativo ao lado do jogador, a partir do header PGN `Result` — dado que
+ *  já existe em toda partida salva, mas que o Relatório nunca tinha agregado (só precisão de
+ *  lance, nunca o resultado real da partida). */
+export function computeResultStats(rows: GameReportRow[]): ResultStats {
+  let wins = 0
+  let draws = 0
+  let losses = 0
+  for (const row of rows) {
+    const result = row.gameInfo.result
+    if (result === '1/2-1/2') { draws++; continue }
+    const whiteWon = result === '1-0'
+    const blackWon = result === '0-1'
+    if (!whiteWon && !blackWon) continue // '*' (em andamento) ou valor não reconhecido — descarta
+    const playerWon = (whiteWon && row.playerColor === 'w') || (blackWon && row.playerColor === 'b')
+    if (playerWon) wins++
+    else losses++
+  }
+  const known = wins + draws + losses
+  return { wins, draws, losses, winRate: known ? Math.round((wins / known) * 1000) / 10 : 0 }
+}
+
+export interface AccuracyBySide {
+  side: 'w' | 'b'
+  accuracy: number
+  games: number
+}
+
+/** Precisão média jogando de brancas vs de pretas — ajuda a notar se um lado puxa a média geral
+ *  pra baixo (padrão comum: pretas um pouco atrás por jogar reativo). */
+export function computeAccuracyBySide(rows: GameReportRow[]): AccuracyBySide[] {
+  return (['w', 'b'] as const).map((side) => {
+    const matching = rows.filter((r) => r.playerColor === side)
+    const games = matching.length
+    const accuracy = games ? Math.round((matching.reduce((sum, r) => sum + r.accuracy, 0) / games) * 10) / 10 : 0
+    return { side, accuracy, games }
+  })
+}
+
 export interface TopLeak {
   reason: MistakeReason
   label: string

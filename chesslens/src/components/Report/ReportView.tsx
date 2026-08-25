@@ -47,7 +47,7 @@ function SectionLabel({ children }: { children: ReactNode }) {
  * desempenho por abertura, evolução de precisão, e um comentário da capivara no fim.
  */
 export function ReportView({ onGoToErrorTraining, onGoToOpeningTraining, onGoToAnalyze }: ReportViewProps) {
-  const { status, overallAccuracy, gamesCount, phaseAccuracy, clockBuckets, openingPerformance, trend, topLeaks, comment } = useReportData()
+  const { status, overallAccuracy, gamesCount, phaseAccuracy, clockBuckets, openingPerformance, trend, topLeaks, resultStats, accuracyBySide, comment } = useReportData()
 
   return (
     <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', maxHeight: 'calc(100vh - 20px)', display: 'flex', justifyContent: 'center' }}>
@@ -84,6 +84,43 @@ export function ReportView({ onGoToErrorTraining, onGoToOpeningTraining, onGoToA
               </span>
               <span style={{ fontSize: 13, color: 'var(--color-gray-muted)' }}>de precisão média, considerando todas as partidas analisadas</span>
             </div>
+
+            {(resultStats.wins + resultStats.draws + resultStats.losses) > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <SectionLabel>Resultado</SectionLabel>
+                <div className="cl-card cl-fade-in" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: 24 }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                      <span className="cl-mono" style={{ fontSize: 26, fontWeight: 800, color: 'var(--color-success)' }}>{resultStats.wins}</span>
+                      <span style={{ fontSize: 12, color: 'var(--color-gray-muted)' }}>vitória{resultStats.wins === 1 ? '' : 's'}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                      <span className="cl-mono" style={{ fontSize: 26, fontWeight: 800, color: 'var(--color-draw)' }}>{resultStats.draws}</span>
+                      <span style={{ fontSize: 12, color: 'var(--color-gray-muted)' }}>empate{resultStats.draws === 1 ? '' : 's'}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                      <span className="cl-mono" style={{ fontSize: 26, fontWeight: 800, color: 'var(--color-error)' }}>{resultStats.losses}</span>
+                      <span style={{ fontSize: 12, color: 'var(--color-gray-muted)' }}>derrota{resultStats.losses === 1 ? '' : 's'}</span>
+                    </div>
+                    <div style={{ marginLeft: 'auto', fontSize: 12.5, color: 'var(--color-gray-muted)' }}>
+                      <span className="cl-mono" style={{ fontWeight: 800, color: 'var(--color-text-on-dark)' }}>{resultStats.winRate}%</span> de aproveitamento
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, borderTop: '1px solid var(--color-gray-border)', paddingTop: 14 }}>
+                    {accuracyBySide.map((s) => (
+                      <div key={s.side} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ width: 14, height: 14, borderRadius: 'var(--radius-sm)', flexShrink: 0, background: s.side === 'w' ? '#f5f5f5' : '#1a1a1a', border: '1.5px solid var(--color-gray-border)' }} />
+                        <span style={{ fontSize: 12, color: 'var(--color-gray-muted)' }}>{s.side === 'w' ? 'Brancas' : 'Pretas'}</span>
+                        <span className="cl-mono" style={{ fontSize: 14, fontWeight: 800, color: s.games ? masteryColor(s.accuracy) : 'var(--color-gray-muted)' }}>
+                          {s.games ? `${s.accuracy}%` : '—'}
+                        </span>
+                        <span style={{ fontSize: 11, color: 'var(--color-gray-muted)' }}>({s.games})</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {topLeaks.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
