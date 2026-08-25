@@ -425,6 +425,16 @@ body {
   .cl-main-shell { min-height: 0; }
 }
 
+/* Padding lateral do `<main>` (10px fixo, pensado pra desktop) some pilhas ~20px de folga fora
+   do container antes mesmo do tabuleiro entrar na conta de `useBoardSize.ts` — reduzido no
+   celular (junto com a margem fixa menor de lá) pra deixar o tabuleiro reivindicar quase toda a
+   largura real da tela, pedido direto do usuário ("deixa tabuleiro maior possivel... encostando
+   na borda do celular"). Vale pro `<main>` inteiro (não só telas com tabuleiro) — não fica
+   apertado demais pro resto do conteúdo, que já tem seu próprio padding interno (cards, `aside`). */
+@media (max-width: 480px) {
+  .cl-main-shell { padding: 6px; }
+}
+
 /* Cabeçalho de perfil (PlayerCard chess.com/Lichess em PlayerSearch/ + o skeleton de loading em
    SearchView.tsx) — os três compartilham o mesmo layout: avatar redondo fixo + coluna de texto ao
    lado. Em 100px fixo + gap 20px, numa tela de ~390px sobra pouquíssima largura pra coluna de
@@ -484,13 +494,27 @@ body {
 }
 
 /* ══════════════════════════════════════════════
-   Home — hero com a mascote como plano de fundo. Em telas estreitas o texto
-   (que normalmente fica encostado à direita) precisa ocupar a largura toda,
-   senão vaza pra fora da área de conteúdo.
+   Home — hero com a mascote como plano de fundo. No desktop o texto fica encostado à direita,
+   longe da lupa que a capivara segura (ver comentário em HomePage.tsx) — sobra espaço de sobra
+   pra isso numa tela larga. Numa tela de celular não sobra: `flex-basis:100%` (já existia) faz o
+   texto ocupar a largura toda, mas ele continua começando no TOPO da imagem (mesmo ponto de
+   sempre), caindo bem em cima do rosto/lupa da capivara — pedido direto do usuário depois de ver
+   isso ao vivo ("a imagem ficou bugada e ficou muito lotado o visual"). Fix: abaixo de 760px o
+   texto desce pra começar DEPOIS da imagem (`margin-top` casando com a altura real dela, mesma
+   fórmula `56.25cqw` de `.cl-hero-bg` abaixo + o `top:-6` dela, inline em HomePage.tsx) em vez de
+   flutuar por cima — a imagem fica limpa e o texto fica num fundo sólido (preto, herdado de
+   `.cl-home-hero-wrap`), sem competir visualmente um com o outro. O respiro grande de 130px que
+   o desktop usa pra separar o hero dos Recursos deixa de fazer sentido empilhado (era espaço pra
+   "ver a imagem no meio", que já não existe mais aqui) — reduzido bem mais.
    ══════════════════════════════════════════════ */
 @media (max-width: 760px) {
   .cl-home-hero-content {
     flex-basis: 100% !important;
+  }
+  .cl-home-hero-row {
+    margin-top: calc(56.25cqw + 22px) !important;
+    margin-bottom: 28px !important;
+    min-height: 0 !important;
   }
 }
 

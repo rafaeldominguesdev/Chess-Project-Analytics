@@ -13,6 +13,15 @@ const DEFAULT_MAX_AUTO = 1060
 const DEFAULT_WIDTH_FACTOR = 0.94
 // Cards de jogador (compactos) + paddings — controles agora ficam ao lado do tabuleiro, não somam altura.
 const DEFAULT_VIEWPORT_H_RESERVE = 136
+// Abaixo desse container (celular — mesmo corte de "tela estreita" usado em index.css), o
+// `widthFactor` de fração (deixa ~6% de fora de propósito, pra respirar numa tela grande) passa
+// a render um tabuleiro "apertado" — pedido direto do usuário depois de ver ao vivo ("deixa
+// tabuleiro maior possivel tipo encostando na borda do celular... para nao ficar apertado"). Num
+// container já estreito não sobra tanto espaço assim pra "respirar" — melhor reservar uma margem
+// FIXA pequena (`MOBILE_SIDE_MARGIN`, os dois lados juntos) em vez de uma fração, deixando o
+// tabuleiro reivindicar quase toda a largura disponível.
+const MOBILE_CONTAINER_THRESHOLD = 480
+const MOBILE_SIDE_MARGIN = 6
 
 interface BoardSizeOptions {
   /** Fração da largura do container que o tabuleiro deve ocupar (0-1). */
@@ -49,7 +58,10 @@ export function useBoardSize(preset: BoardSize = 'auto', options: BoardSizeOptio
   const calcFromWidth = useCallback((containerWidth: number) => {
     const availableH = window.innerHeight - heightReserve
     const availableW = containerWidth > 0 ? containerWidth - chromeWidth : 0
-    const target = containerWidth > 0 ? availableW * widthFactor : 480
+    const isMobileContainer = containerWidth > 0 && containerWidth <= MOBILE_CONTAINER_THRESHOLD
+    const target = containerWidth > 0
+      ? (isMobileContainer ? availableW - MOBILE_SIDE_MARGIN : availableW * widthFactor)
+      : 480
     const size = Math.min(target, availableH, maxSize)
     const withFloor = Math.max(MIN_AUTO, Math.round(size))
     // Em telas de celular bem estreitas (largura útil abaixo do piso de MIN_AUTO — não

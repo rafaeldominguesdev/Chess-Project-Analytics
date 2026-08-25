@@ -93,7 +93,7 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
             encostar o texto bem mais pra direita — encostado em cima/direita, longe da lupa
             que a capivara segura no meio da imagem — e com bastante espaço embaixo antes dos
             Recursos, pra imagem "respirar" no meio. ── */}
-        <div style={{
+        <div className="cl-home-hero-row" style={{
           display: 'flex', justifyContent: 'flex-end', minHeight: 170, marginBottom: 130,
           padding: 'clamp(8px, 1.5vw, 14px) clamp(10px, 1.5vw, 18px) 0',
         }}>
