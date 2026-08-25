@@ -153,7 +153,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
           aria-label="Configurações"
           onClick={(e) => e.stopPropagation()}
           style={{
-            width: 900, maxWidth: '95vw', height: 'min(760px, 90vh)',
+            width: '96vw', maxWidth: 1400, height: '94vh',
             background: 'var(--color-bg-panel)',
             border: '1px solid var(--color-gray-border)',
             borderRadius: 'var(--radius-lg)',
@@ -255,6 +255,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
 
           {/* Conteúdo da categoria selecionada */}
           <div className="settings-scroll" style={{ flex: 1, overflowY: 'auto', padding: '4px 22px 24px' }}>
+           <div style={{ maxWidth: 760, margin: '0 auto' }}>
             {active && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
                 <span style={{
@@ -423,6 +424,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
                 )}
               </Section>
             )}
+           </div>
           </div>
         </div>
         </div>
