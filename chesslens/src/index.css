@@ -525,14 +525,10 @@ body {
    HomePage.tsx) é um container de consulta CSS (`container-type: inline-size`), e a altura vem de
    `cqw` (unidade relativa à LARGURA do container) em vez de esticar pela altura do wrapper.
    Troca de arte (pedido direto do usuário — "quero essa como main"): `hero-jogar.png` é um
-   retrato QUADRADO (1920×1920, mascote central segurando peça em cada mão, com folga mínima ao
-   redor — bem diferente da cena larga/16:9 da arte antiga, que tinha folga generosa pra `cover`
-   cortar sem perder nada importante). Com uma imagem quase sem folga, `cover` numa caixa larga
-   cortava justamente as partes que dão contexto (orelhas, mãos com as peças) — trocado pra
-   `background-size: contain` (nunca corta, sempre mostra a arte inteira) + caixa mais alta
-   (`75cqw` em vez de `56.25cqw`/16:9) pra sobrar menos vão vazio ao redor. `--hero-bg-pos-x`
-   (25% por padrão) desloca a arte pra esquerda, deixando espaço livre à direita pro texto (que no
-   desktop fica ancorado à direita, ver HomePage.tsx) sem os dois competirem visualmente.
+   retrato QUADRADO (1920×1920, mascote central segurando peça em cada mão), bem diferente da
+   cena larga/16:9 da arte antiga — caixa subiu pra `75cqw` (em vez de `56.25cqw`/16:9) pra sobrar
+   menos vão vazio ao redor dela. Detalhe do enquadramento (sizing/position exatos, por que não é
+   mais `cover`) está no comentário bem em cima da própria declaração de `background-size` abaixo.
    Abaixo da altura desta caixa, o resto do wrapper (cards de Recurso, rodapé) precisa continuar
    preto — não cinza — porque o FUNDO DA PRÓPRIA ARTE já é preto (a foto desvanece pra preto perto
    da base, não pára num corte limpo). Antes da troca de paleta desta sessão isso não precisava
@@ -562,21 +558,24 @@ body {
      (a arte antiga, capivara com lupa) continua intocada e é a fonte de todos os outros recortes
      de avatar (CoachComment, PlayVsBotView, .cl-playbot-hero-thumb), que não usam `.cl-hero-bg`
      e por isso não foram afetados por essa troca. Diferente da arte antiga (cena larga, capivara
-     à esquerda + tabuleiro à direita, exigia posição horizontal deslocada e recalibrada por
-     breakpoint pra manter os dois elementos visíveis), a nova é um retrato central e simétrico
-     (mascote no meio, uma peça erguida de cada lado) — center/center básico já enquadra bem em
-     qualquer largura, sem precisar da lógica de `--hero-bg-pos-x` por breakpoint que a composição
-     antiga exigia (removida, não se aplica mais aqui). Também tem transparência real (PNG com
-     alfa, não uma cena opaca) — a "emenda" que o gradiente de baixo (`linear-gradient` abaixo)
-     resolvia pra arte antiga praticamente não aparece mais aqui (mantido mesmo assim, inofensivo
-     sobre uma área já transparente). */
+     à esquerda + tabuleiro à direita), a nova é um retrato quase quadrado com pouca folga ao
+     redor do personagem — `background-size: auto 78%` (não `contain` puro, ver abaixo) encolhe a
+     arte um pouco mais que "preencher a caixa inteira" (pedido do usuário depois de ver ao vivo,
+     "da um pouco menos de zoom"), sobrando uma margem visível ao redor em vez da mascote tocando
+     as bordas da caixa. `--hero-bg-pos-x` (25%) desloca o resultado pra esquerda, deixando espaço
+     livre à direita pro texto (que no desktop fica ancorado à direita, ver HomePage.tsx) sem os
+     dois competirem visualmente — ainda em uso, ao contrário do que a composição simétrica
+     poderia sugerir (o texto continua só de um lado, então a arte também precisa). Tem
+     transparência real (PNG com alfa, não uma cena opaca) — a "emenda" que o gradiente de baixo
+     (`linear-gradient` abaixo) resolvia pra arte antiga praticamente não aparece mais aqui
+     (mantido mesmo assim, inofensivo sobre uma área já transparente). */
   background-image:
     linear-gradient(to bottom, transparent 72%, #000000 100%),
     radial-gradient(ellipse 42% 30% at 26% 90%, color-mix(in srgb, var(--color-blue-light) 65%, transparent), transparent 72%),
     radial-gradient(ellipse 42% 30% at 76% 90%, color-mix(in srgb, var(--color-blue-light) 65%, transparent), transparent 72%),
     url(/hero-jogar.png),
     radial-gradient(ellipse 55% 65% at 30% 55%, color-mix(in srgb, var(--color-blue-bright) 14%, transparent), transparent 70%);
-  background-size: 100% 100%, 100% 100%, 100% 100%, contain, 100% 100%;
+  background-size: 100% 100%, 100% 100%, 100% 100%, auto 78%, 100% 100%;
   background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
   background-position: center, center, center, var(--hero-bg-pos-x, 25%) var(--hero-bg-pos-y, 50%), center;
   background-blend-mode: normal, screen, screen, normal, normal;
