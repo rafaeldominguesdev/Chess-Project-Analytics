@@ -149,3 +149,21 @@ export function ChevronIcon(props: IconProps) {
   )
 }
 
+/** Três linhas — abre o menu-gaveta no celular (abaixo de 760px, ver Sidebar.tsx). */
+export function MenuIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  )
+}
+
+/** X simples — fecha o menu-gaveta no celular, substitui o chevron de encolher/expandir nesse modo. */
+export function CloseIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  )
+}
+

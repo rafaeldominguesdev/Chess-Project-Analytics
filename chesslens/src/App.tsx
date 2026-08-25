@@ -22,6 +22,7 @@ import { AnalysisBoardView } from './components/Analysis/AnalysisBoardView'
 import { PositionEditorView } from './components/PositionEditor/PositionEditorView'
 import { PlayerCard } from './components/Theater/PlayerCard'
 import { Sidebar } from './components/Layout/Sidebar'
+import { MenuIcon } from './components/Layout/icons'
 import { MaintenanceNotice } from './components/Layout/MaintenanceNotice'
 import { UpdatesPanel } from './components/Layout/UpdatesPanel'
 import { HomePage } from './components/Home/HomePage'
@@ -71,6 +72,9 @@ function AppInner() {
   const [pendingErrorReason, setPendingErrorReason] = useState<MistakeReason | null>(null)
   // Nome da função clicada num item de menu "em manutenção" (ver Sidebar) — null = fechado.
   const [maintenanceFeature, setMaintenanceFeature] = useState<string | null>(null)
+  // Menu-gaveta da sidebar no celular (<760px) — aberto pela barra superior mobile abaixo,
+  // fechado pela própria Sidebar (overlay, Esc, ou item de navegação clicado).
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   // Tela de "Analisar" (busca de jogador) — página própria, separada da Home, com prioridade
   // sobre ela: fica visível mesmo com uma partida carregada (isLoaded), pra dar sempre um
   // caminho de volta pra busca sem precisar descarregar a partida antes.
@@ -360,8 +364,35 @@ function AppInner() {
   const blackClock = lastClock('b')
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: 'var(--color-bg-main)', color: 'var(--color-text-on-dark)' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--color-bg-main)', color: 'var(--color-text-on-dark)' }}>
+      {/* Barra superior só-mobile (<760px, ver .cl-mobile-topbar em index.css) — reserva espaço
+          de verdade (sticky, não flutua por cima do conteúdo) pro botão que abre a gaveta da
+          Sidebar. Some por completo no desktop, onde a Sidebar já é sticky/in-flow. */}
+      <div className="cl-mobile-topbar" style={{
+        alignItems: 'center', gap: 10, padding: '10px 14px',
+        background: 'var(--color-bg-sidebar)', borderBottom: '1px solid var(--color-gray-border)',
+        position: 'sticky', top: 0, zIndex: 40,
+      }}>
+        <button
+          onClick={() => setMobileNavOpen(true)}
+          aria-label="Abrir menu"
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: 36, height: 36, flexShrink: 0, padding: 0,
+            borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-gray-border)',
+            background: 'var(--color-bg-raised)', color: 'var(--color-text-on-dark)', cursor: 'pointer',
+          }}
+        >
+          <MenuIcon width={19} height={19} />
+        </button>
+        <img src="/logo.png" alt="" width={24} height={24} style={{ borderRadius: 6, flexShrink: 0, display: 'block' }} />
+        <span className="cl-display" style={{ fontSize: 14.5, fontWeight: 800, color: 'var(--color-text-on-dark)' }}>ChessCap</span>
+      </div>
+
+      <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
       <Sidebar
+        mobileOpen={mobileNavOpen}
+        onCloseMobile={() => setMobileNavOpen(false)}
         onSettings={() => setSettingsOpen(true)}
         onUpdates={() => setUpdatesOpen(true)}
         onToggleTraining={() => { setTrainingMode((v) => !v); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setEndgameTrainingMode(false); setReportMode(false); setPlayBotMode(false); setPositionEditorMode(false); setSearchMode(false) }}
@@ -484,6 +515,7 @@ function AppInner() {
           </>
         )}
       </main>
+      </div>
 
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <UpdatesPanel open={updatesOpen} onClose={() => setUpdatesOpen(false)} />

@@ -382,6 +382,20 @@ body {
   .cl-tool-aside-scroll { overflow-y: visible; max-height: none; }
 }
 
+/* ══════════════════════════════════════════════
+   Navegação mobile (menu-gaveta) — ver Sidebar.tsx/App.tsx. Abaixo de 760px a Sidebar sai do
+   fluxo (`position: fixed`, escondida por padrão) e essa barra fina no topo passa a ser o único
+   jeito de abrir o menu. `.cl-main-shell` tinha `min-height: 100vh` fixo (linha acima) — com a
+   barra agora ocupando altura própria ANTES dele (mesmo wrapper vertical, ver App.tsx), esse
+   100vh sobraria por cima da altura da barra, sobrando espaço vazio rolável no fim da página.
+   Corrigido deixando o `<main>` só preencher o que resta (`flex: 1` já está inline no App.tsx).
+   ══════════════════════════════════════════════ */
+.cl-mobile-topbar { display: none; }
+@media (max-width: 760px) {
+  .cl-mobile-topbar { display: flex; }
+  .cl-main-shell { min-height: 0; }
+}
+
 /* Variante com um rodapé FIXO fora da área rolável (hoje só a Revisão de partida usa, pra
    pinar `BoardControls` — ver ReviewPanel.tsx). Pedido direto do usuário: a navegação de lances
    ficava abaixo da dobra sempre que o conteúdo acima (coach + motor + avaliação + lances) fosse

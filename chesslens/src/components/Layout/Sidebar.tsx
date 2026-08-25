@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { AnalyzeNavIcon, BoardNavIcon, BookNavIcon, ChevronIcon, EndgameNavIcon, ErrorTrainNavIcon, GearIcon, PlayBotNavIcon, PositionSetupIcon, SunNavIcon, TargetIcon, WrenchIcon } from './icons'
+import { AnalyzeNavIcon, BoardNavIcon, BookNavIcon, ChevronIcon, CloseIcon, EndgameNavIcon, ErrorTrainNavIcon, GearIcon, PlayBotNavIcon, PositionSetupIcon, SunNavIcon, TargetIcon, WrenchIcon } from './icons'
+
+// Abaixo desta largura a sidebar sai do fluxo e vira menu-gaveta (ver `isMobile` abaixo) — mesmo
+// breakpoint já usado em outros pontos de `index.css` pra "tela estreita", reaproveitado aqui em
+// vez de inventar um novo número.
+const MOBILE_BREAKPOINT = '(max-width: 760px)'
 
 interface SidebarProps {
   onSettings: () => void
@@ -24,6 +29,11 @@ interface SidebarProps {
   playBotActive: boolean
   positionEditorActive: boolean
   searchActive: boolean
+  /** Estado do menu-gaveta no celular — dono é `App.tsx` (a barra superior mobile que abre o
+   *  menu vive lá, fora da sidebar, pra reservar espaço de verdade em vez de flutuar por cima
+   *  do conteúdo). */
+  mobileOpen: boolean
+  onCloseMobile: () => void
 }
 
 const COLLAPSED_KEY = 'chesslens-sidebar-collapsed'
@@ -55,13 +65,39 @@ const TRAIN_PLACEHOLDERS: string[] = []
  *  colado no topo, ao lado da marca — e esse estado persiste entre sessões (localStorage), já que
  *  é preferência de layout, não algo que muda por partida. Rola internamente (overflowY) porque
  *  com tudo expandido não cabe numa tela baixa. */
-export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard, onToggleOpeningTraining, onToggleErrorTraining, onToggleEndgameTraining, onToggleReport, onTogglePlayBot, onGoHome, onAnalyzeClick, onMaintenanceClick, onTogglePositionEditor, trainingActive, boardActive, openingTrainingActive, errorTrainingActive, endgameTrainingActive, reportActive, playBotActive, positionEditorActive, searchActive }: SidebarProps) {
+export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard, onToggleOpeningTraining, onToggleErrorTraining, onToggleEndgameTraining, onToggleReport, onTogglePlayBot, onGoHome, onAnalyzeClick, onMaintenanceClick, onTogglePositionEditor, trainingActive, boardActive, openingTrainingActive, errorTrainingActive, endgameTrainingActive, reportActive, playBotActive, positionEditorActive, searchActive, mobileOpen, onCloseMobile }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(() => {
     const saved = localStorage.getItem(COLLAPSED_KEY)
     // Sem preferência salva ainda: começa colapsada (só ícones) em telas estreitas, senão a
     // sidebar expandida sozinha já ocupa a maior parte de uma tela de celular.
     return saved !== null ? saved === '1' : window.innerWidth < 640
   })
+
+  // Abaixo de `MOBILE_BREAKPOINT` a sidebar deixa de ser sticky-in-flow e vira menu-gaveta
+  // (`position: fixed`, entra/sai por transform, coberta por overlay) — ver JSX abaixo. Rastreado
+  // via `matchMedia` (não só `window.innerWidth` no mount) pra reagir a rotação de tela/resize.
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia(MOBILE_BREAKPOINT).matches)
+  useEffect(() => {
+    const mq = window.matchMedia(MOBILE_BREAKPOINT)
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
+  // Girar a tela/redimensionar pra desktop com a gaveta aberta não deve deixar o overlay preso.
+  useEffect(() => {
+    if (!isMobile && mobileOpen) onCloseMobile()
+  }, [isMobile, mobileOpen, onCloseMobile])
+
+  // Esc fecha a gaveta, igual outros painéis do app.
+  useEffect(() => {
+    if (!mobileOpen) return
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onCloseMobile()
+    }
+    document.addEventListener('keydown', handleKey)
+    return () => document.removeEventListener('keydown', handleKey)
+  }, [mobileOpen, onCloseMobile])
 
   function toggleCollapsed() {
     setCollapsed(prev => {
@@ -71,119 +107,153 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
     })
   }
 
+  // Na gaveta mobile sempre mostra a versão "expandida" (ícone + texto) — não faz sentido
+  // colapsar pra só-ícone um menu que já começa escondido por padrão. O toggle de
+  // colapsar/expandir (`collapsed`/`toggleCollapsed`) continua existindo só pro desktop.
+  const effectiveCollapsed = isMobile ? false : collapsed
+
+  // Todo onClick de item de navegação passa por aqui — fecha a gaveta mobile depois de navegar
+  // (no desktop `onCloseMobile` é um no-op na prática, `mobileOpen` já começa falso). Sem isso,
+  // cada item precisaria lembrar de fechar a gaveta na mão.
+  function closeAnd(fn: () => void) {
+    return () => { fn(); onCloseMobile() }
+  }
+
   const trainItems: GroupItem[] = [
-    { icon: <TargetIcon width={20} height={20} />, label: 'Puzzles', active: trainingActive, onClick: onToggleTraining },
-    { icon: <BookNavIcon width={20} height={20} />, label: 'Treino de Aberturas', active: openingTrainingActive, onClick: onToggleOpeningTraining },
-    { icon: <ErrorTrainNavIcon width={20} height={20} />, label: 'Treino de Erros', active: errorTrainingActive, onClick: onToggleErrorTraining },
-    { icon: <EndgameNavIcon width={20} height={20} />, label: 'Treino de Finais', active: endgameTrainingActive, onClick: onToggleEndgameTraining },
+    { icon: <TargetIcon width={20} height={20} />, label: 'Puzzles', active: trainingActive, onClick: closeAnd(onToggleTraining) },
+    { icon: <BookNavIcon width={20} height={20} />, label: 'Treino de Aberturas', active: openingTrainingActive, onClick: closeAnd(onToggleOpeningTraining) },
+    { icon: <ErrorTrainNavIcon width={20} height={20} />, label: 'Treino de Erros', active: errorTrainingActive, onClick: closeAnd(onToggleErrorTraining) },
+    { icon: <EndgameNavIcon width={20} height={20} />, label: 'Treino de Finais', active: endgameTrainingActive, onClick: closeAnd(onToggleEndgameTraining) },
     ...TRAIN_PLACEHOLDERS.map((label) => ({
       icon: <WrenchIcon width={19} height={19} />, label, active: false, soon: true,
-      onClick: () => onMaintenanceClick(label),
+      onClick: closeAnd(() => onMaintenanceClick(label)),
     })),
   ]
 
   const toolItems: GroupItem[] = [
-    { icon: <AnalyzeNavIcon width={20} height={20} />, label: 'Analisar', active: searchActive, onClick: onAnalyzeClick },
-    { icon: <BoardNavIcon width={20} height={20} />, label: 'Tabuleiro', active: boardActive, onClick: onToggleBoard },
-    { icon: <PositionSetupIcon width={20} height={20} />, label: 'Definir Posição', active: positionEditorActive, onClick: onTogglePositionEditor },
+    { icon: <AnalyzeNavIcon width={20} height={20} />, label: 'Analisar', active: searchActive, onClick: closeAnd(onAnalyzeClick) },
+    { icon: <BoardNavIcon width={20} height={20} />, label: 'Tabuleiro', active: boardActive, onClick: closeAnd(onToggleBoard) },
+    { icon: <PositionSetupIcon width={20} height={20} />, label: 'Definir Posição', active: positionEditorActive, onClick: closeAnd(onTogglePositionEditor) },
   ]
 
   return (
-    <nav
-      style={{
-        width: collapsed ? WIDTH_COLLAPSED : WIDTH_EXPANDED, flexShrink: 0,
-        position: 'sticky', top: 0,
-        height: '100vh',
-        display: 'flex', flexDirection: 'column',
-        padding: collapsed ? '18px 10px' : '18px 14px',
-        // Um tom mais escuro que o resto do app (--color-bg-panel), não o mesmo — pedido direto
-        // do usuário: "quero a sidebar um pouco mais escura que o cinza do resto do site".
-        background: 'var(--color-bg-sidebar)',
-        borderRight: '1px solid var(--color-gray-border)',
-        zIndex: 30,
-        transition: 'width var(--dur-enter) var(--ease-snap), padding var(--dur-enter) var(--ease-snap)',
-        overflowX: 'hidden', overflowY: 'auto',
-      }}
-    >
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18,
-        // Colapsada, a marca e o botão de toggle não cabem lado a lado (60px de largura total,
-        // menos padding, não sobra espaço pros dois) — empilha em duas linhas centralizadas.
-        flexDirection: collapsed ? 'column' : 'row',
-      }}>
-        {!collapsed && (
+    <>
+      {/* Overlay escuro atrás da gaveta — só existe de fato <760px com a gaveta aberta (ver
+          `isMobile`/`mobileOpen`); no desktop nunca renderiza. */}
+      {isMobile && mobileOpen && (
+        <div
+          onClick={onCloseMobile}
+          aria-hidden="true"
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 44 }}
+        />
+      )}
+      <nav
+        style={{
+          width: isMobile ? WIDTH_EXPANDED : (collapsed ? WIDTH_COLLAPSED : WIDTH_EXPANDED), flexShrink: 0,
+          position: isMobile ? 'fixed' : 'sticky', top: 0, left: 0,
+          height: '100vh',
+          display: 'flex', flexDirection: 'column',
+          padding: effectiveCollapsed ? '18px 10px' : '18px 14px',
+          // Um tom mais escuro que o resto do app (--color-bg-panel), não o mesmo — pedido direto
+          // do usuário: "quero a sidebar um pouco mais escura que o cinza do resto do site".
+          background: 'var(--color-bg-sidebar)',
+          borderRight: '1px solid var(--color-gray-border)',
+          zIndex: isMobile ? 45 : 30,
+          // <760px a sidebar entra/sai por transform (menu-gaveta) — "abre feito dobradiça",
+          // por isso `--ease-hinge` em vez do `--ease-snap` usado na transição de largura do
+          // desktop (ver skill de design: hinge é pra elementos que ABREM, não que aparecem).
+          transform: isMobile ? (mobileOpen ? 'translateX(0)' : 'translateX(-100%)') : undefined,
+          boxShadow: isMobile && mobileOpen ? '4px 0 24px rgba(0,0,0,0.45)' : undefined,
+          transition: isMobile
+            ? 'transform var(--dur-enter) var(--ease-hinge)'
+            : 'width var(--dur-enter) var(--ease-snap), padding var(--dur-enter) var(--ease-snap)',
+          overflowX: 'hidden', overflowY: 'auto',
+        }}
+      >
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18,
+          // Colapsada, a marca e o botão de toggle não cabem lado a lado (60px de largura total,
+          // menos padding, não sobra espaço pros dois) — empilha em duas linhas centralizadas.
+          flexDirection: effectiveCollapsed ? 'column' : 'row',
+        }}>
+          {!effectiveCollapsed && (
+            <button
+              onClick={closeAnd(onGoHome)}
+              title="ChessCap"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0,
+                background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
+                padding: '0 4px',
+              }}
+            >
+              {/* Logo oficial do site (mesma imagem do favicon, `public/logo.png`) — substitui o
+                  ícone vetorial genérico que tinha aqui antes, a pedido direto do usuário. */}
+              <img
+                src="/logo.png"
+                alt=""
+                width={27}
+                height={27}
+                style={{ borderRadius: 6, flexShrink: 0, display: 'block' }}
+              />
+              <span className="cl-display" style={{ fontSize: 15.5, fontWeight: 800, color: 'var(--color-text-on-dark)', whiteSpace: 'nowrap' }}>ChessCap</span>
+            </button>
+          )}
           <button
-            onClick={onGoHome}
-            title="ChessCap"
+            onClick={isMobile ? onCloseMobile : toggleCollapsed}
+            title={isMobile ? 'Fechar menu' : (collapsed ? 'Expandir menu' : 'Encolher menu')}
+            aria-label={isMobile ? 'Fechar menu' : (collapsed ? 'Expandir menu' : 'Encolher menu')}
             style={{
-              display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0,
-              background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
-              padding: '0 4px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 29, height: 29, flexShrink: 0, padding: 0,
+              borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-gray-border)',
+              background: 'var(--color-bg-raised)', color: 'var(--color-text-on-dark)', cursor: 'pointer',
+              transition: 'background-color var(--dur-tap) var(--ease-tap), border-color var(--dur-tap) var(--ease-tap)',
             }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-blue-bright)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-gray-border)' }}
           >
-            {/* Logo oficial do site (mesma imagem do favicon, `public/logo.png`) — substitui o
-                ícone vetorial genérico que tinha aqui antes, a pedido direto do usuário. */}
-            <img
-              src="/logo.png"
-              alt=""
-              width={27}
-              height={27}
-              style={{ borderRadius: 6, flexShrink: 0, display: 'block' }}
-            />
-            <span className="cl-display" style={{ fontSize: 15.5, fontWeight: 800, color: 'var(--color-text-on-dark)', whiteSpace: 'nowrap' }}>ChessCap</span>
+            {isMobile ? (
+              <CloseIcon width={17} height={17} />
+            ) : (
+              <ChevronIcon width={17} height={17} style={{ transform: collapsed ? 'rotate(180deg)' : 'none', transition: 'transform var(--dur-enter) var(--ease-snap)' }} />
+            )}
           </button>
-        )}
-        <button
-          onClick={toggleCollapsed}
-          title={collapsed ? 'Expandir menu' : 'Encolher menu'}
-          aria-label={collapsed ? 'Expandir menu' : 'Encolher menu'}
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            width: 29, height: 29, flexShrink: 0, padding: 0,
-            borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-gray-border)',
-            background: 'var(--color-bg-raised)', color: 'var(--color-text-on-dark)', cursor: 'pointer',
-            transition: 'background-color var(--dur-tap) var(--ease-tap), border-color var(--dur-tap) var(--ease-tap)',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-blue-bright)' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-gray-border)' }}
-        >
-          <ChevronIcon width={17} height={17} style={{ transform: collapsed ? 'rotate(180deg)' : 'none', transition: 'transform var(--dur-enter) var(--ease-snap)' }} />
-        </button>
-      </div>
+        </div>
 
-      <div style={{ height: 1, background: 'var(--color-gray-border)', marginBottom: 18 }} />
+        <div style={{ height: 1, background: 'var(--color-gray-border)', marginBottom: 18 }} />
 
-      {/* Seção própria, acima de "Treino" — item novo de maior destaque (Sprint 4): jogar uma
-          partida real contra o Stockfish com força limitada, não um exercício com resposta
-          certa fixa como os treinos abaixo. Ícone genérico de peão (não a mascote) — o avatar da
-          capivara já aparece dentro da própria tela de jogo, por faixa de força. Item único —
-          continua `NavItem` simples, não vira `NavGroup` (um submenu pra 1 item só não faz sentido). */}
-      <NavSection label="Jogar" collapsed={collapsed}>
-        <NavItem icon={<PlayBotNavIcon width={22} height={22} />} label="Jogar contra a Capivara" active={playBotActive} onClick={onTogglePlayBot} collapsed={collapsed} />
-      </NavSection>
+        {/* Seção própria, acima de "Treino" — item novo de maior destaque (Sprint 4): jogar uma
+            partida real contra o Stockfish com força limitada, não um exercício com resposta
+            certa fixa como os treinos abaixo. Ícone genérico de peão (não a mascote) — o avatar da
+            capivara já aparece dentro da própria tela de jogo, por faixa de força. Item único —
+            continua `NavItem` simples, não vira `NavGroup` (um submenu pra 1 item só não faz sentido). */}
+        <NavSection label="Jogar" collapsed={effectiveCollapsed}>
+          <NavItem icon={<PlayBotNavIcon width={22} height={22} />} label="Jogar contra a Capivara" active={playBotActive} onClick={closeAnd(onTogglePlayBot)} collapsed={effectiveCollapsed} />
+        </NavSection>
 
-      <div style={{ marginBottom: 16 }}>
-        <NavGroup icon={<img src="/icon-treino.png" alt="" width={36} height={36} style={{ flexShrink: 0, display: 'block', aspectRatio: '1' }} />} label="Treino" collapsed={collapsed} items={trainItems} />
-      </div>
+        <div style={{ marginBottom: 16 }}>
+          <NavGroup icon={<img src="/icon-treino.png" alt="" width={36} height={36} style={{ flexShrink: 0, display: 'block', aspectRatio: '1' }} />} label="Treino" collapsed={effectiveCollapsed} items={trainItems} inline={isMobile} />
+        </div>
 
-      {/* Seção própria (não dentro de "Treino") — é o item-âncora do print que a pessoa
-          compartilha (ver ROADMAP.md, Sprint 3), merece destaque visual separado. Item único —
-          mesmo raciocínio de "Jogar" acima. */}
-      <NavSection label="Relatório" collapsed={collapsed}>
-        <NavItem icon={<img src="/icon-relatorio.png" alt="" width={36} height={36} style={{ flexShrink: 0, display: 'block', aspectRatio: '1' }} />} label="Relatório do Jogador" active={reportActive} onClick={onToggleReport} collapsed={collapsed} />
-      </NavSection>
+        {/* Seção própria (não dentro de "Treino") — é o item-âncora do print que a pessoa
+            compartilha (ver ROADMAP.md, Sprint 3), merece destaque visual separado. Item único —
+            mesmo raciocínio de "Jogar" acima. */}
+        <NavSection label="Relatório" collapsed={effectiveCollapsed}>
+          <NavItem icon={<img src="/icon-relatorio.png" alt="" width={36} height={36} style={{ flexShrink: 0, display: 'block', aspectRatio: '1' }} />} label="Relatório do Jogador" active={reportActive} onClick={closeAnd(onToggleReport)} collapsed={effectiveCollapsed} />
+        </NavSection>
 
-      <div style={{ marginBottom: 16 }}>
-        <NavGroup icon={<img src="/icon-ferramentas.png" alt="" width={36} height={36} style={{ flexShrink: 0, display: 'block', aspectRatio: '1' }} />} label="Ferramentas" collapsed={collapsed} items={toolItems} />
-      </div>
+        <div style={{ marginBottom: 16 }}>
+          <NavGroup icon={<img src="/icon-ferramentas.png" alt="" width={36} height={36} style={{ flexShrink: 0, display: 'block', aspectRatio: '1' }} />} label="Ferramentas" collapsed={effectiveCollapsed} items={toolItems} inline={isMobile} />
+        </div>
 
-      <div style={{ flex: 1, minHeight: 12 }} />
+        <div style={{ flex: 1, minHeight: 12 }} />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <NavItem icon={<SunNavIcon width={22} height={22} />} label="Atualizações" onClick={onUpdates} collapsed={collapsed} />
-        <NavItem icon={<GearIcon width={22} height={22} />} label="Configurações" onClick={onSettings} collapsed={collapsed} />
-      </div>
-    </nav>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <NavItem icon={<SunNavIcon width={22} height={22} />} label="Atualizações" onClick={closeAnd(onUpdates)} collapsed={effectiveCollapsed} />
+          <NavItem icon={<GearIcon width={22} height={22} />} label="Configurações" onClick={closeAnd(onSettings)} collapsed={effectiveCollapsed} />
+        </div>
+      </nav>
+    </>
   )
 }
 
@@ -235,7 +305,7 @@ const FLYOUT_CLOSE_DELAY_MS = 220
  *  tabindex, `menuitem` em cada linha) — pros itens continuarem funcionando como botões normais
  *  fora do flyout (reuso do mesmo `NavItem`), ficou uma versão simplificada; documentado aqui
  *  como limitação conhecida, não uma omissão. */
-function NavGroup({ icon, label, collapsed, items }: { icon: ReactNode; label: string; collapsed: boolean; items: GroupItem[] }) {
+function NavGroup({ icon, label, collapsed, items, inline = false }: { icon: ReactNode; label: string; collapsed: boolean; items: GroupItem[]; inline?: boolean }) {
   const [open, setOpen] = useState(false)
   const [pos, setPos] = useState({ top: 0, left: 0 })
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -256,22 +326,12 @@ function NavGroup({ icon, label, collapsed, items }: { icon: ReactNode; label: s
     if (rect) setPos({ top: rect.top, left: rect.right + 8 })
   }
 
-  function openNow() {
-    cancelClose()
-    computePos()
-    setOpen(true)
-  }
-
-  function scheduleClose() {
-    cancelClose()
-    closeTimer.current = window.setTimeout(() => setOpen(false), FLYOUT_CLOSE_DELAY_MS)
-  }
-
-  // Fecha ao clicar fora (necessário pro toque/clique em telas sem hover de verdade, já que ali
-  // o `open` só entra pelo clique no próprio gatilho) e reposiciona se a janela for redimensionada
-  // enquanto o flyout está aberto (a sidebar não some, mas o layout ao redor pode mudar).
+  // Os dois hooks abaixo só fazem sentido no flyout desktop (posição/clique-fora), mas rodam
+  // incondicionalmente pra manter a mesma contagem de hooks entre renders — `inline` pode mudar
+  // em tempo real (redimensionar a janela cruzando o breakpoint mobile), e um `return` condicional
+  // ANTES de um hook faria React acusar "Rendered fewer hooks than expected" nesse resize.
   useEffect(() => {
-    if (!open) return
+    if (inline || !open) return
     function handlePointerDown(e: MouseEvent) {
       if (!wrapperRef.current?.contains(e.target as Node)) setOpen(false)
     }
@@ -282,9 +342,53 @@ function NavGroup({ icon, label, collapsed, items }: { icon: ReactNode; label: s
       window.removeEventListener('resize', computePos)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open])
+  }, [inline, open])
 
   useEffect(() => () => cancelClose(), [])
+
+  // Menu-gaveta mobile (`inline`): sem mouse, e a gaveta já ocupa a tela toda — o padrão de
+  // flyout por hover/posição fixa do desktop (abaixo) não faz sentido aqui. Vira um acordeão
+  // simples, os itens aparecem embutidos no próprio fluxo da gaveta, indentados sob o gatilho.
+  if (inline) {
+    return (
+      <div>
+        <button
+          onClick={() => setOpen(o => !o)}
+          aria-haspopup="true"
+          aria-expanded={open}
+          className={`cl-btn cl-nav-btn${activeAny ? ' cl-btn-selected' : ''}`}
+          style={{ justifyContent: 'flex-start', gap: 11, width: '100%', padding: '16px 13px', fontSize: 13.5, letterSpacing: '0.3px' }}
+        >
+          {icon}
+          <span style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flex: 1 }}>
+            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1, textAlign: 'left' }}>{label}</span>
+            <ChevronIcon width={12} height={12} style={{ color: 'var(--color-gray-muted)', transform: open ? 'rotate(90deg)' : 'rotate(-90deg)', flexShrink: 0, opacity: 0.7, transition: 'transform var(--dur-tap) var(--ease-tap)' }} />
+          </span>
+        </button>
+        {open && (
+          <div style={{
+            display: 'flex', flexDirection: 'column', gap: 3, marginTop: 4, marginBottom: 4,
+            paddingLeft: 10, marginLeft: 15, borderLeft: '1px solid var(--color-gray-border)',
+          }}>
+            {items.map((item) => (
+              <NavItem key={item.label} icon={item.icon} label={item.label} active={item.active} collapsed={false} soon={item.soon} onClick={item.onClick} />
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  function openNow() {
+    cancelClose()
+    computePos()
+    setOpen(true)
+  }
+
+  function scheduleClose() {
+    cancelClose()
+    closeTimer.current = window.setTimeout(() => setOpen(false), FLYOUT_CLOSE_DELAY_MS)
+  }
 
   return (
     <div ref={wrapperRef} onMouseLeave={scheduleClose}>
