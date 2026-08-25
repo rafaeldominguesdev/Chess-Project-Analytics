@@ -47,6 +47,7 @@ interface ThemeContextValue {
   setBoardSize: (v: BoardSize) => void
   setSoundEnabled: (v: boolean) => void
   setSoundTheme: (v: SoundTheme) => void
+  resetTheme: () => void
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
@@ -123,6 +124,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setBoardSize: (v) => update({ boardSize: v }),
       setSoundEnabled: (v) => update({ soundEnabled: v }),
       setSoundTheme: (v) => update({ soundTheme: v }),
+      resetTheme: () => update(DEFAULT_THEME),
     }}>
       {children}
     </ThemeContext.Provider>

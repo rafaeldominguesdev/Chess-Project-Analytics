@@ -55,6 +55,16 @@ export function DataIcon(props: IconProps) {
   )
 }
 
+export function PieceIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <circle cx="12" cy="6.5" r="2.5" />
+      <path d="M9.5 12.5c0-1.4 1.1-2.5 2.5-2.5s2.5 1.1 2.5 2.5l1.2 5.5H8.3z" />
+      <path d="M7 21h10" />
+    </svg>
+  )
+}
+
 export function SearchIcon(props: IconProps) {
   return (
     <svg {...base(props)}>

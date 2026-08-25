@@ -3,11 +3,16 @@ import type { ReactNode } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { BOARD_THEMES, CURATED_BOARD_THEMES, CURATED_PIECE_SETS, PIECE_SETS, PIECE_COLOR_FILTER } from '../../utils/boardThemes'
 import type { PieceSetName, BoardSize, AnimationSpeed, SoundTheme } from '../../types/theme.types'
-import { BoardIcon, AppearanceIcon, MotionIcon, SoundIcon, DataIcon, SearchIcon } from './icons'
+import { BoardIcon, PieceIcon, MotionIcon, SoundIcon, DataIcon, SearchIcon } from './icons'
 import { SOUND_THEMES, playSound } from '../../utils/sounds'
 import { exportAllToJson, importFromJson } from '../../persistence/exportImport'
+import { MiniBoard } from '../Board/MiniBoard'
 
-type CategoryId = 'board' | 'appearance' | 'animation' | 'sound' | 'data'
+// Posição inicial só pra prévia ao vivo do tema/peças — não precisa do FEN completo
+// (MiniBoard só lê a parte de posição).
+const PREVIEW_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR'
+
+type CategoryId = 'board' | 'pieces' | 'movement' | 'sound' | 'data'
 
 interface Category {
   id: CategoryId
@@ -19,19 +24,19 @@ interface Category {
 
 const CATEGORIES: Category[] = [
   {
-    id: 'board', label: 'Tabuleiro e Peças', description: 'Cor do tabuleiro, conjunto de peças e tamanho.',
+    id: 'board', label: 'Tabuleiro', description: 'Cor, destaques e tamanho do tabuleiro.',
     icon: ({ size }) => <BoardIcon width={size} height={size} />,
-    keywords: ['tema', 'cores', 'madeira', 'peças', 'tamanho', 'grande', 'pequeno'],
+    keywords: ['tema', 'cores', 'madeira', 'tamanho', 'grande', 'pequeno', 'coordenadas', 'setas', 'lances legais', 'última jogada'],
   },
   {
-    id: 'appearance', label: 'Aparência', description: 'O que é destacado no tabuleiro durante a análise.',
-    icon: ({ size }) => <AppearanceIcon width={size} height={size} />,
-    keywords: ['coordenadas', 'setas', 'lances legais', 'última jogada'],
+    id: 'pieces', label: 'Peças', description: 'Conjunto de peças usado no tabuleiro.',
+    icon: ({ size }) => <PieceIcon width={size} height={size} />,
+    keywords: ['peças', 'conjunto', 'estilo'],
   },
   {
-    id: 'animation', label: 'Animação', description: 'Velocidade das jogadas na tela.',
+    id: 'movement', label: 'Movimentos', description: 'Velocidade das jogadas na tela.',
     icon: ({ size }) => <MotionIcon width={size} height={size} />,
-    keywords: ['velocidade', 'rápida', 'lenta', 'transição'],
+    keywords: ['velocidade', 'rápida', 'lenta', 'transição', 'animação'],
   },
   {
     id: 'sound', label: 'Sons', description: 'Efeitos sonoros ao mover as peças.',
@@ -86,7 +91,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
     theme,
     setBoardTheme, setPieceSet,
     setShowCoordinates, setCoordinatesOutside, setShowArrows, setShowLegalMoves, setShowLastMove,
-    setBoardSize, setAnimationSpeed, setSoundEnabled, setSoundTheme,
+    setBoardSize, setAnimationSpeed, setSoundEnabled, setSoundTheme, resetTheme,
   } = useTheme()
   const [category, setCategory] = useState<CategoryId>('board')
   const [query, setQuery] = useState('')
@@ -165,14 +170,23 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
           flexShrink: 0,
         }}>
           <h2 className="cl-display" style={{ fontSize: 19, fontWeight: 800, color: 'var(--color-text-on-dark)', letterSpacing: '-0.01em' }}>Configurações</h2>
-          <button
-            onClick={onClose}
-            className="cl-btn cl-btn-sm"
-            aria-label="Fechar configurações"
-            style={{ color: 'var(--color-text-on-dark)', fontSize: 18, lineHeight: 1, padding: '6px 10px' }}
-          >
-            ✕
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button
+              onClick={resetTheme}
+              className="cl-btn cl-btn-ghost"
+              style={{ color: 'var(--color-gray-muted)', fontSize: 12, padding: '6px 10px', width: 'auto', height: 'auto' }}
+            >
+              Restaurar padrão
+            </button>
+            <button
+              onClick={onClose}
+              className="cl-btn cl-btn-sm"
+              aria-label="Fechar configurações"
+              style={{ color: 'var(--color-text-on-dark)', fontSize: 18, lineHeight: 1, padding: '6px 10px' }}
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
         {/* Busca */}
@@ -259,7 +273,9 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
 
             {active?.id === 'board' && (
               <>
-                <Section label="Tabuleiro">
+                <PreviewRow />
+
+                <Section label="Tema">
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                     {CURATED_BOARD_THEMES.map((key) => {
                       const t = BOARD_THEMES[key]
@@ -279,6 +295,41 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
 
                 <Divider />
 
+                <Section label="Tamanho do tabuleiro">
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+                    {(['small', 'medium', 'large', 'auto'] as const).map((size) => (
+                      <SizeButton
+                        key={size}
+                        label={{ small: 'Pequeno', medium: 'Médio', large: 'Grande', auto: 'Auto' }[size]}
+                        isSelected={theme.boardSize === size}
+                        onClick={() => setBoardSize(size as BoardSize)}
+                      />
+                    ))}
+                  </div>
+                </Section>
+
+                <Divider />
+
+                <Section label="Destaques no tabuleiro">
+                  <Toggle label="Mostrar coordenadas" description="Letras e números nas bordas" checked={theme.showCoordinates} onChange={setShowCoordinates} />
+                  <Toggle
+                    label="Notação fora das casas"
+                    description="Números e letras numa margem ao redor do tabuleiro, em vez de dentro das casas"
+                    checked={theme.coordinatesOutside}
+                    onChange={setCoordinatesOutside}
+                    disabled={!theme.showCoordinates}
+                  />
+                  <Toggle label="Última jogada" description="Destaca as casas de origem e destino" checked={theme.showLastMove} onChange={setShowLastMove} />
+                  <Toggle label="Setas de análise" description="Melhor lance do Stockfish" checked={theme.showArrows} onChange={setShowArrows} />
+                  <Toggle label="Lances legais" description="Highlight ao clicar numa peça" checked={theme.showLegalMoves} onChange={setShowLegalMoves} />
+                </Section>
+              </>
+            )}
+
+            {active?.id === 'pieces' && (
+              <>
+                <PreviewRow />
+
                 <Section label="Conjunto de peças">
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
                     {CURATED_PIECE_SETS.map((key) => (
@@ -292,41 +343,10 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
                     ))}
                   </div>
                 </Section>
-
-                <Divider />
-
-                <Section label="Tamanho do tabuleiro">
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
-                    {(['small', 'medium', 'large', 'auto'] as const).map((size) => (
-                      <SizeButton
-                        key={size}
-                        label={{ small: 'Pequeno', medium: 'Médio', large: 'Grande', auto: 'Auto' }[size]}
-                        isSelected={theme.boardSize === size}
-                        onClick={() => setBoardSize(size as BoardSize)}
-                      />
-                    ))}
-                  </div>
-                </Section>
               </>
             )}
 
-            {active?.id === 'appearance' && (
-              <Section label="Destaques no tabuleiro">
-                <Toggle label="Mostrar coordenadas" description="Letras e números nas bordas" checked={theme.showCoordinates} onChange={setShowCoordinates} />
-                <Toggle
-                  label="Notação fora das casas"
-                  description="Números e letras numa margem ao redor do tabuleiro, em vez de dentro das casas"
-                  checked={theme.coordinatesOutside}
-                  onChange={setCoordinatesOutside}
-                  disabled={!theme.showCoordinates}
-                />
-                <Toggle label="Última jogada" description="Destaca as casas de origem e destino" checked={theme.showLastMove} onChange={setShowLastMove} />
-                <Toggle label="Setas de análise" description="Melhor lance do Stockfish" checked={theme.showArrows} onChange={setShowArrows} />
-                <Toggle label="Lances legais" description="Highlight ao clicar numa peça" checked={theme.showLegalMoves} onChange={setShowLegalMoves} />
-              </Section>
-            )}
-
-            {active?.id === 'animation' && (
+            {active?.id === 'movement' && (
               <Section label="Velocidade de animação">
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
                   {(['none', 'fast', 'normal', 'slow'] as const).map((speed) => (
@@ -412,6 +432,16 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
 }
 
 // ── Sub-componentes internos ──────────────────────────────────────
+
+// Prévia ao vivo pras abas de Tabuleiro/Peças — MiniBoard já lê o tema atual sozinho
+// (via useTheme), então basta renderizar: qualquer escolha na aba reflete aqui na hora.
+function PreviewRow() {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+      <MiniBoard fen={PREVIEW_FEN} size={104} />
+    </div>
+  )
+}
 
 function Section({ label, children }: { label: string; children: ReactNode }) {
   return (
