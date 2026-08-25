@@ -196,9 +196,12 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
         </div>
 
         {/* Corpo: navegação + conteúdo */}
-        <div style={{ flex: 1, display: 'flex', minHeight: 0, marginTop: 14 }}>
-          {/* Navegação por categoria */}
-          <nav style={{ width: 224, flexShrink: 0, borderRight: '2px solid var(--color-gray-border)', padding: '4px 14px 16px', overflowY: 'auto' }}>
+        <div className="cl-settings-body" style={{ flex: 1, display: 'flex', minHeight: 0, marginTop: 14 }}>
+          {/* Navegação por categoria — vira uma barra horizontal rolável acima do conteúdo abaixo
+              de 760px (ver .cl-settings-nav em index.css): num modal com `maxWidth: 94vw`, 224px
+              fixos de rail lateral deixavam só ~96px de largura útil de conteúdo numa tela de
+              390px, espremendo os grids de peças/tamanho a colunas de ~20px. */}
+          <nav className="cl-settings-nav" style={{ width: 224, flexShrink: 0, borderRight: '2px solid var(--color-gray-border)', padding: '4px 14px 16px', overflowY: 'auto' }}>
             {visibleCategories.length === 0 && (
               <div style={{ fontSize: 12, color: 'var(--color-gray-muted)', padding: '12px 8px' }}>Nada encontrado.</div>
             )}
@@ -506,7 +509,7 @@ function PieceSetButton({ label, pieceSetKey, isSelected, onClick }: { label: st
     >
       <img
         src={`https://lichess1.org/assets/piece/${PIECE_SETS[pieceSetKey]?.src ?? pieceSetKey}/bQ.svg`}
-        style={PIECE_COLOR_FILTER[pieceSetKey] ? { filter: PIECE_COLOR_FILTER[pieceSetKey] } : undefined}
+        style={{ maxWidth: '100%', height: 'auto', ...(PIECE_COLOR_FILTER[pieceSetKey] ? { filter: PIECE_COLOR_FILTER[pieceSetKey] } : undefined) }}
         width={32} height={32} alt={label}
         onError={(e) => { (e.target as HTMLImageElement).style.visibility = 'hidden' }}
       />

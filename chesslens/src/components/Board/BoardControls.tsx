@@ -50,7 +50,13 @@ export function BoardControls({
   return (
     <div
       style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, rowGap: 6,
+        // `flexWrap` (não um breakpoint fixo): os 6 botões + divisor + contador têm ~330px de
+        // largura mínima somada, e esse rodapé fica FORA da área rolável (`.cl-tool-aside-scroll`,
+        // ver ReviewPanel.tsx) — sem wrap, numa coluna estreita de celular eles ficavam clipados
+        // sem nenhum jeito de alcançar o que cortava. Sempre ligado (não só <430px): não custa
+        // nada em telas largas, onde nunca chega a precisar quebrar linha.
+        flexWrap: 'wrap',
         padding: '8px 10px', borderRadius: 'var(--radius-sm)',
         background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)',
       }}

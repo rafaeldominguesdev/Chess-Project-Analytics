@@ -137,7 +137,10 @@ export function PlayVsBotView({ boardWidth, containerRef }: PlayVsBotViewProps) 
         />
 
         <div style={{
-          width: cardWidth, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          width: cardWidth, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, rowGap: 8,
+          // Mesmo raciocínio de BoardControls.tsx: "Desistir" + "Escolher outra faixa" (rótulo
+          // longo) podem passar da largura mínima de um `cardWidth` estreito de celular.
+          flexWrap: 'wrap',
           padding: '8px 10px', borderRadius: 'var(--radius-sm)',
           background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)',
         }}>

@@ -400,7 +400,11 @@ function PaletteRow({ color, pieceSet, armed, onToggle, squareSize }: {
   squareSize: number
 }) {
   return (
-    <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+    // `overflowX: auto` + `flexShrink: 0` nos botões — em telas estreitas, `boardWidth` (e o
+    // card que contém essa linha) pode cair abaixo da largura mínima das 6 peças lado a lado
+    // (ver `useBoardSize.ts`, que já documenta esse piso); sem isso as peças vazavam/cortavam
+    // pra fora do card sem jeito nenhum de alcançá-las.
+    <div style={{ display: 'flex', gap: 8, justifyContent: 'center', overflowX: 'auto', paddingBottom: 2 }}>
       {PALETTE_TYPES.map((type) => {
         const code = `${color}${type}`
         return (
@@ -411,7 +415,7 @@ function PaletteRow({ color, pieceSet, armed, onToggle, squareSize }: {
             aria-label={`${PIECE_LABELS[type]} ${color === 'w' ? 'branca' : 'preta'}`}
             aria-pressed={armed === code}
             className={`cl-btn cl-btn-sm${armed === code ? ' cl-btn-selected' : ''}`}
-            style={{ width: squareSize, height: squareSize }}
+            style={{ width: squareSize, height: squareSize, flexShrink: 0 }}
           >
             <img src={pieceUrl(code, pieceSet)} alt="" draggable={false} style={{ width: '80%', height: '80%', pointerEvents: 'none', filter: pieceFilter(pieceSet) }} />
           </button>

@@ -194,7 +194,11 @@ export function OpeningTrainerView({ boardWidth, containerRef, initialFamilyKey,
         />
 
         <div style={{
-          width: cardWidth, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+          width: cardWidth, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, rowGap: 6,
+          // Mesmo raciocínio de BoardControls.tsx: 4 botões + contador + label "revisando" podem
+          // passar da largura mínima de um `cardWidth` estreito de celular — `flexWrap` evita
+          // clipping sem precisar de breakpoint (não custa nada quando já cabe numa linha só).
+          flexWrap: 'wrap',
           padding: '6px 10px', borderRadius: 'var(--radius-sm)',
           background: 'var(--color-bg-panel)', border: '1px solid var(--color-gray-border)',
         }}>

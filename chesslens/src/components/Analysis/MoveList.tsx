@@ -50,7 +50,7 @@ export function MoveList({ moves, currentMoveIndex, onGoTo }: MoveListProps) {
         </span>
       </div>
 
-      <div className="overflow-y-auto" style={{ maxHeight: 440 }}>
+      <div className="cl-movelist-scroll">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {Array.from({ length: rows }, (_, i) => {
             const wIdx = i * 2

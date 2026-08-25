@@ -162,22 +162,32 @@ export function EvalGraph({ evals, currentPosition, onSeek }: EvalGraphProps) {
           <line x1={hoverX} y1={0} x2={hoverX} y2={H} stroke="var(--color-text-on-dark)" strokeWidth={1} strokeDasharray="2 2" opacity={0.35} />
         )}
 
-        {/* momentos críticos (erros e erros graves) — clicáveis */}
+        {/* momentos críticos (erros e erros graves) — clicáveis. O círculo visível (raio
+            3.5-4.5) vira um alvo de toque de ~9-12px CSS reais em mobile, abaixo de qualquer
+            tamanho confortável — por isso a interação mora num círculo invisível maior (r=10)
+            por cima, sem mudar nada do visual. */}
         {criticalMoments.map(({ index, severity }) => (
-          <circle
-            key={index}
-            cx={xOf(index)}
-            cy={yOf(evals[index])}
-            r={severity === 'blunder' ? 4.5 : 3.5}
-            fill={QUALITY_CONFIG[severity].color}
-            stroke="var(--color-bg-main)"
-            strokeWidth={1.25}
-            style={{ cursor: 'pointer' }}
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => { e.stopPropagation(); onSeek(index) }}
-          >
-            <title>{`${moveLabel(index)} · ${QUALITY_CONFIG[severity].label} · ${formatEval(evals[index])}`}</title>
-          </circle>
+          <g key={index}>
+            <circle
+              cx={xOf(index)}
+              cy={yOf(evals[index])}
+              r={severity === 'blunder' ? 4.5 : 3.5}
+              fill={QUALITY_CONFIG[severity].color}
+              stroke="var(--color-bg-main)"
+              strokeWidth={1.25}
+            />
+            <circle
+              cx={xOf(index)}
+              cy={yOf(evals[index])}
+              r={10}
+              fill="transparent"
+              style={{ cursor: 'pointer' }}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => { e.stopPropagation(); onSeek(index) }}
+            >
+              <title>{`${moveLabel(index)} · ${QUALITY_CONFIG[severity].label} · ${formatEval(evals[index])}`}</title>
+            </circle>
+          </g>
         ))}
 
         {/* marcador do lance atual */}
