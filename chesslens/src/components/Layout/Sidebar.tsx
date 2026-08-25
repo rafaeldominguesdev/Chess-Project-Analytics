@@ -197,11 +197,11 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
               <img
                 src="/logo.png"
                 alt=""
-                width={27}
-                height={27}
-                style={{ borderRadius: 6, flexShrink: 0, display: 'block' }}
+                width={34}
+                height={34}
+                style={{ borderRadius: 7, flexShrink: 0, display: 'block' }}
               />
-              <span className="cl-display" style={{ fontSize: 15.5, fontWeight: 800, color: 'var(--color-text-on-dark)', whiteSpace: 'nowrap' }}>ChessCap</span>
+              <span className="cl-display" style={{ fontSize: 19, fontWeight: 800, color: 'var(--color-text-on-dark)', whiteSpace: 'nowrap' }}>ChessCap</span>
             </button>
           )}
           <button
