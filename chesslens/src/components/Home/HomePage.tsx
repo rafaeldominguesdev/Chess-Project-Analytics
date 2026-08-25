@@ -98,14 +98,14 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
             Recursos, pra imagem "respirar" no meio. ── */}
         <div className="cl-home-hero-row" style={{
           display: 'flex', justifyContent: 'flex-end', minHeight: 170, marginBottom: 130,
-          padding: 'clamp(8px, 1.5vw, 14px) clamp(10px, 1.5vw, 18px) 0',
+          padding: 'clamp(28px, 5vw, 56px) clamp(28px, 4vw, 64px) 0',
         }}>
             <div className="cl-home-hero-content" style={{ flex: '0 1 380px', display: 'flex', flexDirection: 'column', gap: 12, justifyContent: 'flex-start', minWidth: 0 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span aria-hidden style={{ width: 4, height: 14, borderRadius: 2, background: 'var(--color-blue-bright)' }} />
-                  <span style={{
-                    fontSize: 11.5, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase',
+                  <span className="cl-display" style={{
+                    fontSize: 11.5, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
                     color: 'var(--color-blue-bright)', textShadow: '0 1px 6px rgba(0,0,0,0.9)',
                   }}>
                     Analisador de xadrez
@@ -129,7 +129,7 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <span style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-on-dark)', textShadow: '0 1px 6px rgba(0,0,0,0.9)' }}>
+                <span className="cl-display" style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-on-dark)', textShadow: '0 1px 6px rgba(0,0,0,0.9)' }}>
                   Buscar jogador
                 </span>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

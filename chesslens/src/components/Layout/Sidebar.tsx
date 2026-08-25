@@ -357,11 +357,11 @@ function NavGroup({ icon, label, collapsed, items, inline = false }: { icon: Rea
           aria-haspopup="true"
           aria-expanded={open}
           className={`cl-btn cl-nav-btn${activeAny ? ' cl-btn-selected' : ''}`}
-          style={{ justifyContent: 'flex-start', gap: 11, width: '100%', padding: '16px 13px', fontSize: 13.5, letterSpacing: '0.3px' }}
+          style={{ justifyContent: 'flex-start', gap: 11, width: '100%', padding: '11px 13px', fontSize: 13.5, letterSpacing: 0 }}
         >
           {icon}
           <span style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flex: 1 }}>
-            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1, textAlign: 'left' }}>{label}</span>
+            <span className="cl-display" style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1, textAlign: 'left' }}>{label}</span>
             <ChevronIcon width={12} height={12} style={{ color: 'var(--color-gray-muted)', transform: open ? 'rotate(90deg)' : 'rotate(-90deg)', flexShrink: 0, opacity: 0.7, transition: 'transform var(--dur-tap) var(--ease-tap)' }} />
           </span>
         </button>
@@ -408,13 +408,13 @@ function NavGroup({ icon, label, collapsed, items, inline = false }: { icon: Rea
         className={`cl-btn cl-nav-btn${activeAny ? ' cl-btn-selected' : ''}`}
         style={{
           justifyContent: collapsed ? 'center' : 'flex-start', gap: 11, width: '100%',
-          padding: collapsed ? '16px 0' : '16px 13px', fontSize: 13.5, letterSpacing: '0.3px',
+          padding: collapsed ? '11px 0' : '11px 13px', fontSize: 13.5, letterSpacing: 0,
         }}
       >
         {icon}
         {!collapsed && (
           <span style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flex: 1 }}>
-            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1, textAlign: 'left' }}>{label}</span>
+            <span className="cl-display" style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1, textAlign: 'left' }}>{label}</span>
             {/* Indica "abre um submenu ao lado" — aponta pra direita (rotate 180 no `<` padrão),
                 não pra baixo, porque o flyout nasce ao lado do botão, não embaixo dele. */}
             <ChevronIcon width={12} height={12} style={{ color: 'var(--color-gray-muted)', transform: 'rotate(180deg)', flexShrink: 0, opacity: 0.7 }} />
@@ -470,14 +470,14 @@ function NavItem({ icon, label, active = false, collapsed, soon = false, onClick
       className={`cl-btn cl-nav-btn${active ? ' cl-btn-selected' : ''}`}
       style={{
         justifyContent: collapsed ? 'center' : 'flex-start', gap: 11, width: '100%',
-        padding: collapsed ? '16px 0' : '16px 13px', fontSize: soon ? 12.5 : 13.5, letterSpacing: '0.3px',
+        padding: collapsed ? '11px 0' : '11px 13px', fontSize: soon ? 12.5 : 13.5, letterSpacing: 0,
         opacity: soon ? 0.55 : 1,
       }}
     >
       {icon}
       {!collapsed && (
         <span style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flex: 1 }}>
-          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>
+          <span className="cl-display" style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>
           {soon && (
             <span style={{
               marginLeft: 'auto', fontSize: 9, fontWeight: 800, letterSpacing: '0.02em', textTransform: 'uppercase',
