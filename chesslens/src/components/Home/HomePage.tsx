@@ -13,9 +13,12 @@ interface HomePageProps {
 //    aparece dentro dessa janela:
 //      0   → mostra o TOPO da imagem (a capivara "desce"/sai mais de baixo do enquadramento)
 //      100 → mostra o FUNDO da imagem (a capivara "sobe"/sai mais de cima do enquadramento)
-//    Valor atual = 20 (mostra bem perto do topo da arte). Pra descer a capivara na tela,
-//    AUMENTE esse número (experimente 40, 60...). Pra subir, diminua (0 já é o mínimo).
-const HERO_BG_POSITION_Y = 40
+//    Valor atual = 50 (meio da arte) — a troca pra `hero-jogar.png` (retrato central e
+//    simétrico, mascote com uma peça erguida de cada lado, ver index.css) não tem mais um "topo"
+//    e "fundo" claramente diferentes como a arte antiga (cena larga); centralizado já mostra
+//    rosto + as duas peças razoavelmente bem. Pra descer a capivara na tela, AUMENTE esse número
+//    (experimente 60, 70...). Pra subir, diminua.
+const HERO_BG_POSITION_Y = 50
 
 function base(props: SVGProps<SVGSVGElement>): SVGProps<SVGSVGElement> {
   return { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', ...props }

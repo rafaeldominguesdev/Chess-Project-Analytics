@@ -501,7 +501,7 @@ body {
    sempre), caindo bem em cima do rosto/lupa da capivara — pedido direto do usuário depois de ver
    isso ao vivo ("a imagem ficou bugada e ficou muito lotado o visual"). Fix: abaixo de 760px o
    texto desce pra começar DEPOIS da imagem (`margin-top` casando com a altura real dela, mesma
-   fórmula `56.25cqw` de `.cl-hero-bg` abaixo + o `top:-6` dela, inline em HomePage.tsx) em vez de
+   fórmula `75cqw` de `.cl-hero-bg` abaixo + o `top:-6` dela, inline em HomePage.tsx) em vez de
    flutuar por cima — a imagem fica limpa e o texto fica num fundo sólido (preto, herdado de
    `.cl-home-hero-wrap`), sem competir visualmente um com o outro. O respiro grande de 130px que
    o desktop usa pra separar o hero dos Recursos deixa de fazer sentido empilhado (era espaço pra
@@ -512,41 +512,27 @@ body {
     flex-basis: 100% !important;
   }
   .cl-home-hero-row {
-    margin-top: calc(56.25cqw + 22px) !important;
+    margin-top: calc(75cqw + 22px) !important;
     margin-bottom: 28px !important;
     min-height: 0 !important;
   }
 }
 
-/* Plano de fundo do hero — `cover` numa caixa presa à proporção 16:9 da própria arte, não mais
-   esticada pela altura do wrapper inteiro (hero + cards + rodapé, que pode ficar bem mais "alto
-   e estreito" que 16:9 em janelas mais estreitas/baixas). Duas tentativas anteriores, as duas
-   com o mesmo problema de fundo (caixa com proporção livre, bem diferente de 16:9):
-     1. `background-size: 100% auto` (tamanho fixo pela largura, sem cortar) — deixava um vão
-        embaixo/em cima sempre que a caixa ficasse mais ALTA que a imagem escalada pela largura.
-        Ficava invisível só enquanto --color-bg-main era quase preto igual ao fundo da própria
-        arte; virou uma "prateleira" cinza visível depois do repaint pra cinza-chumbo.
-     2. `background-size: cover` sozinho, sem limitar a proporção da caixa — resolve o vão (cover
-        sempre preenche), mas como a caixa cobria o wrapper inteiro (podendo ficar bem mais alta
-        e estreita que 16:9 em janelas ~1024-1280px), o corte necessário virava grande demais pra
-        caber tanto a capivara (metade esquerda da arte) quanto o tabuleiro+rei (metade direita)
-        ao mesmo tempo — sempre um dos dois saía cortado.
-   A correção: `.cl-home-hero-wrap` (o wrapper, em HomePage.tsx) virou um container de consulta
-   CSS (`container-type: inline-size`), e a altura desta caixa passou a vir de `cqw` (unidade
-   relativa à LARGURA do container) em vez de esticar pela altura do wrapper — `height: calc(
-   56.25cqw + 12px)`, ou seja: largura × 9/16 (a proporção nativa da arte) + uma folga pequena de
-   respiração. Com a caixa já quase 16:9 sempre, `cover` não precisa cortar quase nada — capivara
-   E tabuleiro cabem inteiros em qualquer largura de janela testada. O `background-position`
-   abaixo é só ajuste fino pro pouco corte residual (a caixa não é EXATAMENTE 16:9 por causa da
-   folga de respiração, então ainda sobra um resíduo mínimo de corte):
-     - Horizontal: a arte tem folga à esquerda (fundo vazio antes da capivara) e quase nenhuma
-       folga à direita (o tabuleiro quase encosta na borda direita da imagem) — por isso a
-       posição-X fica baixa (perto da capivara), cortando o resíduo do lado direito (vazio atrás
-       do tabuleiro), não do tabuleiro em si.
-     - Vertical: a arte tem folga generosa acima da cabeça da capivara e quase nenhuma folga
-       abaixo do tabuleiro — por isso `--hero-bg-pos-y` fica ALTO (perto de 100%, via
-       HERO_BG_POSITION_Y no componente), ancorando a imagem pela base, então o resíduo de corte
-       vertical sai de cima (vazio), nunca de baixo (tabuleiro).
+/* Plano de fundo do hero — caixa de altura fixa em `cqw` (largura do container, não a altura do
+   wrapper inteiro — hero + cards + rodapé, que pode ficar bem mais "alto e estreito" que qualquer
+   proporção fixa em janelas mais estreitas/baixas). Mecanismo herdado da arte antiga (`hero-bg.png`,
+   cena larga 16:9, ver histórico de decisão no git blame): `.cl-home-hero-wrap` (o wrapper, em
+   HomePage.tsx) é um container de consulta CSS (`container-type: inline-size`), e a altura vem de
+   `cqw` (unidade relativa à LARGURA do container) em vez de esticar pela altura do wrapper.
+   Troca de arte (pedido direto do usuário — "quero essa como main"): `hero-jogar.png` é um
+   retrato QUADRADO (1920×1920, mascote central segurando peça em cada mão, com folga mínima ao
+   redor — bem diferente da cena larga/16:9 da arte antiga, que tinha folga generosa pra `cover`
+   cortar sem perder nada importante). Com uma imagem quase sem folga, `cover` numa caixa larga
+   cortava justamente as partes que dão contexto (orelhas, mãos com as peças) — trocado pra
+   `background-size: contain` (nunca corta, sempre mostra a arte inteira) + caixa mais alta
+   (`75cqw` em vez de `56.25cqw`/16:9) pra sobrar menos vão vazio ao redor. `--hero-bg-pos-x`
+   (25% por padrão) desloca a arte pra esquerda, deixando espaço livre à direita pro texto (que no
+   desktop fica ancorado à direita, ver HomePage.tsx) sem os dois competirem visualmente.
    Abaixo da altura desta caixa, o resto do wrapper (cards de Recurso, rodapé) precisa continuar
    preto — não cinza — porque o FUNDO DA PRÓPRIA ARTE já é preto (a foto desvanece pra preto perto
    da base, não pára num corte limpo). Antes da troca de paleta desta sessão isso não precisava
@@ -562,7 +548,7 @@ body {
   background: #000000;
 }
 .cl-hero-bg {
-  height: calc(56.25cqw + 12px);
+  height: calc(75cqw + 12px);
   /* Camada 0 (bem no topo, `normal`): a caixa termina num corte reto (altura fixa em `cqw`) e
      o resto do wrapper embaixo é preto sólido (`.cl-home-hero-wrap` acima) — sem essa camada, a
      arte (ainda "viva" bem na borda inferior da caixa: perna da capivara, tabuleiro) batia direto
@@ -570,33 +556,35 @@ body {
      cards de Recurso flutuam bem em cima dela (achado do usuário). Esse gradiente desvanece só o
      último pedaço da própria caixa pra preto, criando a transição suave que a arte sozinha não
      garantia mais (o corte residual de `cover` já não cai exatamente onde a arte "esmaece").*/
+  /* Troca de arte (pedido direto do usuário, mandou a imagem e disse "quero essa como main"):
+     `chesscap-jogar.png` (a mesma pose já usada no ícone "Jogar contra a Capivara" — mascote
+     segurando dama preta e peão branco) virou `hero-jogar.png`, só pra este hero — `hero-bg.png`
+     (a arte antiga, capivara com lupa) continua intocada e é a fonte de todos os outros recortes
+     de avatar (CoachComment, PlayVsBotView, .cl-playbot-hero-thumb), que não usam `.cl-hero-bg`
+     e por isso não foram afetados por essa troca. Diferente da arte antiga (cena larga, capivara
+     à esquerda + tabuleiro à direita, exigia posição horizontal deslocada e recalibrada por
+     breakpoint pra manter os dois elementos visíveis), a nova é um retrato central e simétrico
+     (mascote no meio, uma peça erguida de cada lado) — center/center básico já enquadra bem em
+     qualquer largura, sem precisar da lógica de `--hero-bg-pos-x` por breakpoint que a composição
+     antiga exigia (removida, não se aplica mais aqui). Também tem transparência real (PNG com
+     alfa, não uma cena opaca) — a "emenda" que o gradiente de baixo (`linear-gradient` abaixo)
+     resolvia pra arte antiga praticamente não aparece mais aqui (mantido mesmo assim, inofensivo
+     sobre uma área já transparente). */
   background-image:
     linear-gradient(to bottom, transparent 72%, #000000 100%),
     radial-gradient(ellipse 42% 30% at 26% 90%, color-mix(in srgb, var(--color-blue-light) 65%, transparent), transparent 72%),
     radial-gradient(ellipse 42% 30% at 76% 90%, color-mix(in srgb, var(--color-blue-light) 65%, transparent), transparent 72%),
-    url(/hero-bg.png?v=2),
+    url(/hero-jogar.png),
     radial-gradient(ellipse 55% 65% at 30% 55%, color-mix(in srgb, var(--color-blue-bright) 14%, transparent), transparent 70%);
-  background-size: 100% 100%, 100% 100%, 100% 100%, cover, 100% 100%;
+  background-size: 100% 100%, 100% 100%, 100% 100%, contain, 100% 100%;
   background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
-  /* `--hero-bg-pos-x` isola só o número que muda entre breakpoints (ajuste fino do corte
-     residual horizontal, ver comentário grande logo acima do arquivo) — sem essa variável, os
-     4 breakpoints precisariam repetir a lista inteira de 5 posições só pra mudar 1 número. */
-  background-position: center, center, center, var(--hero-bg-pos-x, 18%) var(--hero-bg-pos-y, 90%), center;
+  background-position: center, center, center, var(--hero-bg-pos-x, 25%) var(--hero-bg-pos-y, 50%), center;
   background-blend-mode: normal, screen, screen, normal, normal;
-}
-@media (max-width: 1200px) {
-  .cl-hero-bg { --hero-bg-pos-x: 28%; }
-}
-@media (max-width: 900px) {
-  .cl-hero-bg { --hero-bg-pos-x: 36%; }
-}
-@media (max-width: 760px) {
-  .cl-hero-bg { --hero-bg-pos-x: 42%; }
 }
 
 /* Respiração sutil da capivara — todo o plano de fundo (mascote + tabuleiro) sobe e desce
    ~5px num ciclo bem lento (8s), só pra dar sensação de vida sem virar espetáculo. A caixa em
-   si já é 12px mais alta que a proporção 16:9 pura (ver `height` acima) e é reposicionada 6px
+   si já é 12px mais alta que a proporção `75cqw` pura (ver `height` acima) e é reposicionada 6px
    pra cima (ver `top` inline em HomePage.tsx), então esse deslocamento nunca revela o fundo da
    página no topo da página. Desligado por completo se o usuário preferir menos movimento. */
 @keyframes cl-hero-breathe {
