@@ -26,3 +26,4 @@ public/stockfish/stockfish-18-single.wasm
 *.njsproj
 *.sln
 *.sw?
+.vercel

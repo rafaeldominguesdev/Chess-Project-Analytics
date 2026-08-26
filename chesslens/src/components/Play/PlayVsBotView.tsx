@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { CSSProperties, RefCallback } from 'react'
+import type { CSSProperties, KeyboardEvent, RefCallback } from 'react'
 import { Chess } from 'chess.js'
 import { usePlayVsBot } from '../../hooks/usePlayVsBot'
 import type { BotLevel } from '../../analysis/botLevels'
@@ -294,10 +294,20 @@ const COLOR_CHOICES: { id: ColorChoice; label: string }[] = [
   { id: 'random', label: 'Sortear' },
 ]
 
-/** Tela de escolha da faixa de força + cor, antes de a partida começar — mesma composição de
- *  "grade de cards centralizada" já usada no Treino de Aberturas (`OpeningTrainerView.tsx`)
- *  pra escolher a abertura, reaproveitada aqui pro mesmo tipo de decisão (escolher 1 de N antes
- *  de entrar numa tela cheia). */
+/** Única faixa marcada como "Ponto de partida" na grade — não é a mais fraca nem a mais forte, é
+ *  a única cujo `level.color` já é `var(--color-blue-bright)` (o único acento interativo do app).
+ *  Marcar essa faixa não mistura o canal de identidade-de-faixa (verde→azuis→vermelho) com o
+ *  canal de acento-interativo — é uma coincidência dos dados que torna essa a opção de menor
+ *  risco pra destacar sem inventar uma cor nova só pro selo. */
+const RECOMMENDED_TIER_INDEX = 3
+
+/** Tela de escolha da faixa de força + cor, antes de a partida começar — v2, reconceito completo
+ *  (a v1 foi rejeitada pelo usuário por inteiro: "não gostei, odeio"). A capivara agora é um
+ *  herói grande e confiante com respiração sutil (`.cl-playbot-hero-v2`, reaproveita
+ *  `@keyframes cl-hero-breathe` da Home), o seletor de cor virou um controle segmentado de
+ *  verdade (`.cl-inset` recessado + `.cl-btn-selected`), e as 6 faixas viram uma lista "escada"
+ *  conectada por um trilho de gradiente (`.cl-ladder`/`.cl-ladder-rail`) em vez de uma grade de
+ *  cards idênticos. */
 function LevelSelectScreen({ levels, isEngineReady, onStart }: {
   levels: BotLevel[]
   isEngineReady: boolean
@@ -312,54 +322,47 @@ function LevelSelectScreen({ levels, isEngineReady, onStart }: {
 
   return (
     <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', maxHeight: 'calc(100vh - 20px)', display: 'flex', justifyContent: 'center' }}>
-      <div style={{ width: '100%', maxWidth: 1040, display: 'flex', flexDirection: 'column', gap: 16, padding: '8px 4px 40px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="cl-display" style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-on-dark)' }}>Jogar contra a Capivara</div>
-            <div style={{ fontSize: 12.5, color: 'var(--color-gray-muted)', marginTop: 2 }}>
-              Escolha a faixa de força e a cor — o motor (Stockfish, rodando no seu navegador) joga
-              com a força ajustada pra faixa escolhida, sempre em tempo real.
+      <div style={{ width: '100%', maxWidth: 1040, display: 'flex', flexDirection: 'column', gap: 20, padding: '8px 4px 40px' }}>
+        <div className="cl-playbot-hero-v2 cl-fade-in">
+          <div>
+            <div className="cl-display" style={{ fontSize: 27, fontWeight: 700, color: 'var(--color-text-on-dark)', lineHeight: 1.1 }}>
+              Jogar contra a Capivara
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--color-gray-muted)', marginTop: 6, maxWidth: 420 }}>
+              Motor real (Stockfish, no seu navegador), força ajustada pra faixa escolhida.
             </div>
           </div>
-          {/* Recorte mais aberto da MESMA arte oficial (`hero-bg.png`, a mesma usada na Home e nos
-              avatares circulares acima) — pedido do usuário depois de ver uma referência de
-              "capivara de corpo inteiro, sentada" que ele mesmo mandou (um clipart genérico com
-              marca d'água, que NÃO foi usado — descaracterizaria a mascote oficial). Sem
-              ferramenta de geração de imagem não dá pra pintar uma ilustração nova no estilo do
-              hero; a alternativa real foi um recorte diferente do MESMO arquivo, largo o
-              suficiente pra mostrar tronco/braços/colo (não só o rosto, como os avatares de
-              faixa acima) segurando a lupa ao lado do tabuleiro — a mesma pose de "sentada
-              jogando" que ele queria, com a arte 100% oficial. `cl-playbot-hero-thumb` esconde
-              esse recorte em telas estreitas (ver index.css) pra não espremer o texto ao lado. */}
-          <div aria-hidden className="cl-playbot-hero-thumb" />
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--color-gray-muted)' }}>Suas peças:</span>
-          {COLOR_CHOICES.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => setColorChoice(c.id)}
-              className={`cl-btn cl-btn-sm${colorChoice === c.id ? ' cl-btn-selected' : ''}`}
-              style={{ width: 'auto', height: 'auto', padding: '7px 14px', fontSize: 12.5 }}
-            >
-              {c.label}
-            </button>
-          ))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--color-gray-muted)' }}>Suas peças:</span>
+            <div className="cl-inset" style={{ display: 'inline-flex', padding: 4, gap: 4 }}>
+              {COLOR_CHOICES.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => setColorChoice(c.id)}
+                  className={`cl-btn cl-btn-sm${colorChoice === c.id ? ' cl-btn-selected' : ''}`}
+                  style={{ width: 'auto', height: 'auto', padding: '7px 14px', fontSize: 12.5 }}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {!isEngineReady && (
           <p style={{ fontSize: 12, color: 'var(--color-gray-muted)' }}>Carregando o motor…</p>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 }}>
+        <div className="cl-ladder">
+          <span className="cl-ladder-rail" aria-hidden />
           {levels.map((level, tierIndex) => (
-            <LevelCard
+            <LevelRow
               key={level.id}
               level={level}
               tierIndex={tierIndex}
               totalTiers={levels.length}
               disabled={!isEngineReady}
+              recommended={tierIndex === RECOMMENDED_TIER_INDEX}
               onSelect={() => pick(level)}
             />
           ))}
@@ -369,42 +372,67 @@ function LevelSelectScreen({ levels, isEngineReady, onStart }: {
   )
 }
 
-/** Card de faixa — redesenhado (pedido direto do usuário: "não gostei do menu... a estética dos
- *  cards"). Mudanças em relação à versão anterior: (1) faixa colorida fina no topo do card, além
- *  da borda fina já existente — a borda sozinha ficava sutil demais pra diferenciar 6 faixas num
- *  relance; (2) avatar maior com recorte/filtro progressivo por faixa (`capybaraAvatarStyle`),
- *  não mais o mesmo recorte fixo; (3) Elo em `cl-mono` colorido pela faixa + pips de força ao
- *  lado, pra comunicar a progressão sem depender só de ler o número; (4) hierarquia: nome →
- *  Elo/força → frase → CTA, nessa ordem de leitura de cima pra baixo. */
-function LevelCard({ level, tierIndex, totalTiers, disabled, onSelect }: {
-  level: BotLevel; tierIndex: number; totalTiers: number; disabled: boolean; onSelect: () => void
+/** Linha de faixa (era `LevelCard`, agora uma linha de lista, não um card de grade — ver comentário
+ *  de `.cl-ladder`/`.cl-ladder-rail` em `index.css`). O avatar mora FORA do `.cl-card` da linha,
+ *  numa coluna própria (`.cl-ladder-avatar-col`) que flutua sobre o trilho — é o que faz o trilho
+ *  parecer "passar por trás" do avatar em vez de ficar escondido atrás do fundo opaco do card.
+ *  Mantém da v1: linha inteira clicável (`role="button"`/teclado, botão "Jogar" interno como
+ *  `<span>` decorativo pra evitar elemento interativo aninhado), selo "Ponto de partida" na faixa
+ *  `RECOMMENDED_TIER_INDEX`. */
+function LevelRow({ level, tierIndex, totalTiers, disabled, recommended, onSelect }: {
+  level: BotLevel; tierIndex: number; totalTiers: number; disabled: boolean; recommended: boolean; onSelect: () => void
 }) {
+  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (disabled) return
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      onSelect()
+    }
+  }
+
   return (
-    <div
-      className="cl-card"
-      style={{
-        padding: 14, paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 12,
-        position: 'relative', overflow: 'hidden',
-        borderColor: 'color-mix(in srgb, ' + level.color + ' 35%, var(--color-gray-border))',
-      }}
-    >
-      <span aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: level.color }} />
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={capybaraAvatarStyle(52, level, tierIndex)} />
+    <div className="cl-ladder-item cl-row-in" style={{ animationDelay: `${40 + tierIndex * 35}ms` }}>
+      <div className="cl-ladder-avatar-col">
+        <div style={capybaraAvatarStyle(62, level, tierIndex)} />
+      </div>
+      <div
+        className={`cl-card cl-ladder-row${recommended ? ' cl-ladder-row-recommended' : ''}${disabled ? ' cl-ladder-row-disabled' : ''}`}
+        style={{
+          padding: '13px 18px', display: 'flex', alignItems: 'center', gap: 14,
+          position: 'relative', overflow: 'hidden',
+          borderColor: 'color-mix(in srgb, ' + level.color + ' 35%, var(--color-gray-border))',
+        }}
+        role="button"
+        tabIndex={disabled ? -1 : 0}
+        aria-disabled={disabled}
+        aria-label={`Jogar contra ${level.label}, Elo ${level.elo}`}
+        onClick={disabled ? undefined : onSelect}
+        onKeyDown={handleKeyDown}
+      >
         <div style={{ minWidth: 0, flex: 1 }}>
-          <span className="cl-display" style={{ fontSize: 14.5, fontWeight: 700, color: 'var(--color-text-on-dark)', display: 'block', lineHeight: 1.25 }}>
-            {level.label}
-          </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span className="cl-display" style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-on-dark)', lineHeight: 1.25 }}>
+              {level.label}
+            </span>
             <span className="cl-mono" style={{ fontSize: 12.5, fontWeight: 700, color: level.color }}>Elo ~{level.elo}</span>
             <StrengthPips tierIndex={tierIndex} total={totalTiers} color={level.color} />
+            {recommended && (
+              <span aria-hidden style={{
+                fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em',
+                padding: '3px 8px', borderRadius: 'var(--radius-sm)',
+                background: 'color-mix(in srgb, var(--color-blue-bright) 20%, var(--color-bg-panel))',
+                border: '1px solid var(--color-blue-bright)', color: 'var(--color-blue-light)',
+              }}>
+                Ponto de partida
+              </span>
+            )}
           </div>
+          <p style={{ fontSize: 12, color: 'var(--color-gray-muted)', lineHeight: 1.4, marginTop: 3 }}>{level.blurb}</p>
         </div>
+        <span aria-hidden className="cl-btn cl-btn-accent" style={{ width: 'auto', padding: '8px 20px', fontSize: 12.5, pointerEvents: 'none', flexShrink: 0 }}>
+          Jogar
+        </span>
       </div>
-      <p style={{ fontSize: 12, color: 'var(--color-gray-muted)', lineHeight: 1.4, flex: 1 }}>{level.blurb}</p>
-      <button onClick={onSelect} disabled={disabled} className="cl-btn cl-btn-accent" style={{ width: '100%', padding: '9px 0', fontSize: 12.5 }}>
-        Jogar
-      </button>
     </div>
   )
 }

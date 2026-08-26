@@ -612,26 +612,166 @@ body {
   );
 }
 
-/* Recorte "corpo inteiro" da mascote pro cabeçalho da tela "Jogar contra a Capivara"
-   (`LevelSelectScreen` em `PlayVsBotView.tsx`) — mesmo arquivo `hero-bg.png` da Home e dos
-   avatares circulares de faixa, só que um recorte bem mais aberto (mostra tronco/braços/colo
-   segurando a lupa + o tabuleiro do lado, não só o rosto) pra sugerir a pose "sentada, jogando"
-   sem precisar de arte nova. Caixa pequena e autocontida — não reaproveita a máquina de
-   `.cl-hero-bg` (essa é pro hero em largura total da Home, com container query/gradientes
-   ajustados só pra aquela composição; aqui é só uma miniatura ao lado do título). */
-.cl-playbot-hero-thumb {
-  width: 236px;
-  height: 176px;
-  flex-shrink: 0;
+/* Cabeçalho da tela "Jogar contra a Capivara" (`LevelSelectScreen` em `PlayVsBotView.tsx`) — v2,
+   reconceito completo (a v1 foi rejeitada pelo usuário por inteiro: "não gostei, odeio" — layout,
+   clima visual, a capivara e a falta de vida foram todos apontados). A v1 tinha a capivara como
+   fundo discreto atrás de um gradiente de fusão bem sutil, quase sumindo; esta versão é bem maior
+   e mais confiante — mesma proporção comprovada ao vivo no herói da Home (`.cl-hero-bg`, `auto
+   80%` dentro da caixa), escalada pra este painel menor, com a MESMA respiração sutil que a Home
+   já usa (`@keyframes cl-hero-breathe`, reaproveitada abaixo, não duplicada). Continua usando
+   `hero-jogar.png` (arte oficial, capivara segurando dama preta e peão branco — pose de "jogando",
+   já usada no hero da Home) via recorte/composição CSS — sem geração de imagem nova, confirmado
+   com o usuário. */
+.cl-playbot-hero-v2 {
+  position: relative;
+  overflow: hidden;
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-gray-border);
-  background-image: url(/hero-bg.png?v=2);
-  background-size: cover;
-  background-position: 22% 44%;
-  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.6);
+  background: var(--color-bg-panel);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
+    0 1px 0 0 rgba(0, 0, 0, 0.5),
+    0 20px 44px -14px rgba(0, 0, 0, 0.65);
+  padding: 26px 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  min-height: 240px;
+}
+.cl-playbot-hero-v2::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, var(--color-bg-panel) 0%, color-mix(in srgb, var(--color-bg-panel) 55%, transparent) 38%, transparent 68%),
+    radial-gradient(ellipse 70% 100% at 88% 100%, color-mix(in srgb, var(--color-blue-bright) 24%, transparent), transparent 72%),
+    url(/hero-jogar.png);
+  background-size: 100% 100%, 100% 100%, auto 100%;
+  background-position: center, center, 88% 85%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+.cl-playbot-hero-v2 > * {
+  position: relative;
+  z-index: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cl-playbot-hero-v2 { animation: cl-hero-breathe 8s ease-in-out infinite; }
+}
+@media (max-width: 979px) {
+  .cl-playbot-hero-v2 { min-height: 210px; padding: 22px 24px; }
 }
 @media (max-width: 700px) {
-  .cl-playbot-hero-thumb { display: none; }
+  /* Nunca `display:none` — abaixo daqui a arte recua de posição (mais centralizada, menos
+     escondida atrás do fade) em vez de sumir, mesmo princípio que a v1 já tinha corrigido. */
+  .cl-playbot-hero-v2 { min-height: 176px; padding: 18px 20px; }
+  .cl-playbot-hero-v2::before {
+    background-position: center, center, 62% 88%;
+    background-size: 100% 100%, 100% 100%, auto 100%;
+  }
+}
+
+/* Lista "escada" das 6 faixas — reconceito da v1 (que era uma grade de 6 cards idênticos, "sacola
+   de opções soltas"). Agora é uma lista vertical única com um trilho de gradiente conectando os
+   avatares (`.cl-ladder-rail`, as mesmas 6 cores de `level.color`/`BOT_LEVELS`, na ordem real,
+   nenhuma cor nova) — lê como UM sistema de progressão, não 6 ilhas repetidas. Cada item
+   (`.cl-ladder-item` em `PlayVsBotView.tsx`) é uma linha flex com DOIS filhos: uma coluna de
+   avatar (`.cl-ladder-avatar-col`, 62px, fora do card) que flutua sobre o trilho, e o card em si
+   (`.cl-ladder-row`) só com nome/Elo/blurb/CTA — o avatar "quebra" a linha do trilho em cada nó,
+   efeito clássico de timeline/changelog (Linear/Stripe). Elimina também a complexidade de
+   breakpoint de grade da v1: é uma lista, empilha em qualquer largura. */
+.cl-ladder {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.cl-ladder-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.cl-ladder-avatar-col {
+  width: 62px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+.cl-ladder-rail {
+  position: absolute;
+  left: 31px;
+  top: 43px;
+  bottom: 43px;
+  width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to bottom,
+    var(--color-success) 0%,
+    var(--color-blue-ice) 20%,
+    var(--color-blue-light) 40%,
+    var(--color-blue-bright) 60%,
+    var(--color-blue-primary) 80%,
+    var(--color-error) 100%
+  );
+  transform-origin: top;
+  opacity: 0.55;
+}
+@keyframes cl-ladder-rail-in {
+  0% { transform: scaleY(0); opacity: 0; }
+  100% { transform: scaleY(1); opacity: 0.55; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cl-ladder-rail { animation: cl-ladder-rail-in var(--dur-enter) var(--ease-snap) both; }
+}
+@media (max-width: 560px) {
+  /* Avatar/trilho encolhem um pouco pra sobrar mais largura pro nome/Elo/blurb numa tela estreita
+     (mesmo espírito dos outros ajustes de largura mínima já no arquivo). */
+  .cl-ladder-avatar-col { width: 50px; }
+  .cl-ladder-rail { left: 25px; }
+}
+
+/* Linha de faixa (`LevelRow`, era `LevelCard` na v1) — alvo de clique PRINCIPAL da tela, igual
+   antes (`role="button"` no componente), só que agora é uma LINHA horizontal (nome/Elo/blurb +
+   CTA, o avatar mora fora do card — ver `.cl-ladder-avatar-col` acima). Hover desloca pro lado
+   (`translateX`) em vez de levantar — mais coerente com "linha de lista" do que "card solto". */
+.cl-ladder-row {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  transition: transform var(--dur-enter) var(--ease-snap), box-shadow var(--dur-enter) var(--ease-snap), border-color var(--dur-enter) var(--ease-snap), background-color var(--dur-enter) var(--ease-snap);
+}
+/* Único item marcado como "Ponto de partida" (`RECOMMENDED_TIER_INDEX` no componente) — tint
+   permanente sutil (não só no hover) pra se destacar em repouso sem gritar; mesma cor do acento
+   interativo, não uma cor nova (essa faixa já usa `--color-blue-bright` como `level.color`). */
+.cl-ladder-row-recommended {
+  background: color-mix(in srgb, var(--color-blue-bright) 6%, var(--color-bg-panel));
+}
+.cl-ladder-row:hover {
+  transform: translateX(5px);
+  border-color: color-mix(in srgb, var(--color-blue-bright) 45%, var(--color-gray-border));
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
+    0 1px 0 0 rgba(0, 0, 0, 0.5),
+    0 14px 28px -10px rgba(0, 0, 0, 0.65);
+}
+.cl-ladder-row:active {
+  transform: translateX(2px);
+  transition-duration: var(--dur-tap);
+  transition-timing-function: var(--ease-tap);
+}
+/* O "botão" Jogar interno é um `<span>` decorativo (evita botão aninhado dentro da linha
+   clicável) — sem `:disabled` próprio pra escurecer, então o esmaecimento de faixa indisponível
+   (motor ainda carregando) é da linha inteira. */
+.cl-ladder-row-disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.cl-ladder-row-disabled:hover,
+.cl-ladder-row-disabled:active {
+  transform: none;
 }
 
 /* ══════════════════════════════════════════════
