@@ -181,7 +181,7 @@ export function ErrorTrainerView({ boardWidth, containerRef, onGoToAnalyze, init
 
       {/* Right — mesma posição/largura do painel de análise */}
       <aside className="cl-tool-aside">
-        <div className="cl-tool-aside-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingRight: 2 }}>
+        <div className="cl-tool-aside-scroll" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, justifyContent: 'center', gap: 10, paddingRight: 2 }}>
           {current && (
             <div className="cl-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '14px 12px', textAlign: 'center' }}>
               <SectionLabel>Essa partida</SectionLabel>
