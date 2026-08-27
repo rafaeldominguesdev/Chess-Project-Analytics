@@ -105,7 +105,14 @@ function AppInner() {
   } = useChessGame()
 
   const { theme } = useTheme()
-  const { boardWidth, containerRef } = useBoardSize(theme.boardSize, { chromeWidth: BOARD_ROW_CHROME_WIDTH })
+  // As telas sem barra de avaliação (treinos, Puzzle Diário, Jogar contra a Capivara) não
+  // precisam reservar a largura da EvalBar ao lado do tabuleiro — reservar mesmo assim deixava
+  // ~42px de espaço lateral sobrando nelas ("sinto que o tabuleiro diminuiu", pedido do usuário).
+  const boardChromeWidth =
+    dailyPuzzleMode || trainingMode || endgameTrainingMode || errorTrainingMode || playBotMode
+      ? 0
+      : BOARD_ROW_CHROME_WIDTH
+  const { boardWidth, containerRef } = useBoardSize(theme.boardSize, { chromeWidth: boardChromeWidth })
   // multiPv=3 pede as 3 melhores linhas ao mesmo worker que já calculava a avaliação ao vivo da
   // posição atual (era multiPv=1) — reaproveita o mesmo motor em vez de subir um segundo worker
   // em paralelo só pra alimentar o painel "Motor" da Revisão de partida (mesmo padrão já usado

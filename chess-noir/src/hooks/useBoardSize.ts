@@ -9,8 +9,8 @@ const PRESET_SIZES: Record<BoardSize, number | null> = {
 }
 
 const MIN_AUTO = 320
-const DEFAULT_MAX_AUTO = 1060
-const DEFAULT_WIDTH_FACTOR = 0.94
+const DEFAULT_MAX_AUTO = 1180
+const DEFAULT_WIDTH_FACTOR = 0.965
 // Cards de jogador (compactos) + paddings — controles agora ficam ao lado do tabuleiro, não somam altura.
 const DEFAULT_VIEWPORT_H_RESERVE = 136
 // Abaixo desse container (celular — mesmo corte de "tela estreita" usado em index.css), o
