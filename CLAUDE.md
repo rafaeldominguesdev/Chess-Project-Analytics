@@ -1,12 +1,12 @@
-# CLAUDE.md — ChessCap
+# CLAUDE.md — Chess Noir
 
 Instruções operacionais pra trabalhar neste repositório. Escrito pra guiar o Claude Code (ou
-qualquer assistente) — não é o README (esse é voltado pra humanos, veja `chesslens/README.md`
+qualquer assistente) — não é o README (esse é voltado pra humanos, veja `chess-noir/README.md`
 e o `README.md` da raiz, que é o portfólio).
 
 ## O que é o projeto
 
-ChessCap é um analisador de partidas de xadrez: importa uma partida (chess.com/Lichess/PGN
+Chess Noir é um analisador de partidas de xadrez: importa uma partida (chess.com/Lichess/PGN
 colado), roda o motor Stockfish real (WASM, num Web Worker, 100% no navegador — sem backend),
 classifica cada lance, mostra gráfico de avaliação, e tem modos de treino (aberturas, puzzles
 táticos) e um editor de posição. A mascote — uma capivara com lupa — é a imagem central da Home
@@ -24,17 +24,17 @@ corporativo com processo formal de aprovação.
   pode trocar a mascote em si sem autorização explícita do usuário. Ver `original.md` (raiz) pro
   "prompt-mestre" completo de regras de preservação — leia antes de qualquer mudança de escopo
   visual grande (redesign, não um ajuste pontual).
-- **Não modifique o worker do Stockfish (`chesslens/src/hooks/useStockfish.ts`, os arquivos em
-  `chesslens/public/stockfish/`, ou `chesslens/scripts/setup-stockfish.mjs`) sem pedir
+- **Não modifique o worker do Stockfish (`chess-noir/src/hooks/useStockfish.ts`, os arquivos em
+  `chess-noir/public/stockfish/`, ou `chess-noir/scripts/setup-stockfish.mjs`) sem pedir
   autorização explícita primeiro.** É a peça que mais reintroduz bugs sutis (profundidade,
   multiPv, timing de postMessage/worker) se "otimizada" sem necessidade concreta. Ajustar
   `depth`/`multiPv` como parâmetro de uma função existente é diferente de mexer no wrapper.
 - **Não copiar visualmente chess.com, Chessigma ou Lichess.** Princípios de UX podem inspirar
   (densidade de informação do motor, por exemplo), mas a paleta/tipografia/composição são
-  próprias do ChessCap — ver skill `chesslens-design`.
+  próprias do Chess Noir — ver skill `chessnoir-design`.
 - **Preservar dados, integrações e nomes de função existentes** ao refatorar, a menos que o
   usuário peça a mudança especificamente. Isso inclui os hooks de API (chess.com/Lichess), o
-  formato dos dados salvos em `localStorage`, e o banco ECO/puzzles em `chesslens/src/data/`.
+  formato dos dados salvos em `localStorage`, e o banco ECO/puzzles em `chess-noir/src/data/`.
 
 ## Stack e como rodar
 
@@ -46,7 +46,7 @@ utilitárias Tailwind. Não introduza Tailwind em massa num componente sem alinh
 mudança de convenção, não um detalhe local.
 
 ```bash
-cd chesslens
+cd chess-noir
 npm install   # roda scripts/setup-stockfish.mjs sozinho (copia o motor de node_modules/stockfish, ~108MB, pra public/stockfish/ — não versionado no git)
 npm run dev
 npm run build   # tsc -b && vite build — SEMPRE valide com este comando, não só `tsc --noEmit` avulso (noEmit sozinho já deixou passar um import quebrado que só o build completo pegou)
@@ -57,10 +57,10 @@ npm run lint     # oxlint
 `package.json`). Se for adicionar testes (ver Sprint 0 do `ROADMAP.md`), essa é uma decisão de
 setup que vale confirmar com o usuário antes (qual framework, onde ficam os arquivos).
 
-## Estrutura (veja também `chesslens/README.md`)
+## Estrutura (veja também `chess-noir/README.md`)
 
 ```
-chesslens/src/
+chess-noir/src/
 ├── components/   # uma pasta por tela/bloco visual (Home, PlayerSearch, Board, Review,
 │                 # Analysis, Training, PositionEditor, Theater, Layout, Settings)
 ├── hooks/        # estado com lógica (useStockfish, useChessGame, useOpeningTrainer, etc.)
@@ -88,7 +88,7 @@ Pontos de entrada úteis pra auditoria futura:
   Context genérico de estado global. `ThemeContext` é o único Context do projeto.
 - **Estilo**: `style={{}}` inline é o padrão dominante (não classes utilitárias) + classes
   `.cl-*`/custom properties CSS pra tokens compartilhados (cor, sombra, tipografia, animação).
-  Antes de estilizar algo novo, leia a skill `chesslens-design` (`.claude/skills/`) — documenta
+  Antes de estilizar algo novo, leia a skill `chessnoir-design` (`.claude/skills/`) — documenta
   a paleta "Cinza Azulado" atual e onde ficam os tokens de verdade (`index.css`).
 - **Naming**: componentes em PascalCase (um por arquivo, mesmo nome do arquivo), hooks
   `useAlgumaCoisa.ts`, utils em camelCase.
@@ -111,7 +111,7 @@ Pontos de entrada úteis pra auditoria futura:
   estabelecida do projeto).
 - **`ROADMAP.md`** (raiz) — plano de sprints pra evoluir o produto além do estado atual
   (persistência, Treino de Erros, Relatório do jogador, Jogar contra bots, polimento, retenção).
-- **`.claude/skills/chesslens-design/SKILL.md`** — sistema visual (paleta, tipografia, tokens).
+- **`.claude/skills/chessnoir-design/SKILL.md`** — sistema visual (paleta, tipografia, tokens).
 
 ## Como conduzir sprints grandes (do `ROADMAP.md`)
 

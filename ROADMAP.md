@@ -1,4 +1,4 @@
-# Roadmap — ChessCap
+# Roadmap — Chess Noir
 
 Plano de evolução em sprints curtos, cada um entregando algo funcional. A ordem importa: os
 dois primeiros sprints criam a base de dados que todo o resto consome — pular direto pro Treino
@@ -196,9 +196,9 @@ Um item por sessão do Claude Code, cada um em seu próprio commit:
       visual), ícones reais (imagens do usuário) pra Treino/Ferramentas/Relatório do Jogador,
       botões mais "gordinhos"/arredondados. Bug de distorção de ícone na sidebar colapsada
       corrigido no mesmo lote (68→80px).
-- [x] Rename "ChessLens" → "ChessCap" (nome exibido) — **feito em 2026-08-24**, pedido direto do
-      usuário (trocadilho chess+capivara). Só texto/prosa visível — pasta, `package.json`,
-      classes `.cl-*` e chaves de storage continuam técnicos.
+- [x] Rename do nome exibido → **"Chess Noir"** — **feito em 2026-08-24**, pedido direto do
+      usuário. Só texto/prosa visível — pasta, `package.json`, classes `.cl-*` e chaves de
+      storage continuam técnicos.
 - [x] Tipografia do site (Manrope + Bricolage Grotesque) — **feito em 2026-08-24**, pedido direto
       do usuário ("chamativo, confortável, sem exuberante"). JetBrains Mono mantida nos números.
 
