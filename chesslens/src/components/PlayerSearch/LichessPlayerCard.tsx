@@ -81,7 +81,7 @@ export function LichessPlayerCard({ profile, totalGames }: LichessPlayerCardProp
               </span>
             )}
             {profile.isPremium && <PremiumIcon size={19} />}
-            <span className="cl-display" style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-on-dark)', overflowWrap: 'anywhere' }}>{profile.username}</span>
+            <span className="cl-display" style={{ fontSize: 28, fontWeight: 700, color: 'var(--color-text-on-dark)', overflowWrap: 'anywhere' }}>{profile.username}</span>
             {flag && <span style={{ fontSize: 20 }}>{flag}</span>}
           </div>
 
@@ -103,11 +103,14 @@ export function LichessPlayerCard({ profile, totalGames }: LichessPlayerCardProp
               )}
               {lastSeen.label}
             </span>
+            {/* Cápsula (não mais link de texto solto) — vira uma ação clara, empurrada pra ponta
+                direita da própria linha em vez de ficar coladinha no metadado de atividade. */}
             <a
               href={`https://lichess.org/@/${profile.username}`}
               target="_blank"
               rel="noreferrer"
-              style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--color-blue-bright)', fontWeight: 600, textDecoration: 'none' }}
+              className="cl-btn cl-btn-sm cl-segmented"
+              style={{ width: 'auto', height: 'auto', marginLeft: 'auto', gap: 5, padding: '6px 14px', fontSize: 12, flexShrink: 0 }}
             >
               Ver perfil <ExternalLinkIcon width={11} height={11} />
             </a>

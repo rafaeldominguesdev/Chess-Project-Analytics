@@ -92,64 +92,69 @@ export function SearchView({ initialPlatform, onAnalyzeGame }: SearchViewProps) 
 
   return (
     <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', maxHeight: 'calc(100vh - 20px)', display: 'flex', justifyContent: 'center' }}>
-      <div style={{ width: '100%', maxWidth: 640, display: 'flex', flexDirection: 'column', gap: 20, padding: '8px 4px 40px' }}>
+      <div style={{ width: '100%', maxWidth: 760, display: 'flex', flexDirection: 'column', gap: 20, padding: '8px 4px 40px' }}>
         <div>
-          <div className="cl-display" style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-on-dark)' }}>Buscar jogador</div>
+          <div className="cl-display" style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-on-dark)' }}>Buscar jogador</div>
           <div style={{ fontSize: 12.5, color: 'var(--color-gray-muted)', marginTop: 2 }}>Perfil, ratings e partidas recentes</div>
         </div>
 
-        {/* Abas de plataforma */}
-        <div style={{ display: 'flex', gap: 8 }}>
-          {(Object.keys(PLATFORM_META) as Platform[]).map((p) => {
-            const m = PLATFORM_META[p]
-            const isActive = platform === p
-            return (
-              <button
-                key={p}
-                onClick={() => switchPlatform(p)}
-                aria-pressed={isActive}
-                className={`cl-btn cl-btn-sm${isActive ? ' cl-btn-selected' : ''}`}
-                style={{
-                  flex: 1, gap: 8,
-                  padding: '8px 0',
-                  fontSize: 13.5,
-                  color: isActive ? undefined : 'var(--color-text-on-dark)',
-                }}
-              >
-                <m.Icon width={17} height={17} />
-                {m.label}
-              </button>
-            )
-          })}
-        </div>
+        {/* Abas de plataforma (cápsula) + busca numa linha só — antes eram 2 linhas separadas;
+            colapsadas pedido direto ("estilo apple design", controles mais compactos/deliberados
+            em vez de gastar ritmo vertical com 2 fileiras de utilidade). Quebra pra 2 linhas
+            sozinha em tela estreita (`flexWrap`). */}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <div className="cl-inset cl-segmented" style={{ display: 'inline-flex', padding: 4, gap: 4, flexShrink: 0 }}>
+            {(Object.keys(PLATFORM_META) as Platform[]).map((p) => {
+              const m = PLATFORM_META[p]
+              const isActive = platform === p
+              return (
+                <button
+                  key={p}
+                  onClick={() => switchPlatform(p)}
+                  aria-pressed={isActive}
+                  className={`cl-btn cl-btn-sm${isActive ? ' cl-btn-selected' : ''}`}
+                  style={{
+                    width: 'auto', height: 'auto', gap: 8,
+                    padding: '8px 16px',
+                    fontSize: 13.5,
+                    color: isActive ? undefined : 'var(--color-text-on-dark)',
+                  }}
+                >
+                  <m.Icon width={17} height={17} />
+                  {m.label}
+                </button>
+              )
+            })}
+          </div>
 
-        <div style={{ display: 'flex', gap: 8 }}>
-          <input
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={meta.placeholder}
-            aria-label={`Buscar jogador no ${meta.label}`}
-            style={{
-              flex: 1,
-              padding: '11px 14px',
-              fontSize: 14,
-              background: 'var(--color-bg-surface)',
-              border: '1px solid var(--color-gray-border)',
-              borderRadius: 'var(--radius-sm)',
-              color: 'var(--color-text-on-light)',
-              outline: 'none',
-              boxShadow: 'inset 0 2px 4px 0 rgba(28,25,22,0.18), inset 0 1px 0 0 rgba(28,25,22,0.1)',
-            }}
-          />
-          <button
-            onClick={runSearch}
-            className="cl-btn cl-btn-accent"
-            style={{ padding: '11px 20px', fontSize: 14, flexShrink: 0 }}
-          >
-            Buscar
-          </button>
+          <div style={{ display: 'flex', gap: 8, flex: 1, minWidth: 220 }}>
+            <input
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={meta.placeholder}
+              aria-label={`Buscar jogador no ${meta.label}`}
+              style={{
+                flex: 1,
+                padding: '11px 14px',
+                fontSize: 14,
+                background: 'var(--color-bg-surface)',
+                border: '1px solid var(--color-gray-border)',
+                borderRadius: 'var(--radius-sm)',
+                color: 'var(--color-text-on-light)',
+                outline: 'none',
+                boxShadow: 'inset 0 2px 4px 0 rgba(28,25,22,0.18), inset 0 1px 0 0 rgba(28,25,22,0.1)',
+              }}
+            />
+            <button
+              onClick={runSearch}
+              className="cl-btn cl-btn-accent"
+              style={{ padding: '11px 20px', fontSize: 14, flexShrink: 0 }}
+            >
+              Buscar
+            </button>
+          </div>
         </div>
 
         {active.loading && <LoadingSkeleton />}
@@ -165,16 +170,16 @@ export function SearchView({ initialPlatform, onAnalyzeGame }: SearchViewProps) 
           </div>
         )}
 
+        {/* Espaçamento por agrupamento, não uniforme (pedido direto: "mude a posição das coisas",
+            estilo apple) — perfil+ratings ficam com gap curto entre si (uma identidade só, o
+            grid de ratings lê como extensão natural do cabeçalho, sem precisar de rótulo "RATINGS"
+            em maiúsculo); "Partidas recentes" ganha mais respiro antes (categoria de conteúdo
+            diferente — lista, não resumo — mantém o próprio título, que aqui ajuda de verdade). */}
         {!active.loading && !active.error && platform === 'chesscom' && chesscom.profile && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 26 }} key={chesscom.profile.username}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }} key={chesscom.profile.username}>
             <PlayerCard profile={chesscom.profile} />
-            {chesscom.stats && (
-              <section>
-                <SectionTitle>Ratings</SectionTitle>
-                <StatsGrid stats={chesscom.stats} />
-              </section>
-            )}
-            <section>
+            {chesscom.stats && <StatsGrid stats={chesscom.stats} />}
+            <section style={{ marginTop: 20 }}>
               <SectionTitle>Partidas recentes</SectionTitle>
               <RecentGames games={chesscomGames.games} loading={chesscomGames.loading} onAnalyze={onAnalyzeGame} />
             </section>
@@ -182,15 +187,10 @@ export function SearchView({ initialPlatform, onAnalyzeGame }: SearchViewProps) 
         )}
 
         {!active.loading && !active.error && platform === 'lichess' && lichess.profile && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 26 }} key={lichess.profile.username}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }} key={lichess.profile.username}>
             <LichessPlayerCard profile={lichess.profile} totalGames={lichess.stats?.totalGames} />
-            {lichess.stats && (
-              <section>
-                <SectionTitle>Ratings</SectionTitle>
-                <LichessStatsGrid stats={lichess.stats} />
-              </section>
-            )}
-            <section>
+            {lichess.stats && <LichessStatsGrid stats={lichess.stats} />}
+            <section style={{ marginTop: 20 }}>
               <SectionTitle>Partidas recentes</SectionTitle>
               <RecentGames games={lichessGames.games} loading={lichessGames.loading} onAnalyze={onAnalyzeGame} />
             </section>

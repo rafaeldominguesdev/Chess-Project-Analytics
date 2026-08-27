@@ -443,14 +443,26 @@ body {
 
 /* Cabeçalho de perfil (PlayerCard chess.com/Lichess em PlayerSearch/ + o skeleton de loading em
    SearchView.tsx) — os três compartilham o mesmo layout: avatar redondo fixo + coluna de texto ao
-   lado. Em 100px fixo + gap 20px, numa tela de ~390px sobra pouquíssima largura pra coluna de
-   texto (username chegava a quebrar letra por letra, reproduzido ao vivo) — abaixo de 480px o
-   avatar encolhe e o cabeçalho empilha em coluna em vez de espremer os dois lado a lado. */
+   lado. Avatar aumentado (100→116px, pedido direto: "estilo apple design", mais contraste de
+   escala/presença — mesmo princípio já aplicado no herói de "Jogar contra a Capivara") — abaixo
+   de 480px o avatar encolhe (116→78px, mesma proporção de antes) e o cabeçalho empilha em coluna
+   em vez de espremer os dois lado a lado (numa tela de ~390px sobra pouquíssima largura pra
+   coluna de texto, username chegava a quebrar letra por letra, reproduzido ao vivo). */
 .cl-profile-header { display: flex; align-items: center; gap: 20px; }
-.cl-profile-avatar { width: 100px; height: 100px; }
+.cl-profile-avatar { width: 116px; height: 116px; }
 @media (max-width: 480px) {
   .cl-profile-header { flex-direction: column; align-items: flex-start; gap: 12px; }
-  .cl-profile-avatar { width: 72px; height: 72px; }
+  .cl-profile-avatar { width: 78px; height: 78px; }
+}
+
+/* Controle em cápsula genérico (raio 999px) — generaliza a receita já usada em
+   `.cl-color-picker` (PlayVsBotView, seletor de cor) pra qualquer controle novo em pílula, sem
+   duplicar a regra a cada tela (aqui: abas de plataforma + botão "Ver perfil" em
+   PlayerSearch/). Geometria de referência de estudo Apple (não cópia de marca), mesmos
+   tokens/sombra "físicos" do resto do app — só o raio muda. */
+.cl-segmented,
+.cl-segmented .cl-btn {
+  border-radius: 999px;
 }
 
 /* Nav de categorias do modal de Configurações (SettingsPanel.tsx) — 224px de rail lateral fixo

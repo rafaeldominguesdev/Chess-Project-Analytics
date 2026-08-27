@@ -201,7 +201,15 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
                 height={34}
                 style={{ borderRadius: 7, flexShrink: 0, display: 'block' }}
               />
-              <span className="cl-display" style={{ fontSize: 19, fontWeight: 800, color: 'var(--color-text-on-dark)', whiteSpace: 'nowrap' }}>ChessCap</span>
+              {/* Wordmark bicolor (pedido direto do usuário: "muda a fonte deixa mais
+                  artístico") — mesmo tratamento já usado no herói da Home ("Chess" + "Cap" em
+                  azul de destaque), trazido pra cá em vez de inventar uma fonte nova só pro
+                  nome: mais peso de marca (tracking mais fechado, "Cap" na cor de acento) com a
+                  MESMA família (`.cl-display`, Bricolage Grotesque) que já é a fonte de
+                  destaque/título do resto do site. */}
+              <span className="cl-display" style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--color-text-on-dark)', whiteSpace: 'nowrap' }}>
+                Chess<span style={{ color: 'var(--color-blue-bright)' }}>Cap</span>
+              </span>
             </button>
           )}
           <button

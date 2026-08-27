@@ -386,7 +386,11 @@ function AppInner() {
           <MenuIcon width={19} height={19} />
         </button>
         <img src="/logo.png" alt="" width={24} height={24} style={{ borderRadius: 6, flexShrink: 0, display: 'block' }} />
-        <span className="cl-display" style={{ fontSize: 14.5, fontWeight: 800, color: 'var(--color-text-on-dark)' }}>ChessCap</span>
+        {/* Mesmo wordmark bicolor da Sidebar/Home ("Cap" no acento azul) — consistência de marca
+            entre a barra mobile e o resto do site. */}
+        <span className="cl-display" style={{ fontSize: 14.5, fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--color-text-on-dark)' }}>
+          Chess<span style={{ color: 'var(--color-blue-bright)' }}>Cap</span>
+        </span>
       </div>
 
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>

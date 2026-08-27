@@ -1,7 +1,18 @@
 import { useEffect, useState } from 'react'
 import type { ChesscomGame } from '../types/chess.types'
 
-const MAX_GAMES = 8
+// Pedido direto do usuário: quer ver as últimas 5 partidas de CADA modo (bullet/blitz/rápida)
+// separadas, não só as últimas N no geral. Um teto FIXO de partidas (a 1ª tentativa, MAX_GAMES=60)
+// não garante isso de verdade — reportado ao vivo pelo usuário ("só apareceram Bullet/Blitz,
+// Rápida sumiu"): um jogador que joga MUITO bullet/blitz recentemente pode não ter nenhuma
+// partida rápida dentro de um teto fixo de 60, mesmo jogando rápida com regularidade só um pouco
+// mais espaçada. Por isso o loop abaixo agora para por COBERTURA (pelo menos `PER_MODE_TARGET`
+// de cada um dos 3 modos rastreados), não só por contagem total — só usa `MAX_GAMES`/`SAFETY_MAX`
+// como teto de segurança pra não varrer o histórico inteiro de quem nunca jogou um dos 3 modos.
+const MAX_GAMES = 60
+const SAFETY_MAX_GAMES = 200
+const PER_MODE_TARGET = 5
+const TRACKED_RAW_MODES = ['chess_bullet', 'chess_blitz', 'chess_rapid']
 const archivesCache = new Map<string, string[]>()
 const monthCache = new Map<string, ChesscomGame[]>()
 
@@ -81,17 +92,26 @@ export function useRecentGames(username: string | null) {
     async function run() {
       try {
         const archives = await fetchArchives(username!)
-        const recentMonths = archives.slice(-3).reverse()
+        // Janela de meses generosa (12) — o loop abaixo para sozinho assim que tiver cobertura
+        // suficiente (ou bater no teto de segurança), então isso só busca mês a mais quando de
+        // fato precisa, não busca os 12 sempre.
+        const recentMonths = archives.slice(-12).reverse()
         const collected: ChesscomGame[] = []
+        const modeCounts = new Map<string, number>()
+        const hasFullCoverage = () => TRACKED_RAW_MODES.every((m) => (modeCounts.get(m) ?? 0) >= PER_MODE_TARGET)
 
         for (const archiveUrl of recentMonths) {
-          if (collected.length >= MAX_GAMES) break
+          if (collected.length >= SAFETY_MAX_GAMES) break
+          if (collected.length >= MAX_GAMES && hasFullCoverage()) break
           const monthGames = await fetchMonth(archiveUrl)
-          collected.push(...[...monthGames].reverse())
+          for (const g of [...monthGames].reverse()) {
+            collected.push(g)
+            modeCounts.set(g.time_class, (modeCounts.get(g.time_class) ?? 0) + 1)
+          }
         }
 
         if (cancelled) return
-        setGames(collected.slice(0, MAX_GAMES).map((g) => normalize(username!, g)))
+        setGames(collected.slice(0, SAFETY_MAX_GAMES).map((g) => normalize(username!, g)))
       } catch {
         if (!cancelled) setGames([])
       } finally {
