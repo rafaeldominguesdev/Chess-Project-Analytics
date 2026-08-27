@@ -20,7 +20,7 @@ export type Side = 'white' | 'black'
 // 'done'       → linha acabou (saiu de teoria conhecida, ou bateu no limite de lances).
 export type TrainerStatus = 'picking' | 'your-turn' | 'wrong' | 'their-turn' | 'done'
 
-const STATS_KEY = 'chesslens-opening-stats'
+const STATS_KEY = 'chessnoir-opening-stats'
 // Além desse número de lances por linha a sessão encerra sozinha — sessões mais curtas favorecem
 // repetição espaçada de verdade (várias linhas curtas em vários dias > uma linha gigante uma vez).
 const MAX_PLY = 24
@@ -33,7 +33,7 @@ function statsKey(familyKey: string, side: Side): string {
 // escondia se a pessoa já sabia bem uma variação específica ou não ("não aprende variáveis").
 // Só nome+ECO+lado (mesma MasteryStats, chave mais fina) — mesma aproximação honesta, sem
 // intervalo de repetição de verdade.
-const LINE_STATS_KEY = 'chesslens-opening-line-stats'
+const LINE_STATS_KEY = 'chessnoir-opening-line-stats'
 
 function lineStatsKey(eco: string, name: string, side: Side): string {
   return `${eco}|${name}|${side}`

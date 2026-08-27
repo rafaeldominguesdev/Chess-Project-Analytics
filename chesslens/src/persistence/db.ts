@@ -5,6 +5,10 @@
 // saveJsonRecord de `hooks/useOpeningTrainer.ts`, só que para IndexedDB (async) em vez de
 // localStorage (sync) — o app nunca deve quebrar por causa de persistência opcional.
 
+// Nome herdado do nome antigo do projeto ("ChessLens"), mantido de propósito no rebrand pra
+// "Chess Noir": renomear um IndexedDB exigiria abrir o banco antigo e copiar todos os stores pro
+// novo — risco de perder análises salvas, zero ganho já que o nome do banco é invisível pro
+// usuário. Mesmo critério das custom properties `--color-blue-*`.
 const DB_NAME = 'chesslens-db'
 const DB_VERSION = 1
 

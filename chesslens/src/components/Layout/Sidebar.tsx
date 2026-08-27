@@ -36,7 +36,7 @@ interface SidebarProps {
   onCloseMobile: () => void
 }
 
-const COLLAPSED_KEY = 'chesslens-sidebar-collapsed'
+const COLLAPSED_KEY = 'chessnoir-sidebar-collapsed'
 // Aumentado a pedido direto do usuário: "deixe maior a sidebar e os icones e texto esta
 // apertado" — eram 254/60, ícones 19-20px e fonte 10-12px, ficando apertado visualmente.
 const WIDTH_EXPANDED = 278
@@ -185,7 +185,7 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
           {!effectiveCollapsed && (
             <button
               onClick={closeAnd(onGoHome)}
-              title="ChessCap"
+              title="Chess Noir"
               style={{
                 display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0,
                 background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
@@ -208,7 +208,7 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
                   MESMA família (`.cl-display`, Bricolage Grotesque) que já é a fonte de
                   destaque/título do resto do site. */}
               <span className="cl-display" style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--color-text-on-dark)', whiteSpace: 'nowrap' }}>
-                Chess<span style={{ color: 'var(--color-blue-bright)' }}>Cap</span>
+                Chess<span style={{ color: 'var(--color-blue-bright)' }}>Noir</span>
               </span>
             </button>
           )}

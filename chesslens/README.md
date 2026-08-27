@@ -1,4 +1,4 @@
-# ♟️ ChessCap
+# ♟️ Chess Noir
 
 Analisador de partidas de xadrez feito para estudar minhas próprias partidas —
 e, principalmente, pra praticar programação no processo. Sou estudante, gosto

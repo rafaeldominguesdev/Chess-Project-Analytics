@@ -34,7 +34,7 @@ interface CoachCommentProps {
   retry?: { wrongAttempts: number; onReveal: () => void } | null
 }
 
-/** Comentário estilo "coach" do chess.com, mas com a capivara mascote do ChessCap — comenta
+/** Comentário estilo "coach" do chess.com, mas com a capivara mascote do Chess Noir — comenta
  *  o lance atual em uma frase, comparando com o melhor lance quando não foi o jogado. Quando
  *  `retry` está ativo, mostra o desafio "ache o lance melhor" em vez do comentário — pedido do
  *  roadmap (Sprint 5, "retry inline... antes de revelar"), pra tentar achar o lance certo você

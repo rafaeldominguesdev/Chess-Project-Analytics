@@ -49,7 +49,7 @@ function isStoredAnalysis(v: unknown): v is StoredAnalysis {
 export async function importFromJson(raw: unknown): Promise<ImportResult> {
   const result: ImportResult = { importedGames: 0, importedAnalyses: 0, skipped: 0, errors: [] }
   if (!raw || typeof raw !== 'object') {
-    result.errors.push('Arquivo não é um backup válido do ChessCap.')
+    result.errors.push('Arquivo não é um backup válido do Chess Noir.')
     return result
   }
   const data = raw as Record<string, unknown>
@@ -58,7 +58,7 @@ export async function importFromJson(raw: unknown): Promise<ImportResult> {
     return result
   }
   if (!Array.isArray(data.games) || !Array.isArray(data.analyses)) {
-    result.errors.push('Arquivo não é um backup válido do ChessCap.')
+    result.errors.push('Arquivo não é um backup válido do Chess Noir.')
     return result
   }
 

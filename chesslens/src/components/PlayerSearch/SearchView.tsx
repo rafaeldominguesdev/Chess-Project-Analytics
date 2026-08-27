@@ -13,9 +13,9 @@ import { ChesscomMarkIcon, LichessMarkIcon } from '../PlatformIcons'
 
 export type Platform = 'chesscom' | 'lichess'
 
-const LAST_SEARCH_KEY = 'chesslens-last-player-search'
-const LAST_PLATFORM_KEY = 'chesslens-last-platform'
-const LAST_MODE_KEY = 'chesslens-analyze-mode'
+const LAST_SEARCH_KEY = 'chessnoir-last-player-search'
+const LAST_PLATFORM_KEY = 'chessnoir-last-platform'
+const LAST_MODE_KEY = 'chessnoir-analyze-mode'
 
 type Mode = 'search' | 'paste'
 

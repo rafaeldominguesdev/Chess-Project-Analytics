@@ -228,7 +228,7 @@ function AppInner() {
   // Esc — sai da ferramenta/modo atual pra tela por baixo (Revisão se tiver partida carregada,
   // senão Home). Prioriza fechar modal/aviso aberto (Configurações, Atualizações, "em
   // manutenção") antes de sair de um modo de tela cheia — só um desses por vez pode estar aberto,
-  // mas a ordem importa pra sempre fechar "de fora pra dentro". Diferente do "ChessCap" no topo
+  // mas a ordem importa pra sempre fechar "de fora pra dentro". Diferente do "Chess Noir" no topo
   // da sidebar (onGoHome): não descarrega a partida nem fecha a busca, é só "volta uma tela".
   const handleEscape = useCallback(() => {
     if (settingsOpen) { setSettingsOpen(false); return }
@@ -412,10 +412,10 @@ function AppInner() {
           <MenuIcon width={19} height={19} />
         </button>
         <img src="/logo.png" alt="" width={24} height={24} style={{ borderRadius: 6, flexShrink: 0, display: 'block' }} />
-        {/* Mesmo wordmark bicolor da Sidebar/Home ("Cap" no acento azul) — consistência de marca
+        {/* Mesmo wordmark bicolor da Sidebar/Home ("Noir" no acento azul) — consistência de marca
             entre a barra mobile e o resto do site. */}
         <span className="cl-display" style={{ fontSize: 14.5, fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--color-text-on-dark)' }}>
-          Chess<span style={{ color: 'var(--color-blue-bright)' }}>Cap</span>
+          Chess<span style={{ color: 'var(--color-blue-bright)' }}>Noir</span>
         </span>
       </div>
 

@@ -5,11 +5,11 @@ import type { PieceSet, PieceSetName, UITheme, UIThemeName } from '../types/them
 export const BOARD_THEMES = {
 
   // ══════════════════════════════════════════════
-  // CHESSCAP — tabuleiro assinatura do site: cinza-pedra quente (nada de verde/marrom
+  // CHESS NOIR — tabuleiro assinatura do site: cinza-pedra quente (nada de verde/marrom
   // clássico), tom casado com o fundo carvão + destaque âmbar do resto da UI. Marcação
   // de lance em âmbar translúcido em vez de amarelo/verde padrão.
   // ══════════════════════════════════════════════
-  'graphite-amber': { label: 'ChessCap Signature', category: 'ChessCap', light: '#DAD3C6', dark: '#4A443C', highlight: '#E8A93C', highlightDark: '#C68A22', moveFrom: 'rgba(232,169,60,0.5)', moveTo: 'rgba(232,169,60,0.62)', image: undefined },
+  'graphite-amber': { label: 'Chess Noir Signature', category: 'Chess Noir', light: '#DAD3C6', dark: '#4A443C', highlight: '#E8A93C', highlightDark: '#C68A22', moveFrom: 'rgba(232,169,60,0.5)', moveTo: 'rgba(232,169,60,0.62)', image: undefined },
 
   // ══════════════════════════════════════════════
   // CHESS.COM — TEMAS OFICIAIS

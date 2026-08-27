@@ -19,7 +19,7 @@ const FERRAMENTAS = 'Revisão lance a lance · Puzzles táticos · Treino de abe
  * Rodapé só da Home — informativo (marca, com o que foi construído, aviso de projeto pessoal).
  * Não tem links de navegação de propósito: as ferramentas ficam todas na Sidebar, e o app não
  * tem páginas de marketing (preço, blog) que justificassem colunas de link. Composição/paleta
- * próprias do ChessCap — não espelha o rodapé de nenhum concorrente.
+ * próprias do Chess Noir — não espelha o rodapé de nenhum concorrente.
  */
 export function HomeFooter() {
   return (
@@ -40,7 +40,7 @@ export function HomeFooter() {
         {/* Marca + tagline */}
         <div style={{ flex: '1 1 240px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <span className="cl-display" style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--color-text-on-dark)', textShadow: TEXT_SHADOW }}>
-            Chess<span style={{ color: 'var(--color-blue-bright)' }}>Cap</span>
+            Chess<span style={{ color: 'var(--color-blue-bright)' }}>Noir</span>
           </span>
           <span style={{ fontSize: 12.5, color: 'var(--color-gray-muted)', lineHeight: 1.6, textShadow: TEXT_SHADOW }}>
             Análise de xadrez com o Stockfish completo, lance a lance, 100% no seu navegador.
@@ -73,7 +73,7 @@ export function HomeFooter() {
         fontSize: 11.5, color: 'var(--color-gray-muted)', textShadow: TEXT_SHADOW,
       }}>
         <span>Projeto pessoal de portfólio e aprendizado. Não afiliado ao Chess.com, ao Lichess nem ao Stockfish.</span>
-        <span>© 2026 ChessCap</span>
+        <span>© 2026 Chess Noir</span>
       </div>
     </footer>
   )

@@ -1,4 +1,4 @@
-# CLAUDE.md — ChessCap
+# CLAUDE.md — Chess Noir
 
 Instruções operacionais pra trabalhar neste repositório. Escrito pra guiar o Claude Code (ou
 qualquer assistente) — não é o README (esse é voltado pra humanos, veja `chesslens/README.md`
@@ -6,7 +6,7 @@ e o `README.md` da raiz, que é o portfólio).
 
 ## O que é o projeto
 
-ChessCap é um analisador de partidas de xadrez: importa uma partida (chess.com/Lichess/PGN
+Chess Noir é um analisador de partidas de xadrez: importa uma partida (chess.com/Lichess/PGN
 colado), roda o motor Stockfish real (WASM, num Web Worker, 100% no navegador — sem backend),
 classifica cada lance, mostra gráfico de avaliação, e tem modos de treino (aberturas, puzzles
 táticos) e um editor de posição. A mascote — uma capivara com lupa — é a imagem central da Home
@@ -31,7 +31,7 @@ corporativo com processo formal de aprovação.
   `depth`/`multiPv` como parâmetro de uma função existente é diferente de mexer no wrapper.
 - **Não copiar visualmente chess.com, Chessigma ou Lichess.** Princípios de UX podem inspirar
   (densidade de informação do motor, por exemplo), mas a paleta/tipografia/composição são
-  próprias do ChessCap — ver skill `chesslens-design`.
+  próprias do Chess Noir — ver skill `chessnoir-design`.
 - **Preservar dados, integrações e nomes de função existentes** ao refatorar, a menos que o
   usuário peça a mudança especificamente. Isso inclui os hooks de API (chess.com/Lichess), o
   formato dos dados salvos em `localStorage`, e o banco ECO/puzzles em `chesslens/src/data/`.
@@ -88,7 +88,7 @@ Pontos de entrada úteis pra auditoria futura:
   Context genérico de estado global. `ThemeContext` é o único Context do projeto.
 - **Estilo**: `style={{}}` inline é o padrão dominante (não classes utilitárias) + classes
   `.cl-*`/custom properties CSS pra tokens compartilhados (cor, sombra, tipografia, animação).
-  Antes de estilizar algo novo, leia a skill `chesslens-design` (`.claude/skills/`) — documenta
+  Antes de estilizar algo novo, leia a skill `chessnoir-design` (`.claude/skills/`) — documenta
   a paleta "Cinza Azulado" atual e onde ficam os tokens de verdade (`index.css`).
 - **Naming**: componentes em PascalCase (um por arquivo, mesmo nome do arquivo), hooks
   `useAlgumaCoisa.ts`, utils em camelCase.
@@ -111,7 +111,7 @@ Pontos de entrada úteis pra auditoria futura:
   estabelecida do projeto).
 - **`ROADMAP.md`** (raiz) — plano de sprints pra evoluir o produto além do estado atual
   (persistência, Treino de Erros, Relatório do jogador, Jogar contra bots, polimento, retenção).
-- **`.claude/skills/chesslens-design/SKILL.md`** — sistema visual (paleta, tipografia, tokens).
+- **`.claude/skills/chessnoir-design/SKILL.md`** — sistema visual (paleta, tipografia, tokens).
 
 ## Como conduzir sprints grandes (do `ROADMAP.md`)
 

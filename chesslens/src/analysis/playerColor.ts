@@ -4,7 +4,7 @@ import type { StoredGame } from '../persistence/types'
 // propósito: `analysis/` não pode importar de `components/` (mesma regra que motivou a extração
 // de `src/analysis/` no Sprint 0), e são só 2 strings literais, não vale criar um módulo
 // compartilhado só pra isso.
-const LAST_SEARCH_KEYS = ['chesslens-last-player-search-chesscom', 'chesslens-last-player-search-lichess']
+const LAST_SEARCH_KEYS = ['chessnoir-last-player-search-chesscom', 'chessnoir-last-player-search-lichess']
 
 function lastSearchedUsernames(): string[] {
   try {

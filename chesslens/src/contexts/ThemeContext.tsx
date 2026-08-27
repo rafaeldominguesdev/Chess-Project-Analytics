@@ -3,7 +3,7 @@ import type { ThemeConfig, BoardThemeName, PieceSetName, UIThemeName, AnimationS
 import { UI_THEMES, BOARD_THEMES } from '../utils/boardThemes'
 import { SOUND_THEMES } from '../utils/sounds'
 
-const STORAGE_KEY = 'chesslens-theme'
+const STORAGE_KEY = 'chessnoir-theme'
 
 // Blue + Alpha é só o PADRÃO de fábrica (pedido direto do usuário — trocou do default anterior,
 // Green + Dubrovny Noir) — trocável de novo em Configurações (ver SettingsPanel.tsx e

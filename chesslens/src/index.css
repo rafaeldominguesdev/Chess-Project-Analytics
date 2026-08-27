@@ -4,7 +4,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  /* Identidade visual "ChessCap Cinza Azulado": fundo cinza NEUTRO (sem matiz de nenhuma cor —
+  /* Identidade visual "Chess Noir Cinza Azulado": fundo cinza NEUTRO (sem matiz de nenhuma cor —
      pedido direto do usuário depois da 1ª troca de paleta, "não quero o site meio azulado, quero
      cinza e o azul só nos botões e em textos chamativos"; a 1ª versão desses tokens usava cinzas
      ligeiramente puxados pro azul, e isso "vazava" a sensação de azul pro site inteiro mesmo com
@@ -57,7 +57,7 @@
      mais quente/confortável que Inter em texto denso — labels, blurbs, painel de análise — sem
      perder neutralidade em corpo de texto longo), destaque/título (Bricolage Grotesque: grotesca
      variável com personalidade real — curvas ligeiramente irregulares nos traços, presença forte
-     em título grande e na marca "ChessCap" — sem cair pro lado decorativo/serifado que fugiria
+     em título grande e na marca "Chess Noir" — sem cair pro lado decorativo/serifado que fugiria
      do tom sério de um analisador de motor), dados numéricos (JetBrains Mono mantido — já era uma
      escolha sólida pro papel, ótimos numerais tabulares, não "dança" de largura ao trocar dígito,
      trocar só por trocar não agregaria). */

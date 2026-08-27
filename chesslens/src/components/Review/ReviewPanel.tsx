@@ -346,14 +346,14 @@ export function ReviewPanel({
   // Export "PGN anotado com NAG + imagem da posição crítica" (Sprint 5, Polimento). Baixa dois
   // arquivos: o PGN original com `$N` inserido depois de cada lance classificado (preserva
   // headers/comentários — ver `pgnExport.ts`), e um SVG desenhado com as cores do tema de
-  // tabuleiro ATUAL do usuário (`chesslens-design`: nunca paleta hardcoded) da posição mais
+  // tabuleiro ATUAL do usuário (`chessnoir-design`: nunca paleta hardcoded) da posição mais
   // decisiva da partida (mate, se terminou assim; senão o lance com maior queda de chance de
   // vitória — `criticalPosition.ts`). Não trava se a partida ainda não estiver 100% analisada:
   // `annotatePgnWithNags` só anota o que já tem `classification`.
   const handleExportAnnotatedPgn = () => {
     const slug = `${slugForFilename(whiteName)}-vs-${slugForFilename(blackName)}`
     const annotated = annotatePgnWithNags(pgn, moves)
-    downloadTextFile(`chesscap-${slug}.pgn`, annotated, 'application/x-chess-pgn')
+    downloadTextFile(`chess-noir-${slug}.pgn`, annotated, 'application/x-chess-pgn')
 
     const critical = findCriticalPosition(moves)
     if (critical) {
@@ -363,7 +363,7 @@ export function ReviewPanel({
         highlightTo: critical.move.to,
         caption: critical.label,
       })
-      downloadTextFile(`chesscap-${slug}-posicao-critica.svg`, svg, 'image/svg+xml')
+      downloadTextFile(`chess-noir-${slug}-posicao-critica.svg`, svg, 'image/svg+xml')
     }
   }
 

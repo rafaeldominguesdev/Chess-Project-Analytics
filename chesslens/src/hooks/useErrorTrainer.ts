@@ -23,7 +23,7 @@ export type ErrorTrainerStatus = 'loading' | 'solving' | 'wrong' | 'solved' | 'e
 // origem do lance certo; 'move' mostra a seta inteira e joga sozinho depois de 1s.
 export type HintStage = 'none' | 'reason' | 'piece' | 'move'
 
-const ERROR_STATS_KEY = 'chesslens-error-stats'
+const ERROR_STATS_KEY = 'chessnoir-error-stats'
 // Mastery POR POSIÇÃO específica (gameUrl+moveIndex), separado do mastery por MOTIVO acima —
 // existe só pra decidir a ordem da fila (ver `buildQueue`), nunca aparece na tela. Bug real
 // reportado pelo usuário depois de usar a feature ("repete sempre sem sentido"): antes, a fila
@@ -33,7 +33,7 @@ const ERROR_STATS_KEY = 'chesslens-error-stats'
 // motivo) — sobrava girar entre as poucas categorias restantes, repetindo as mesmas 2-3 posições.
 // Com mastery por posição, resolver uma não afeta as outras — a fila de verdade varre o que
 // ainda não foi bem resolvido, não só "que categoria ampla já foi tocada uma vez".
-const POSITION_STATS_KEY = 'chesslens-error-position-stats'
+const POSITION_STATS_KEY = 'chessnoir-error-position-stats'
 // Corta quantos candidatos de UMA MESMA partida entram na fila de treino — sem isso, uma
 // partida excepcionalmente ruim dominaria a sessão inteira sozinha. `extractErrorCandidates`
 // continua devolvendo a lista completa/sem corte (o Relatório do jogador, Sprint 3, precisa

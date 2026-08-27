@@ -59,7 +59,7 @@ export interface BotLevel {
   elo: number
   /** Frase curta pra tela de seleção — não é o texto do coach, só descreve o nível. */
   blurb: string
-  /** Sempre `var(--color-x)` — nunca hex direto (ver skill chesslens-design). Reaproveita a
+  /** Sempre `var(--color-x)` — nunca hex direto (ver skill chessnoir-design). Reaproveita a
    *  progressão verde→azuis→vermelho já existente nos tokens da marca como "termômetro" de
    *  dificuldade (mais fácil de escanear que 6 tons de azul quase iguais), sem inventar cor nova. */
   color: string

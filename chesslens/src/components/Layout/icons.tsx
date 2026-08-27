@@ -129,7 +129,7 @@ export function EndgameNavIcon(props: IconProps) {
 
 /** Peão simples — "Jogar" (partida real contra a capivara com força limitada). Ícone genérico de
  *  peça, não a mascote — o avatar da capivara já aparece dentro da própria tela de jogo, recortado
- *  do mesmo jeito que o "coach" da Revisão (ver skill `chesslens-design`), não como ícone de nav. */
+ *  do mesmo jeito que o "coach" da Revisão (ver skill `chessnoir-design`), não como ícone de nav. */
 export function PlayBotNavIcon(props: IconProps) {
   return (
     <svg {...base(props)}>

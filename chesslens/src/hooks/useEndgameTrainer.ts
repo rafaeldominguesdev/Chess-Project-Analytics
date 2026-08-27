@@ -31,7 +31,7 @@ export type EndgameTrainerStatus = 'loading' | 'solving' | 'bot-thinking' | 'wro
 
 export type EndgameHintStage = 'none' | 'piece' | 'move'
 
-const ENDGAME_STATS_KEY = 'chesslens-endgame-stats'
+const ENDGAME_STATS_KEY = 'chessnoir-endgame-stats'
 // Pausa antes do oponente "responder" — só pra não parecer instantâneo/robótico, mesmo padrão de
 // `showMoveHint` abaixo.
 const BOT_REPLY_DELAY_MS = 500
