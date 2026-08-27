@@ -11,6 +11,7 @@ import { ChessBoard, BOARD_ROW_CHROME_WIDTH } from './components/Board/ChessBoar
 import { ReviewPanel } from './components/Review/ReviewPanel'
 import { SettingsPanel } from './components/Settings/SettingsPanel'
 import { TrainingView } from './components/Training/TrainingView'
+import { DailyPuzzleView } from './components/Training/DailyPuzzleView'
 import { OpeningTrainerView } from './components/Training/OpeningTrainerView'
 import type { Side } from './hooks/useOpeningTrainer'
 import { ErrorTrainerView } from './components/Training/ErrorTrainerView'
@@ -43,6 +44,8 @@ const ANALYSIS_DEPTH = 18
 function AppInner() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [updatesOpen, setUpdatesOpen] = useState(false)
+  // Puzzle Diário — mesmo esquema de modo de tela cheia, mutuamente exclusivo com os outros.
+  const [dailyPuzzleMode, setDailyPuzzleMode] = useState(false)
   // Modo de treino de táticas — não é um modal, substitui o conteúdo principal (igual à análise).
   const [trainingMode, setTrainingMode] = useState(false)
   // Treino de Aberturas — mesmo esquema, mutuamente exclusivo com os outros modos.
@@ -234,6 +237,7 @@ function AppInner() {
     if (settingsOpen) { setSettingsOpen(false); return }
     if (updatesOpen) { setUpdatesOpen(false); return }
     if (maintenanceFeature) { setMaintenanceFeature(null); return }
+    setDailyPuzzleMode(false)
     setTrainingMode(false)
     setBoardMode(false)
     setOpeningTrainingMode(false)
@@ -252,7 +256,7 @@ function AppInner() {
     // Desligado também em "Jogar contra a Capivara" pelo mesmo motivo — não há histórico de
     // revisão pra navegar ali, é uma partida ao vivo. `onEscape` continua funcionando mesmo com
     // isso tudo desligado (ver comentário em `useKeyboard.ts`) — é o que fecha essas telas.
-    enabled: !settingsOpen && !updatesOpen && !trainingMode && !boardMode && !openingTrainingMode && !errorTrainingMode && !endgameTrainingMode && !reportMode && !positionEditorMode && !playBotMode,
+    enabled: !settingsOpen && !updatesOpen && !dailyPuzzleMode && !trainingMode && !boardMode && !openingTrainingMode && !errorTrainingMode && !endgameTrainingMode && !reportMode && !positionEditorMode && !playBotMode,
   })
 
   const handleAnalyzeGame = useCallback((pgn: string, url: string | null, color: 'w' | 'b') => {
@@ -297,6 +301,7 @@ function AppInner() {
   }, [])
 
   const openSearch = useCallback((platform?: Platform) => {
+    setDailyPuzzleMode(false)
     setTrainingMode(false)
     setBoardMode(false)
     setOpeningTrainingMode(false)
@@ -425,17 +430,19 @@ function AppInner() {
         onCloseMobile={() => setMobileNavOpen(false)}
         onSettings={() => setSettingsOpen(true)}
         onUpdates={() => setUpdatesOpen(true)}
-        onToggleTraining={() => { setTrainingMode((v) => !v); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setEndgameTrainingMode(false); setReportMode(false); setPlayBotMode(false); setPositionEditorMode(false); setSearchMode(false) }}
-        onToggleBoard={() => { setBoardMode((v) => !v); setTrainingMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setEndgameTrainingMode(false); setReportMode(false); setPlayBotMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setSearchMode(false) }}
-        onToggleOpeningTraining={() => { setOpeningTrainingMode((v) => !v); setTrainingMode(false); setBoardMode(false); setErrorTrainingMode(false); setEndgameTrainingMode(false); setReportMode(false); setPlayBotMode(false); setPositionEditorMode(false); setPendingOpeningTarget(null); setSearchMode(false) }}
-        onToggleErrorTraining={() => { setErrorTrainingMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setEndgameTrainingMode(false); setReportMode(false); setPlayBotMode(false); setPositionEditorMode(false); setPendingErrorReason(null); setSearchMode(false) }}
-        onToggleEndgameTraining={() => { setEndgameTrainingMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setReportMode(false); setPlayBotMode(false); setPositionEditorMode(false); setSearchMode(false) }}
-        onToggleReport={() => { setReportMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setEndgameTrainingMode(false); setPlayBotMode(false); setPositionEditorMode(false); setSearchMode(false) }}
-        onTogglePlayBot={() => { setPlayBotMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setEndgameTrainingMode(false); setReportMode(false); setPositionEditorMode(false); setSearchMode(false) }}
-        onGoHome={() => { setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setEndgameTrainingMode(false); setReportMode(false); setPlayBotMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setPendingOpeningTarget(null); setPendingErrorReason(null); setSearchMode(false); unloadGame(); setGameUrl(null) }}
+        onToggleDailyPuzzle={() => { setDailyPuzzleMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setEndgameTrainingMode(false); setReportMode(false); setPlayBotMode(false); setPositionEditorMode(false); setSearchMode(false) }}
+        onToggleTraining={() => { setTrainingMode((v) => !v); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setEndgameTrainingMode(false); setReportMode(false); setPlayBotMode(false); setPositionEditorMode(false); setDailyPuzzleMode(false); setSearchMode(false) }}
+        onToggleBoard={() => { setBoardMode((v) => !v); setTrainingMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setEndgameTrainingMode(false); setReportMode(false); setPlayBotMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setDailyPuzzleMode(false); setSearchMode(false) }}
+        onToggleOpeningTraining={() => { setOpeningTrainingMode((v) => !v); setTrainingMode(false); setBoardMode(false); setErrorTrainingMode(false); setEndgameTrainingMode(false); setReportMode(false); setPlayBotMode(false); setPositionEditorMode(false); setPendingOpeningTarget(null); setDailyPuzzleMode(false); setSearchMode(false) }}
+        onToggleErrorTraining={() => { setErrorTrainingMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setEndgameTrainingMode(false); setReportMode(false); setPlayBotMode(false); setPositionEditorMode(false); setPendingErrorReason(null); setDailyPuzzleMode(false); setSearchMode(false) }}
+        onToggleEndgameTraining={() => { setEndgameTrainingMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setReportMode(false); setPlayBotMode(false); setPositionEditorMode(false); setDailyPuzzleMode(false); setSearchMode(false) }}
+        onToggleReport={() => { setReportMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setEndgameTrainingMode(false); setPlayBotMode(false); setPositionEditorMode(false); setDailyPuzzleMode(false); setSearchMode(false) }}
+        onTogglePlayBot={() => { setPlayBotMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setEndgameTrainingMode(false); setReportMode(false); setPositionEditorMode(false); setDailyPuzzleMode(false); setSearchMode(false) }}
+        onGoHome={() => { setDailyPuzzleMode(false); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setEndgameTrainingMode(false); setReportMode(false); setPlayBotMode(false); setPositionEditorMode(false); setPendingBoardFen(undefined); setPendingOpeningTarget(null); setPendingErrorReason(null); setSearchMode(false); unloadGame(); setGameUrl(null) }}
         onAnalyzeClick={() => { unloadGame(); setGameUrl(null); openSearch() }}
         onMaintenanceClick={setMaintenanceFeature}
-        onTogglePositionEditor={() => { setPositionEditorMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setEndgameTrainingMode(false); setReportMode(false); setPlayBotMode(false); setSearchMode(false) }}
+        onTogglePositionEditor={() => { setPositionEditorMode((v) => !v); setTrainingMode(false); setBoardMode(false); setOpeningTrainingMode(false); setErrorTrainingMode(false); setEndgameTrainingMode(false); setReportMode(false); setPlayBotMode(false); setDailyPuzzleMode(false); setSearchMode(false) }}
+        dailyPuzzleActive={dailyPuzzleMode}
         trainingActive={trainingMode}
         boardActive={boardMode}
         openingTrainingActive={openingTrainingMode}
@@ -449,7 +456,9 @@ function AppInner() {
 
       {/* Main */}
       <main className="cl-main-shell" style={{ flex: 1, minWidth: 0 }}>
-        {trainingMode ? (
+        {dailyPuzzleMode ? (
+          <DailyPuzzleView boardWidth={boardWidth} containerRef={containerRef} />
+        ) : trainingMode ? (
           <TrainingView boardWidth={boardWidth} containerRef={containerRef} />
         ) : endgameTrainingMode ? (
           <EndgameTrainerView boardWidth={boardWidth} containerRef={containerRef} />

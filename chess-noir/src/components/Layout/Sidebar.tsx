@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { ChevronIcon, CloseIcon, ErrorTrainNavIcon, GearIcon, SunNavIcon, WrenchIcon } from './icons'
+import { ChevronIcon, CloseIcon, ErrorTrainNavIcon, GearIcon, WrenchIcon } from './icons'
 
 // Abaixo desta largura a sidebar sai do fluxo e vira menu-gaveta (ver `isMobile` abaixo) — mesmo
 // breakpoint já usado em outros pontos de `index.css` pra "tela estreita", reaproveitado aqui em
@@ -9,6 +9,7 @@ const MOBILE_BREAKPOINT = '(max-width: 760px)'
 interface SidebarProps {
   onSettings: () => void
   onUpdates: () => void
+  onToggleDailyPuzzle: () => void
   onToggleTraining: () => void
   onToggleBoard: () => void
   onToggleOpeningTraining: () => void
@@ -20,6 +21,7 @@ interface SidebarProps {
   onAnalyzeClick: () => void
   onMaintenanceClick: (feature: string) => void
   onTogglePositionEditor: () => void
+  dailyPuzzleActive: boolean
   trainingActive: boolean
   boardActive: boolean
   openingTrainingActive: boolean
@@ -65,7 +67,7 @@ const TRAIN_PLACEHOLDERS: string[] = []
  *  colado no topo, ao lado da marca — e esse estado persiste entre sessões (localStorage), já que
  *  é preferência de layout, não algo que muda por partida. Rola internamente (overflowY) porque
  *  com tudo expandido não cabe numa tela baixa. */
-export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard, onToggleOpeningTraining, onToggleErrorTraining, onToggleEndgameTraining, onToggleReport, onTogglePlayBot, onGoHome, onAnalyzeClick, onMaintenanceClick, onTogglePositionEditor, trainingActive, boardActive, openingTrainingActive, errorTrainingActive, endgameTrainingActive, reportActive, playBotActive, positionEditorActive, searchActive, mobileOpen, onCloseMobile }: SidebarProps) {
+export function Sidebar({ onSettings, onUpdates, onToggleDailyPuzzle, onToggleTraining, onToggleBoard, onToggleOpeningTraining, onToggleErrorTraining, onToggleEndgameTraining, onToggleReport, onTogglePlayBot, onGoHome, onAnalyzeClick, onMaintenanceClick, onTogglePositionEditor, dailyPuzzleActive, trainingActive, boardActive, openingTrainingActive, errorTrainingActive, endgameTrainingActive, reportActive, playBotActive, positionEditorActive, searchActive, mobileOpen, onCloseMobile }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(() => {
     const saved = localStorage.getItem(COLLAPSED_KEY)
     // Sem preferência salva ainda: começa colapsada (só ícones) em telas estreitas, senão a
@@ -245,6 +247,13 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
           <NavItem icon={<img src="/icon-jogar.png" alt="" width={48} height={48} style={{ flexShrink: 0, display: 'block', aspectRatio: '1' }} />} label="Jogar contra a Capivara" active={playBotActive} onClick={closeAnd(onTogglePlayBot)} collapsed={effectiveCollapsed} />
         </NavSection>
 
+        {/* Seção própria — item de "volta todo dia": um puzzle diferente por dia, o mesmo pra
+            todo mundo, que não repete (ver analysis/dailyPuzzle.ts). Fica separado do "Treino"
+            de propósito — a proposta é retenção diária, não uma sessão de estudo. */}
+        <NavSection label="Diário" collapsed={effectiveCollapsed}>
+          <NavItem icon={<img src="/icon-diario.png" alt="" width={36} height={36} style={{ flexShrink: 0, display: 'block', aspectRatio: '1' }} />} label="Puzzle Diário" active={dailyPuzzleActive} onClick={closeAnd(onToggleDailyPuzzle)} collapsed={effectiveCollapsed} />
+        </NavSection>
+
         <div style={{ marginBottom: 16 }}>
           <NavGroup icon={<img src="/icon-treino.png" alt="" width={36} height={36} style={{ flexShrink: 0, display: 'block', aspectRatio: '1' }} />} label="Treino" collapsed={effectiveCollapsed} items={trainItems} inline={isMobile} />
         </div>
@@ -263,7 +272,10 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
         <div style={{ flex: 1, minHeight: 12 }} />
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <NavItem icon={<SunNavIcon width={14} height={14} />} label="Updates" ghost onClick={closeAnd(onUpdates)} collapsed={effectiveCollapsed} />
+          {/* "New Updates" (pedido direto do usuário: "troca update por new updates pra chamar
+              atenção com esse ícone") — megafone 3D no lugar do ícone de traço fino, e sem o
+              estilo `ghost` discreto de antes: agora chama atenção como um item de verdade. */}
+          <NavItem icon={<img src="/icon-updates.png" alt="" width={22} height={22} style={{ flexShrink: 0, display: 'block', aspectRatio: '1' }} />} label="New Updates" onClick={closeAnd(onUpdates)} collapsed={effectiveCollapsed} />
           <NavItem icon={<GearIcon width={22} height={22} />} label="Configurações" onClick={closeAnd(onSettings)} collapsed={effectiveCollapsed} />
         </div>
       </nav>
