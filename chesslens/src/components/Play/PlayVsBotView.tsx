@@ -10,50 +10,50 @@ interface PlayVsBotViewProps {
   containerRef: RefCallback<HTMLDivElement>
 }
 
-// Mesmo recorte de rosto usado no avatar do "coach" (`CoachComment.tsx`/`ReportView.tsx`) — a
-// capivara é a mascote única do produto, um desenho novo por faixa está fora de cogitação. Mas
-// pedido direto do usuário depois de testar ("o mascote é só imagem com zoom") era exatamente o
-// problema: as 6 faixas usavam o MESMO recorte, só trocando a cor do anel. Agora o TAMANHO do
-// recorte varia por faixa, girando ao redor do mesmo ponto fixo (aprox. os olhos/focinho, centro
-// do recorte original `{ x: 260, y: 80, size: 900 }` ainda usado por `CoachComment.tsx`) — faixas
-// fracas usam um recorte mais aberto (mais "olhar distraído", contexto ao redor), faixas fortes um
-// recorte mais fechado, quase só os olhos (mais "focada"). Ainda é 100% a mesma imagem/arte, só
-// matemática de crop diferente por índice de faixa (0 = mais fraca .. 5 = mais forte).
-const CAPY_IMG = { width: 2560, height: 1440 }
-const CAPY_FACE_CENTER = { x: 710, y: 530 }
-// Faixa de tamanhos mais conservadora do que a 1ª tentativa (que ia até 650px) — testado ao vivo,
-// um recorte MUITO fechado ao redor do mesmo centro fixo cortava o rosto de um jeito estranho (só
-// um olho, cortando perto da orelha) porque a capivara está em 3/4 de perfil, não de frente — o
-// "centro do rosto" não é simétrico o bastante pra aguentar um crop extremo sem descentralizar.
-// Essa faixa (1050 a 780) mantém a mesma composição bem enquadrada do recorte original (900,
-// ainda usado por `CoachComment.tsx`) em todas as faixas, só variando o zoom moderadamente.
-const TIER_CROP_SIZES = [1050, 980, 920, 870, 820, 780]
+// Retratos DEDICADOS por faixa (pedido direto do usuário: "vou pedir pro manus criar uma logo
+// pra cada nível") — substitui a técnica antiga de recorte/zoom numa ÚNICA imagem (`hero-bg.png`)
+// que esta função usava antes. O estilo de arte dessas 6 imagens (cartoon/vetorial, personagem
+// com camiseta) é diferente da mascote oficial (pintura/foto-realista, sem roupa) usada no resto
+// do site (Home, herói desta mesma tela) — confirmado explicitamente com o usuário que essa
+// mudança de estilo vale só pra estes 6 selos de faixa, não pra mascote oficial em geral. Ordem
+// do array bate com a ordem de `BOT_LEVELS` (mais fraca .. mais forte); a progressão de
+// expressão (distraída → focada → intensa) já vem das próprias imagens.
+const TIER_AVATARS = [
+  '/level-filhote.png',
+  '/level-curiosa.png',
+  '/level-aprendiz.png',
+  '/level-experiente.png',
+  '/level-veterana.png',
+  '/level-mestra.png',
+]
 
-function capybaraAvatarStyle(size: number, level: BotLevel, tierIndex: number): CSSProperties {
-  const cropSize = TIER_CROP_SIZES[tierIndex] ?? 900
-  const cropX = CAPY_FACE_CENTER.x - cropSize / 2
-  const cropY = CAPY_FACE_CENTER.y - cropSize / 2
-  const scale = size / cropSize
-  // "Termômetro" visual além da cor do anel: faixas fracas ficam mais foscas/claras (como se
-  // ainda estivesse distraída), faixas fortes mais saturadas/nítidas — reforça a progressão de
-  // força ao primeiro olhar, sem depender só de diferenciar 6 tons de azul quase iguais.
-  const t = tierIndex / (TIER_CROP_SIZES.length - 1) // 0 (mais fraca) .. 1 (mais forte)
+function capybaraAvatarStyle(width: number, tierIndex: number): CSSProperties {
+  const src = TIER_AVATARS[tierIndex] ?? TIER_AVATARS[0]
+  // "Termômetro" visual: faixas fracas ficam mais foscas/claras (como se ainda estivesse
+  // distraída), faixas fortes mais saturadas/nítidas — reforça a progressão de força ao primeiro
+  // olhar, sem depender só de diferenciar 6 tons de azul quase iguais.
+  const t = tierIndex / (TIER_AVATARS.length - 1) // 0 (mais fraca) .. 1 (mais forte)
   const saturate = 45 + t * 65
   const brightness = 0.92 + t * 0.14
   const contrast = 96 + t * 18
   return {
-    width: size,
-    height: size,
-    borderRadius: '50%',
+    // Foto quadradinha com contorno cinza neutro (pedido direto do usuário: "tira esse
+    // círculo... outline cinza", depois "foto quadradinha") — não mais avatar circular com anel
+    // colorido por faixa; a progressão de força agora só pela `StrengthPips`/Elo ao lado, e o
+    // nome vira legenda embaixo da foto (ver `LevelRow`), não mais só dentro do card ao lado.
+    width,
+    height: width,
+    borderRadius: 'var(--radius-sm)',
     flexShrink: 0,
-    backgroundImage: 'url(/hero-bg.png?v=2)',
-    backgroundSize: `${CAPY_IMG.width * scale}px ${CAPY_IMG.height * scale}px`,
-    backgroundPosition: `${-cropX * scale}px ${-cropY * scale}px`,
+    backgroundImage: `url(${src})`,
+    // Imagem inteira aparecendo, sem corte (pedido direto: "ageita a imagem ficar 100%
+    // aparecendo") — a caixa é quadrada e a arte de origem também é quadrada (1920×1920), então
+    // 100% mostra o retrato inteiro encaixado exato, sem sobrar nem cortar nada.
+    backgroundSize: '100%',
+    backgroundPosition: 'center',
     filter: `saturate(${saturate}%) brightness(${brightness}) contrast(${contrast}%)`,
-    border: `2px solid ${level.color}`,
-    // Anel duplo (borda sólida + halo translúcido que cresce um pouco por faixa) em vez de um
-    // contorno único fino — lê mais como "medalha"/emblema do que como avatar de perfil genérico.
-    boxShadow: `0 0 0 3px color-mix(in srgb, ${level.color} ${16 + t * 24}%, transparent), 0 2px 10px -3px rgba(0,0,0,0.65)`,
+    border: '1px solid var(--color-gray-border)',
+    boxShadow: '0 2px 10px -3px rgba(0, 0, 0, 0.6)',
   }
 }
 
@@ -177,7 +177,7 @@ function BotStatusCard({ level, tierIndex, totalTiers, isBotThinking, botToMove 
   if (!level || tierIndex < 0) return null
   return (
     <div className="cl-card" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px' }}>
-      <div style={capybaraAvatarStyle(40, level, tierIndex)} />
+      <div style={capybaraAvatarStyle(40, tierIndex)} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, flex: 1 }}>
         <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-gray-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 7 }}>
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>Elo <span className="cl-mono">{level.elo}</span></span>
@@ -305,9 +305,8 @@ const RECOMMENDED_TIER_INDEX = 3
  *  (a v1 foi rejeitada pelo usuário por inteiro: "não gostei, odeio"). A capivara agora é um
  *  herói grande e confiante com respiração sutil (`.cl-playbot-hero-v2`, reaproveita
  *  `@keyframes cl-hero-breathe` da Home), o seletor de cor virou um controle segmentado de
- *  verdade (`.cl-inset` recessado + `.cl-btn-selected`), e as 6 faixas viram uma lista "escada"
- *  conectada por um trilho de gradiente (`.cl-ladder`/`.cl-ladder-rail`) em vez de uma grade de
- *  cards idênticos. */
+ *  verdade (`.cl-inset` recessado + `.cl-btn-selected`), e as 6 faixas viram uma lista (`.cl-ladder`)
+ *  com foto quadrada + legenda por faixa em vez de uma grade de cards idênticos. */
 function LevelSelectScreen({ levels, isEngineReady, onStart }: {
   levels: BotLevel[]
   isEngineReady: boolean
@@ -323,24 +322,36 @@ function LevelSelectScreen({ levels, isEngineReady, onStart }: {
   return (
     <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', maxHeight: 'calc(100vh - 20px)', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: 1040, display: 'flex', flexDirection: 'column', gap: 20, padding: '8px 4px 40px' }}>
-        <div className="cl-playbot-hero-v2 cl-fade-in">
+        <div className="cl-playbot-hero-v2">
           <div>
-            <div className="cl-display" style={{ fontSize: 27, fontWeight: 700, color: 'var(--color-text-on-dark)', lineHeight: 1.1 }}>
-              Jogar contra a Capivara
+            {/* Entrada em cascata (`.cl-stat-pop`, mesmo pop+fade já usado em `StatsGrid.tsx`) —
+                cada bloco de texto/controle aparece em sequência em vez do card surgir de uma vez.
+                Apurado a pedido direto ("melhore tudo, estilo apple design"): tirado o peão
+                decorativo girando e a textura de linhas que tinham entrado numa rodada anterior —
+                ornamento demais compete com a própria foto, que devia carregar o drama visual
+                sozinha; contraste de escala mais forte no título (34px, ao invés de 29) pra
+                compensar sem precisar de enfeite extra. */}
+            <span className="cl-mono cl-stat-pop" style={{ display: 'inline-block', fontSize: 10.5, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--color-blue-light)' }}>
+              Modo de jogo
+            </span>
+            <div className="cl-display cl-stat-pop" style={{ fontSize: 34, fontWeight: 700, color: 'var(--color-text-on-dark)', lineHeight: 1.05, letterSpacing: '-0.015em', marginTop: 5, animationDelay: '70ms' }}>
+              Jogar contra a <span style={{ color: 'var(--color-blue-bright)' }}>Capivara</span>
             </div>
-            <div style={{ fontSize: 13, color: 'var(--color-gray-muted)', marginTop: 6, maxWidth: 420 }}>
+            <div className="cl-stat-pop" style={{ fontSize: 13.5, color: 'var(--color-gray-muted)', marginTop: 8, maxWidth: 420, lineHeight: 1.45, animationDelay: '130ms' }}>
               Motor real (Stockfish, no seu navegador), força ajustada pra faixa escolhida.
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <div className="cl-stat-pop" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', animationDelay: '190ms' }}>
             <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--color-gray-muted)' }}>Suas peças:</span>
-            <div className="cl-inset" style={{ display: 'inline-flex', padding: 4, gap: 4 }}>
+            {/* Cápsula (raio 999px via `.cl-color-picker` em index.css) — geometria de pílula,
+                referência de estudo do "estilo apple" pedido, não cópia de marca. */}
+            <div className="cl-inset cl-color-picker" style={{ display: 'inline-flex', padding: 4, gap: 4 }}>
               {COLOR_CHOICES.map((c) => (
                 <button
                   key={c.id}
                   onClick={() => setColorChoice(c.id)}
                   className={`cl-btn cl-btn-sm${colorChoice === c.id ? ' cl-btn-selected' : ''}`}
-                  style={{ width: 'auto', height: 'auto', padding: '7px 14px', fontSize: 12.5 }}
+                  style={{ width: 'auto', height: 'auto', padding: '7px 16px', fontSize: 12.5 }}
                 >
                   {c.label}
                 </button>
@@ -354,7 +365,6 @@ function LevelSelectScreen({ levels, isEngineReady, onStart }: {
         )}
 
         <div className="cl-ladder">
-          <span className="cl-ladder-rail" aria-hidden />
           {levels.map((level, tierIndex) => (
             <LevelRow
               key={level.id}
@@ -373,11 +383,10 @@ function LevelSelectScreen({ levels, isEngineReady, onStart }: {
 }
 
 /** Linha de faixa (era `LevelCard`, agora uma linha de lista, não um card de grade — ver comentário
- *  de `.cl-ladder`/`.cl-ladder-rail` em `index.css`). O avatar mora FORA do `.cl-card` da linha,
- *  numa coluna própria (`.cl-ladder-avatar-col`) que flutua sobre o trilho — é o que faz o trilho
- *  parecer "passar por trás" do avatar em vez de ficar escondido atrás do fundo opaco do card.
- *  Mantém da v1: linha inteira clicável (`role="button"`/teclado, botão "Jogar" interno como
- *  `<span>` decorativo pra evitar elemento interativo aninhado), selo "Ponto de partida" na faixa
+ *  de `.cl-ladder` em `index.css`). O avatar (foto quadrada + legenda do nome embaixo) mora FORA
+ *  do `.cl-card` da linha, numa coluna própria (`.cl-ladder-avatar-col`). Mantém da v1: linha
+ *  inteira clicável (`role="button"`/teclado, botão "Jogar" interno como `<span>` decorativo pra
+ *  evitar elemento interativo aninhado), selo "Ponto de partida" na faixa
  *  `RECOMMENDED_TIER_INDEX`. */
 function LevelRow({ level, tierIndex, totalTiers, disabled, recommended, onSelect }: {
   level: BotLevel; tierIndex: number; totalTiers: number; disabled: boolean; recommended: boolean; onSelect: () => void
@@ -393,7 +402,13 @@ function LevelRow({ level, tierIndex, totalTiers, disabled, recommended, onSelec
   return (
     <div className="cl-ladder-item cl-row-in" style={{ animationDelay: `${40 + tierIndex * 35}ms` }}>
       <div className="cl-ladder-avatar-col">
-        <div style={capybaraAvatarStyle(62, level, tierIndex)} />
+        <div style={capybaraAvatarStyle(62, tierIndex)} />
+        {/* Legenda com o nome curto da faixa embaixo da foto (pedido direto do usuário: "foto
+            quadradinha só nome embaixo") — só a palavra da faixa, sem repetir "Capivara" (já
+            óbvio pelo contexto da tela inteira), a coluna é estreita demais pro nome completo. */}
+        <span className="cl-mono" style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--color-gray-muted)', textAlign: 'center', lineHeight: 1.2, marginTop: 4 }}>
+          {level.label.replace('Capivara ', '')}
+        </span>
       </div>
       <div
         className={`cl-card cl-ladder-row${recommended ? ' cl-ladder-row-recommended' : ''}${disabled ? ' cl-ladder-row-disabled' : ''}`}

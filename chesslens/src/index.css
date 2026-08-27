@@ -613,12 +613,14 @@ body {
 }
 
 /* Cabeçalho da tela "Jogar contra a Capivara" (`LevelSelectScreen` em `PlayVsBotView.tsx`) — v2,
-   reconceito completo (a v1 foi rejeitada pelo usuário por inteiro: "não gostei, odeio" — layout,
-   clima visual, a capivara e a falta de vida foram todos apontados). A v1 tinha a capivara como
-   fundo discreto atrás de um gradiente de fusão bem sutil, quase sumindo; esta versão é bem maior
-   e mais confiante — mesma proporção comprovada ao vivo no herói da Home (`.cl-hero-bg`, `auto
-   80%` dentro da caixa), escalada pra este painel menor, com a MESMA respiração sutil que a Home
-   já usa (`@keyframes cl-hero-breathe`, reaproveitada abaixo, não duplicada). Continua usando
+   reconceito completo (a v1 foi rejeitada pelo usuário por inteiro: "não gostei, odeio"), depois
+   apurado a pedido direto do usuário ("melhore tudo, estilo apple design"). A rodada anterior
+   tinha ganhado textura de linhas diagonais animadas + um ícone de peão girando no canto — bonito
+   como ideia, mas exatamente o tipo de ornamento que o princípio Apple de referência rejeita
+   ("don't overuse shadows, glow effects, or decorative gradients in core UI chrome" — deixa a
+   IMAGEM carregar o drama visual, não efeitos sintéticos por cima dela) — removidos os dois.
+   Sobra só UM glow (não dois) mais discreto, e a deriva lenta da própria foto (não um enfeite à
+   parte) como único motion decorativo, além da respiração já herdada da Home. Continua usando
    `hero-jogar.png` (arte oficial, capivara segurando dama preta e peão branco — pose de "jogando",
    já usada no hero da Home) via recorte/composição CSS — sem geração de imagem nova, confirmado
    com o usuário. */
@@ -632,11 +634,11 @@ body {
     inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
     0 1px 0 0 rgba(0, 0, 0, 0.5),
     0 20px 44px -14px rgba(0, 0, 0, 0.65);
-  padding: 26px 28px;
+  padding: 30px 32px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 16px;
+  gap: 18px;
   min-height: 240px;
 }
 .cl-playbot-hero-v2::before {
@@ -645,7 +647,7 @@ body {
   inset: 0;
   background-image:
     linear-gradient(to right, var(--color-bg-panel) 0%, color-mix(in srgb, var(--color-bg-panel) 55%, transparent) 38%, transparent 68%),
-    radial-gradient(ellipse 70% 100% at 88% 100%, color-mix(in srgb, var(--color-blue-bright) 24%, transparent), transparent 72%),
+    radial-gradient(ellipse 65% 95% at 88% 100%, color-mix(in srgb, var(--color-blue-bright) 20%, transparent), transparent 72%),
     url(/hero-jogar.png);
   background-size: 100% 100%, 100% 100%, auto 100%;
   background-position: center, center, 88% 85%;
@@ -659,8 +661,18 @@ body {
 @media (prefers-reduced-motion: no-preference) {
   .cl-playbot-hero-v2 { animation: cl-hero-breathe 8s ease-in-out infinite; }
 }
+/* Deriva lenta só da FOTO — separada da respiração do card inteiro acima (essa move o painel
+   todo; esta anima só a posição da camada da capivara dentro do `::before`, a 1ª posição do
+   layer-list fica em `center` fixo, só a 2ª — a arte — se move). */
+@keyframes cl-hero-photo-drift {
+  0%, 100% { background-position: center, center, 88% 85%; }
+  50% { background-position: center, center, 84% 81%; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cl-playbot-hero-v2::before { animation: cl-hero-photo-drift 9s ease-in-out infinite; }
+}
 @media (max-width: 979px) {
-  .cl-playbot-hero-v2 { min-height: 210px; padding: 22px 24px; }
+  .cl-playbot-hero-v2 { min-height: 210px; padding: 24px 26px; }
 }
 @media (max-width: 700px) {
   /* Nunca `display:none` — abaixo daqui a arte recua de posição (mais centralizada, menos
@@ -670,17 +682,29 @@ body {
     background-position: center, center, 62% 88%;
     background-size: 100% 100%, 100% 100%, auto 100%;
   }
+  @keyframes cl-hero-photo-drift {
+    0%, 100% { background-position: center, center, 62% 88%; }
+    50% { background-position: center, center, 58% 84%; }
+  }
+}
+
+/* Seletor de cor em cápsula — pedido direto: "estilo apple design". Apple usa geometria de
+   pílula/cápsula como assinatura de controles de seleção (referência de estudo, não cópia de
+   marca — só o RAIO, mesma paleta/sombra "físicas" do resto do app). Override LOCAL só neste
+   controle (não mexe no `--radius-md` global do `.cl-btn`, que continuaria quadrado em todo o
+   resto do app), mesmo princípio de exceção pontual já usado em `.cl-nav-btn`. */
+.cl-color-picker,
+.cl-color-picker .cl-btn {
+  border-radius: 999px;
 }
 
 /* Lista "escada" das 6 faixas — reconceito da v1 (que era uma grade de 6 cards idênticos, "sacola
-   de opções soltas"). Agora é uma lista vertical única com um trilho de gradiente conectando os
-   avatares (`.cl-ladder-rail`, as mesmas 6 cores de `level.color`/`BOT_LEVELS`, na ordem real,
-   nenhuma cor nova) — lê como UM sistema de progressão, não 6 ilhas repetidas. Cada item
+   de opções soltas"). Agora é uma lista vertical única (sem trilho conector — removido a pedido
+   direto do usuário: "ageita essa linha atrás da imagem conectando eles tira isso"). Cada item
    (`.cl-ladder-item` em `PlayVsBotView.tsx`) é uma linha flex com DOIS filhos: uma coluna de
-   avatar (`.cl-ladder-avatar-col`, 62px, fora do card) que flutua sobre o trilho, e o card em si
-   (`.cl-ladder-row`) só com nome/Elo/blurb/CTA — o avatar "quebra" a linha do trilho em cada nó,
-   efeito clássico de timeline/changelog (Linear/Stripe). Elimina também a complexidade de
-   breakpoint de grade da v1: é uma lista, empilha em qualquer largura. */
+   avatar (`.cl-ladder-avatar-col`, foto quadrada + legenda do nome embaixo) e o card em si
+   (`.cl-ladder-row`) com Elo/blurb/CTA. Elimina também a complexidade de breakpoint de grade da
+   v1: é uma lista, empilha em qualquer largura. */
 .cl-ladder {
   position: relative;
   display: flex;
@@ -696,41 +720,14 @@ body {
   width: 62px;
   flex-shrink: 0;
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  position: relative;
-  z-index: 1;
-}
-.cl-ladder-rail {
-  position: absolute;
-  left: 31px;
-  top: 43px;
-  bottom: 43px;
-  width: 3px;
-  border-radius: 2px;
-  background: linear-gradient(
-    to bottom,
-    var(--color-success) 0%,
-    var(--color-blue-ice) 20%,
-    var(--color-blue-light) 40%,
-    var(--color-blue-bright) 60%,
-    var(--color-blue-primary) 80%,
-    var(--color-error) 100%
-  );
-  transform-origin: top;
-  opacity: 0.55;
-}
-@keyframes cl-ladder-rail-in {
-  0% { transform: scaleY(0); opacity: 0; }
-  100% { transform: scaleY(1); opacity: 0.55; }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .cl-ladder-rail { animation: cl-ladder-rail-in var(--dur-enter) var(--ease-snap) both; }
 }
 @media (max-width: 560px) {
-  /* Avatar/trilho encolhem um pouco pra sobrar mais largura pro nome/Elo/blurb numa tela estreita
-     (mesmo espírito dos outros ajustes de largura mínima já no arquivo). */
+  /* Avatar encolhe um pouco pra sobrar mais largura pro nome/Elo/blurb numa tela estreita (mesmo
+     espírito dos outros ajustes de largura mínima já no arquivo). */
   .cl-ladder-avatar-col { width: 50px; }
-  .cl-ladder-rail { left: 25px; }
 }
 
 /* Linha de faixa (`LevelRow`, era `LevelCard` na v1) — alvo de clique PRINCIPAL da tela, igual
@@ -750,7 +747,10 @@ body {
   background: color-mix(in srgb, var(--color-blue-bright) 6%, var(--color-bg-panel));
 }
 .cl-ladder-row:hover {
-  transform: translateX(5px);
+  /* Deslocamento contido (3px, não 5) — feedback de "levantar/prestar atenção" discreto em vez
+   *  de um deslize chamativo, mais coerente com o princípio de restrição do pedido "estilo apple
+   *  design". */
+  transform: translateX(3px);
   border-color: color-mix(in srgb, var(--color-blue-bright) 45%, var(--color-gray-border));
   box-shadow:
     inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
