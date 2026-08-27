@@ -94,14 +94,18 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
         <div className="cl-fade-in" style={{ position: 'relative' }}>
         {/* ── Hero: título + busca flutuam direto sobre o plano de fundo acima, sem card. Essa
             linha usa a largura TOTAL da página (não o maxWidth:1080 do resto) só pra poder
-            encostar o texto bem mais pra direita — encostado em cima/direita, longe da lupa
-            que a capivara segura no meio da imagem — e com bastante espaço embaixo antes dos
-            Recursos, pra imagem "respirar" no meio. ── */}
+            encostar o texto bem mais pra direita — longe da lupa que a capivara segura no meio
+            da imagem. `minHeight` casa com a altura real da arte (`.cl-hero-bg`, `75cqw + 12px`)
+            e `alignItems: center` centraliza o bloco VERTICALMENTE na lateral direita, em vez de
+            grudá-lo no topo — pedido direto do usuário ("centraliza na lateral, lá em cima fica
+            ruim"). O override mobile (`@media` em index.css) continua fazendo o texto descer pra
+            baixo da imagem em tela estreita. ── */}
         <div className="cl-home-hero-row" style={{
-          display: 'flex', justifyContent: 'flex-end', minHeight: 170, marginBottom: 130,
-          padding: 'clamp(28px, 5vw, 56px) clamp(28px, 4vw, 64px) 0',
+          display: 'flex', justifyContent: 'flex-end', alignItems: 'center',
+          minHeight: 'calc(75cqw + 12px)', marginBottom: 0,
+          padding: '0 clamp(28px, 4vw, 64px)',
         }}>
-            <div className="cl-home-hero-content" style={{ flex: '0 1 380px', display: 'flex', flexDirection: 'column', gap: 12, justifyContent: 'flex-start', minWidth: 0 }}>
+            <div className="cl-home-hero-content" style={{ flex: '0 1 380px', display: 'flex', flexDirection: 'column', gap: 12, justifyContent: 'center', minWidth: 0 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span aria-hidden style={{ width: 4, height: 14, borderRadius: 2, background: 'var(--color-blue-bright)' }} />
