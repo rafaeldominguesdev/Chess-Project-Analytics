@@ -454,7 +454,7 @@ export function ReviewPanel({
       </div>
 
       {reviewStarted && (
-        <div style={{ paddingTop: 10, paddingRight: 2, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="cl-review-footer" style={{ paddingTop: 10, paddingRight: 2, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
           {/* "Jogar a partir daqui" (Sprint 4) — continua a partir de QUALQUER posição da revisão,
               não só do início. Usa `currentFen` (posição já resultante do lance selecionado, a
               mesma que o painel "Motor" acima analisa) e o mesmo mecanismo de `pendingBoardFen`
@@ -489,6 +489,7 @@ export function ReviewPanel({
             onNext={onNext}
             onLast={onLast}
             onFlip={onFlipBoard}
+            mobileDock
           />
         </div>
       )}

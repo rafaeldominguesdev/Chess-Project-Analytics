@@ -13,6 +13,11 @@ interface BoardControlsProps {
   onNext?: () => void
   onLast?: () => void
   onFlip?: () => void
+  /** Vira uma barra fixa no rodapé da TELA no celular (`.cl-board-controls-dock`, ver index.css)
+   *  em vez de só o último item de uma pilha rolável — pedido direto do usuário: no painel de
+   *  Revisão, alcançar esses botões exigia rolar a página inteira até o fim. Só a Revisão usa
+   *  isso hoje; `AnalysisBoardView.tsx` já fica colado no tabuleiro (sem o bug), não precisa. */
+  mobileDock?: boolean
 }
 
 /**
@@ -22,7 +27,7 @@ interface BoardControlsProps {
  */
 export function BoardControls({
   isLoaded, currentMoveIndex, totalMoves,
-  onFirst, onPrev, onNext, onLast, onFlip,
+  onFirst, onPrev, onNext, onLast, onFlip, mobileDock,
 }: BoardControlsProps) {
   const atStart = currentMoveIndex === -1
   const atEnd = currentMoveIndex === totalMoves - 1 || totalMoves === 0
@@ -49,6 +54,7 @@ export function BoardControls({
 
   return (
     <div
+      className={mobileDock ? 'cl-board-controls-dock' : undefined}
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, rowGap: 6,
         // `flexWrap` (não um breakpoint fixo): os 6 botões + divisor + contador têm ~330px de
