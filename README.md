@@ -15,7 +15,7 @@ projeto aqui é uma oportunidade de praticar e evoluir.
 
 ## 📂 Projetos
 
-### ♟️ [Chess Noir](./chesslens) — Analisador de partidas de xadrez
+### ♟️ [Chess Noir](./chess-noir) — Analisador de partidas de xadrez
 Um web app para importar, revisar e treinar partidas de xadrez, com análise do
 engine **Stockfish**, avaliação de cada lance, modos de treino e de jogo contra
 o computador.
@@ -23,7 +23,7 @@ o computador.
 **Status:** 🚧 Em desenvolvimento
 **Stack:** React · Vite · TypeScript · Tailwind CSS · chess.js · Stockfish (WASM)
 
-➡️ Detalhes, funcionalidades e como rodar em [`chesslens/README.md`](./chesslens/README.md)
+➡️ Detalhes, funcionalidades e como rodar em [`chess-noir/README.md`](./chess-noir/README.md)
 
 ---
 

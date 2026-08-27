@@ -45,7 +45,7 @@ mesmo uso.
 ## Estrutura do projeto
 
 ```
-chesslens/
+chess-noir/
 ├── public/
 │   └── stockfish/        # engine Stockfish (WASM) servido como asset estático
 ├── scripts/
