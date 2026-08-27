@@ -465,28 +465,44 @@ body {
   border-radius: 999px;
 }
 
-/* Nav de categorias do modal de Configurações (SettingsPanel.tsx) — 224px de rail lateral fixo
-   deixavam só ~96px de largura útil de conteúdo num modal `maxWidth: 94vw` numa tela de 390px
-   (achado confirmado: os grids de peças/tamanho viravam colunas de ~20px). Abaixo de 760px vira
-   uma barra horizontal rolável ACIMA do conteúdo, em vez de rail lateral. `!important` nos botões
-   porque `width:'100%'`/`margin-bottom` vêm inline no componente (mesmo padrão já usado em
-   `.cl-home-hero-content` acima pra vencer estilo inline sem reescrever o componente inteiro). */
-@media (max-width: 760px) {
+/* Modal de Configurações (SettingsPanel.tsx) — 3 colunas em tela larga: rail de navegação +
+   conteúdo + painel lateral fixo (prévia ao vivo do tabuleiro + dica da capivara). O painel
+   lateral existe justamente pra nenhuma aba parecer "buraco" (Movimentos/Dados têm poucos
+   controles). Abaixo de 900px as 3 colunas empilham: nav vira barra horizontal rolável no topo,
+   conteúdo no meio, painel lateral vira uma faixa no rodapé (largura toda, prévia menor).
+   `!important` nos itens de nav porque `width:'100%'` vem inline no componente (mesmo padrão já
+   usado em `.cl-home-hero-content` pra vencer estilo inline sem reescrever o componente). */
+@media (max-width: 900px) {
   .cl-settings-body { flex-direction: column; }
   .cl-settings-nav {
     width: 100% !important;
     border-right: none !important;
-    border-bottom: 2px solid var(--color-gray-border);
-    display: flex; flex-direction: row; gap: 6px;
-    overflow-x: auto; overflow-y: hidden;
-    padding: 4px 14px 10px !important;
+    border-bottom: 1px solid var(--color-gray-border);
+    padding: 14px !important;
   }
-  .cl-settings-nav button {
+  .cl-settings-nav-list {
+    flex-direction: row !important;
+    gap: 6px !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .cl-settings-nav-list button {
     width: auto !important;
-    margin-bottom: 0 !important;
     flex-shrink: 0;
     white-space: nowrap;
   }
+  .cl-settings-main { order: 1; }
+  .cl-settings-side {
+    order: 2;
+    width: 100% !important;
+    border-left: none !important;
+    border-top: 1px solid var(--color-gray-border);
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .cl-settings-side > * { flex: 1 1 240px; }
+  .cl-settings-side .cl-card { margin-top: 0 !important; }
 }
 
 /* Variante com um rodapé FIXO fora da área rolável (hoje só a Revisão de partida usa, pra

@@ -73,3 +73,13 @@ export function SearchIcon(props: IconProps) {
     </svg>
   )
 }
+
+// Lâmpada — usada no card de "Dica" do painel lateral de Configurações.
+export function HintIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M9 18h6M10 21.5h4" />
+      <path d="M12 2.5a6.5 6.5 0 0 0-4 11.6c.7.6 1 1.4 1 2.4h6c0-1 .3-1.8 1-2.4A6.5 6.5 0 0 0 12 2.5z" />
+    </svg>
+  )
+}
