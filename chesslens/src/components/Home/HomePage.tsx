@@ -1,6 +1,7 @@
 import { ChesscomMarkIcon, LichessMarkIcon } from '../PlatformIcons'
 import type { Platform } from '../PlayerSearch/SearchView'
 import type { SVGProps } from 'react'
+import { HomeFooter } from './HomeFooter'
 
 interface HomePageProps {
   onOpenSearch: (platform: Platform) => void
@@ -201,6 +202,10 @@ export function HomePage({ onOpenSearch }: HomePageProps) {
           </div>
         </section>
         </div>
+
+        {/* Rodapé — largura total (o divisor atravessa a página); o cap de 1080 é interno ao
+            componente. Fica no fim do scroll da Home, logo abaixo dos Recursos. */}
+        <HomeFooter />
       </div>
     </div>
   )

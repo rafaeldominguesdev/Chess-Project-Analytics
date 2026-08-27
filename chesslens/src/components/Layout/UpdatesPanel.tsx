@@ -1,4 +1,4 @@
-import { SunNavIcon, CloseIcon } from './icons'
+import { CloseIcon } from './icons'
 
 interface UpdatesPanelProps {
   open: boolean
@@ -81,13 +81,10 @@ export function UpdatesPanel({ open, onClose }: UpdatesPanelProps) {
             flexShrink: 0,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-                background: 'color-mix(in srgb, var(--color-blue-bright) 16%, var(--color-bg-main))', color: 'var(--color-blue-bright)',
-              }}>
-                <SunNavIcon width={17} height={17} />
-              </span>
+              {/* Ícone oficial do painel (pedido direto do usuário): megafone 3D skeumórfico,
+                  mesma família das artes PNG do site (`public/icon-*.png`) — sem o círculo
+                  tintado que o ícone genérico usava antes. */}
+              <img src="/icon-updates.png" alt="" width={28} height={28} style={{ flexShrink: 0, display: 'block', aspectRatio: '1' }} />
               <h2 className="cl-display" style={{ fontSize: 19, fontWeight: 800, color: 'var(--color-text-on-dark)', letterSpacing: '-0.01em' }}>Updates</h2>
             </div>
             <button

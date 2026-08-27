@@ -115,8 +115,9 @@ function AppInner() {
   // acima: motor mais forte, mesmo com a partida inteira demorando mais pra classificar).
   const { analyzeGame, cancel: cancelAnalysis, progress } = useGameAnalysis(ANALYSIS_DEPTH)
   // URL de origem (chess.com/Lichess) da partida carregada — chave de cache em `persistence/`.
-  // `null` quando não há partida carregada, ou (por ora) quando ela não veio de uma dessas duas
-  // fontes (não existe hoje caminho de colar PGN cru na UI — só partidas com URL chegam aqui).
+  // `null` quando não há partida carregada, ou quando ela veio de um PGN colado à mão (aba
+  // "Colar PGN/FEN" da tela Analisar) — sem URL não há o que cachear, e todo o caminho de
+  // cache já é guardado por `if (gameUrl)`.
   const [gameUrl, setGameUrl] = useState<string | null>(null)
   // Texto cru do PGN da partida atual — `useChessGame` guarda só a versão já parseada (moves/
   // fens/gameInfo), não o texto original, então precisa ser guardado aqui pra poder salvar no
@@ -254,7 +255,7 @@ function AppInner() {
     enabled: !settingsOpen && !updatesOpen && !trainingMode && !boardMode && !openingTrainingMode && !errorTrainingMode && !endgameTrainingMode && !reportMode && !positionEditorMode && !playBotMode,
   })
 
-  const handleAnalyzeGame = useCallback((pgn: string, url: string, color: 'w' | 'b') => {
+  const handleAnalyzeGame = useCallback((pgn: string, url: string | null, color: 'w' | 'b') => {
     try {
       loadPgn(pgn)
       pgnRef.current = pgn
@@ -269,6 +270,31 @@ function AppInner() {
       // PGN inválido vindo da API do chess.com/Lichess — ignora silenciosamente.
     }
   }, [loadPgn])
+
+  // Colar PGN cru na aba "Colar PGN/FEN" da tela Analisar — mesmo corpo do `handleAnalyzeGame`,
+  // mas sem URL (não veio de API) e devolvendo `boolean` pra tela conseguir mostrar erro inline
+  // quando o PGN colado é inválido (`loadPgn` lança `Error` nesse caso).
+  const handleAnalyzePastedPgn = useCallback((pgn: string, color: 'w' | 'b'): boolean => {
+    try {
+      loadPgn(pgn)
+      pgnRef.current = pgn
+      setGameUrl(null)
+      setGamePerspectiveColor(color)
+      setReviewStarted(false)
+      setSearchMode(false)
+      return true
+    } catch {
+      return false
+    }
+  }, [loadPgn])
+
+  // Colar FEN na mesma aba — abre o Tabuleiro de análise livre já nessa posição (mesmo mecanismo
+  // que o Editor de Posição usa em `onAnalyze`). A validação do FEN é feita na própria tela.
+  const handleOpenPastedFen = useCallback((fen: string) => {
+    setPendingBoardFen(fen)
+    setBoardMode(true)
+    setSearchMode(false)
+  }, [])
 
   const openSearch = useCallback((platform?: Platform) => {
     setTrainingMode(false)
@@ -456,7 +482,12 @@ function AppInner() {
         ) : boardMode ? (
           <AnalysisBoardView boardWidth={boardWidth} containerRef={containerRef} initialFen={pendingBoardFen} />
         ) : searchMode ? (
-          <SearchView initialPlatform={searchPlatform} onAnalyzeGame={handleAnalyzeGame} />
+          <SearchView
+            initialPlatform={searchPlatform}
+            onAnalyzeGame={handleAnalyzeGame}
+            onAnalyzePastedPgn={handleAnalyzePastedPgn}
+            onOpenFen={handleOpenPastedFen}
+          />
         ) : !isLoaded ? (
           <HomePage onOpenSearch={openSearch} />
         ) : (
