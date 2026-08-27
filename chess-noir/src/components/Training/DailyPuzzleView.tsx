@@ -109,7 +109,13 @@ export function DailyPuzzleView({ boardWidth, containerRef }: DailyPuzzleViewPro
         </div>
       </div>
 
-      <aside className="cl-tool-aside">
+      {/* `justifyContent: center` (só nesta tela — o `.cl-tool-aside` compartilhado continua
+          alinhando ao topo nas outras) centraliza o painel de infos na vertical, no meio da
+          coluna da direita — pedido direto do usuário: "lá em cima fica ruim, centraliza no
+          meio da direita". O painel do Diário é curto (streak + objetivo + "volte amanhã"),
+          então não corre risco de cortar no topo; se um dia crescer, o `overflow-y: auto` do
+          `.cl-tool-aside-scroll` ainda dá scroll. */}
+      <aside className="cl-tool-aside" style={{ justifyContent: 'center' }}>
         <div className="cl-tool-aside-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingRight: 2 }}>
           {/* Sequência de dias seguidos */}
           <div className="cl-card" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 14 }}>
