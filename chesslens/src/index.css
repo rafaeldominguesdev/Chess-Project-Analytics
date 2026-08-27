@@ -819,6 +819,17 @@ body {
   transform: none;
 }
 
+/* Botão de fechar do painel "Atualizações" (`UpdatesPanel.tsx`) — círculo com sombra em anel em
+   vez de borda dura (mesmo princípio "liso" do resto do painel), fica um degrau mais claro no
+   hover em vez de mudar de cor abruptamente. */
+.cl-updates-close {
+  transition: background-color var(--dur-tap) var(--ease-tap), color var(--dur-tap) var(--ease-tap);
+}
+.cl-updates-close:hover {
+  background: color-mix(in srgb, var(--color-blue-bright) 14%, var(--color-bg-raised));
+  color: var(--color-blue-light);
+}
+
 /* ══════════════════════════════════════════════
    Micro-interações globais — foco por teclado visível e transições
    suaves e consistentes para elementos interativos que ainda não

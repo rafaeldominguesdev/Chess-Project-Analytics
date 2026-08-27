@@ -1,4 +1,4 @@
-import { SunNavIcon } from './icons'
+import { SunNavIcon, CloseIcon } from './icons'
 
 interface UpdatesPanelProps {
   open: boolean
@@ -53,25 +53,30 @@ export function UpdatesPanel({ open, onClose }: UpdatesPanelProps) {
           separado da animação de entrada, senão a keyframe de cl-modal-in sobrescreve o
           translate de centralização assim que termina. */}
       <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 50 }}>
+        {/* Acabamento "liso"/em camadas (pedido direto: "estilo claude system smoth e liso") —
+            sem trocar a paleta escura do site (continuam só os tokens de sempre): borda dura vira
+            sombra em ANEL (`0 0 0 1px`, a mesma técnica que dá profundidade sem precisar de um
+            traço visível), cantos mais generosos, divisores viram hairlines suaves em vez de
+            linhas grossas, e cada atualização vira um cartão com camada própria
+            (`--color-bg-raised`, um degrau mais claro que o painel) em vez de bullet + texto solto. */}
         <div
           className="cl-modal-in"
           role="dialog"
           aria-modal="true"
-          aria-label="Atualizações"
+          aria-label="Updates"
           onClick={(e) => e.stopPropagation()}
           style={{
             width: 520, maxWidth: '92vw', height: 'min(600px, 86vh)',
             background: 'var(--color-bg-panel)',
-            border: '1px solid var(--color-gray-border)',
-            borderRadius: 'var(--radius-lg)',
+            borderRadius: 18,
             display: 'flex', flexDirection: 'column',
             overflow: 'hidden',
-            boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.05), 0 1px 0 0 rgba(0,0,0,0.5), 0 32px 64px -16px rgba(0,0,0,0.75)',
+            boxShadow: '0 0 0 1px var(--color-gray-border), inset 0 1px 0 0 rgba(255,255,255,0.05), 0 32px 64px -16px rgba(0,0,0,0.75)',
           }}
         >
           <div style={{
             padding: '20px 24px 16px',
-            borderBottom: '2px solid var(--color-gray-border)',
+            boxShadow: '0 1px 0 0 color-mix(in srgb, var(--color-gray-border) 65%, transparent)',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             flexShrink: 0,
           }}>
@@ -83,29 +88,42 @@ export function UpdatesPanel({ open, onClose }: UpdatesPanelProps) {
               }}>
                 <SunNavIcon width={17} height={17} />
               </span>
-              <h2 className="cl-display" style={{ fontSize: 19, fontWeight: 800, color: 'var(--color-text-on-dark)', letterSpacing: '-0.01em' }}>Atualizações</h2>
+              <h2 className="cl-display" style={{ fontSize: 19, fontWeight: 800, color: 'var(--color-text-on-dark)', letterSpacing: '-0.01em' }}>Updates</h2>
             </div>
             <button
               onClick={onClose}
-              className="cl-btn cl-btn-sm"
               aria-label="Fechar atualizações"
-              style={{ color: 'var(--color-text-on-dark)', fontSize: 18, lineHeight: 1, padding: '6px 10px' }}
+              className="cl-updates-close"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 30, height: 30, flexShrink: 0, padding: 0,
+                borderRadius: '50%', border: 'none', cursor: 'pointer',
+                background: 'var(--color-bg-raised)', color: 'var(--color-gray-muted)',
+                boxShadow: '0 0 0 1px var(--color-gray-border)',
+              }}
             >
-              ✕
+              <CloseIcon width={15} height={15} />
             </button>
           </div>
 
-          <div className="settings-scroll" style={{ flex: 1, overflowY: 'auto', padding: '18px 24px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <p style={{ fontSize: 12.5, color: 'var(--color-gray-muted)', lineHeight: 1.5, margin: 0 }}>
+          <div className="settings-scroll" style={{ flex: 1, overflowY: 'auto', padding: '18px 24px 24px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <p style={{ fontSize: 12.5, color: 'var(--color-gray-muted)', lineHeight: 1.6, margin: '0 0 4px' }}>
               O que mudou recentemente no ChessCap — mais novo primeiro.
             </p>
-            {UPDATES.map((item) => (
-              <div key={item.title} style={{ display: 'flex', gap: 12 }}>
-                <span aria-hidden style={{ width: 6, height: 6, marginTop: 7, borderRadius: '50%', background: 'var(--color-blue-bright)', flexShrink: 0 }} />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--color-text-on-dark)', lineHeight: 1.3 }}>{item.title}</span>
-                  <span style={{ fontSize: 12, color: 'var(--color-gray-muted)', lineHeight: 1.5 }}>{item.description}</span>
-                </div>
+            {UPDATES.map((item, i) => (
+              <div
+                key={item.title}
+                className="cl-row-in"
+                style={{
+                  display: 'flex', flexDirection: 'column', gap: 4,
+                  padding: '14px 16px', borderRadius: 12,
+                  background: 'var(--color-bg-raised)',
+                  boxShadow: '0 0 0 1px color-mix(in srgb, var(--color-gray-border) 55%, transparent)',
+                  animationDelay: `${i * 30}ms`,
+                }}
+              >
+                <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--color-text-on-dark)', lineHeight: 1.3 }}>{item.title}</span>
+                <span style={{ fontSize: 12, color: 'var(--color-gray-muted)', lineHeight: 1.6 }}>{item.description}</span>
               </div>
             ))}
           </div>

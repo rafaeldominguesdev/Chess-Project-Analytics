@@ -5,12 +5,13 @@ import { SOUND_THEMES } from '../utils/sounds'
 
 const STORAGE_KEY = 'chesslens-theme'
 
-// Green + Dubrovny Noir é só o PADRÃO de fábrica — trocável de novo em Configurações (ver
-// SettingsPanel.tsx e CURATED_BOARD_THEMES/CURATED_PIECE_SETS em boardThemes.ts, a lista curada
-// que aparece no seletor). Todos os tabuleiros/peças continuam definidos em boardThemes.ts.
+// Blue + Alpha é só o PADRÃO de fábrica (pedido direto do usuário — trocou do default anterior,
+// Green + Dubrovny Noir) — trocável de novo em Configurações (ver SettingsPanel.tsx e
+// CURATED_BOARD_THEMES/CURATED_PIECE_SETS em boardThemes.ts, a lista curada que aparece no
+// seletor). Todos os tabuleiros/peças continuam definidos em boardThemes.ts.
 const DEFAULT_THEME: ThemeConfig = {
-  boardTheme: 'chesscom-green',
-  pieceSet: 'dubrovny-noir',
+  boardTheme: 'chesscom-blue',
+  pieceSet: 'alpha',
   uiTheme: 'amber-noir',
   showCoordinates: true,
   coordinatesOutside: false,
@@ -24,14 +25,15 @@ const DEFAULT_THEME: ThemeConfig = {
 }
 
 // Defaults antigos — quem tinha isso salvo nunca escolheu um tema de propósito, então migra pro
-// novo default também. IMPORTANTE: só entra aqui quem NÃO é mais uma opção válida no seletor
-// curado (CURATED_BOARD_THEMES/CURATED_PIECE_SETS) — 'chesscom-walnut'/'graphite-amber' e
-// 'cburnett' voltaram a ser escolhas legítimas, então saíram dessas listas pra não sobrescrever
-// uma escolha deliberada da pessoa no próximo carregamento.
-const OLD_DEFAULT_BOARD_THEMES = new Set(['obsidian-gold', 'brasil'])
+// novo default também. IMPORTANTE: normalmente só entra aqui quem NÃO é mais uma opção válida no
+// seletor curado, pra não sobrescrever uma escolha deliberada da pessoa no próximo carregamento —
+// 'chesscom-green'/'dubrovny-noir' são exceção: continuam válidos no seletor, mas entraram aqui
+// mesmo assim porque a troca de default pra Blue/Alpha foi um pedido EXPLÍCITO do usuário sobre o
+// que ele mesmo já tinha salvo (não uma limpeza de opção descontinuada como as outras abaixo).
+const OLD_DEFAULT_BOARD_THEMES = new Set(['obsidian-gold', 'brasil', 'chesscom-green'])
 const OLD_DEFAULT_UI_THEMES = new Set(['obsidian-gold', 'brasil', 'chesscom-dark', 'arcade-mostarda'])
 // 'governor' foi default antigo de peça — 'cburnett' voltou a ser opção legítima no seletor.
-const OLD_DEFAULT_PIECE_SETS = new Set(['governor'])
+const OLD_DEFAULT_PIECE_SETS = new Set(['governor', 'dubrovny-noir'])
 
 interface ThemeContextValue {
   theme: ThemeConfig

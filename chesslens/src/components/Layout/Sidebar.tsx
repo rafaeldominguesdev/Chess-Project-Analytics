@@ -263,7 +263,7 @@ export function Sidebar({ onSettings, onUpdates, onToggleTraining, onToggleBoard
         <div style={{ flex: 1, minHeight: 12 }} />
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <NavItem icon={<SunNavIcon width={22} height={22} />} label="Atualizações" onClick={closeAnd(onUpdates)} collapsed={effectiveCollapsed} />
+          <NavItem icon={<SunNavIcon width={14} height={14} />} label="Updates" ghost onClick={closeAnd(onUpdates)} collapsed={effectiveCollapsed} />
           <NavItem icon={<GearIcon width={22} height={22} />} label="Configurações" onClick={closeAnd(onSettings)} collapsed={effectiveCollapsed} />
         </div>
       </nav>
@@ -472,8 +472,8 @@ function NavGroup({ icon, label, collapsed, items, inline = false }: { icon: Rea
   )
 }
 
-function NavItem({ icon, label, active = false, collapsed, soon = false, onClick }: {
-  icon: ReactNode; label: string; active?: boolean; collapsed: boolean; soon?: boolean; onClick: () => void
+function NavItem({ icon, label, active = false, collapsed, soon = false, ghost = false, onClick }: {
+  icon: ReactNode; label: string; active?: boolean; collapsed: boolean; soon?: boolean; ghost?: boolean; onClick: () => void
 }) {
   return (
     <button
@@ -481,17 +481,23 @@ function NavItem({ icon, label, active = false, collapsed, soon = false, onClick
       title={collapsed ? label + (soon ? ' (em breve)' : '') : undefined}
       aria-label={collapsed ? label + (soon ? ' (em breve)' : '') : undefined}
       aria-current={active ? 'page' : undefined}
-      className={`cl-btn cl-nav-btn${active ? ' cl-btn-selected' : ''}`}
+      // `ghost` (pedido direto: "quero mude o botao de atualizacoes algo descreco") — tira o
+      // visual de "tecla física" (`cl-nav-btn`, sombra/relevo igual aos itens de navegação
+      // principal) e usa `cl-btn-ghost` (sem preenchimento nem sombra), pra ler como link
+      // utilitário discreto, não como destino de navegação primário. Só "Atualizações" usa isso
+      // hoje — "Configurações" continua com o peso visual normal.
+      className={`cl-btn ${ghost ? 'cl-btn-ghost' : 'cl-nav-btn'}${active ? ' cl-btn-selected' : ''}`}
       style={{
         justifyContent: collapsed ? 'center' : 'flex-start', gap: 11, width: '100%',
         padding: collapsed ? '8px 0' : '8px 13px', fontSize: soon ? 13 : 14.5, letterSpacing: 0,
-        opacity: soon ? 0.55 : 1,
+        opacity: soon ? 0.55 : ghost ? 0.75 : 1,
+        color: ghost ? 'var(--color-gray-muted)' : undefined,
       }}
     >
       {icon}
       {!collapsed && (
         <span style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flex: 1 }}>
-          <span className="cl-display" style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>
+          <span className="cl-display" style={{ fontWeight: ghost ? 500 : 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>
           {soon && (
             <span style={{
               marginLeft: 'auto', fontSize: 9, fontWeight: 800, letterSpacing: '0.02em', textTransform: 'uppercase',
