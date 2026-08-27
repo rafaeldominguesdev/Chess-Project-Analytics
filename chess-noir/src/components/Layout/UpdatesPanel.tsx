@@ -63,7 +63,7 @@ export function UpdatesPanel({ open, onClose }: UpdatesPanelProps) {
           className="cl-modal-in"
           role="dialog"
           aria-modal="true"
-          aria-label="Updates"
+          aria-label="New Updates"
           onClick={(e) => e.stopPropagation()}
           style={{
             width: 520, maxWidth: '92vw', height: 'min(600px, 86vh)',
@@ -85,7 +85,7 @@ export function UpdatesPanel({ open, onClose }: UpdatesPanelProps) {
                   mesma família das artes PNG do site (`public/icon-*.png`) — sem o círculo
                   tintado que o ícone genérico usava antes. */}
               <img src="/icon-updates.png" alt="" width={28} height={28} style={{ flexShrink: 0, display: 'block', aspectRatio: '1' }} />
-              <h2 className="cl-display" style={{ fontSize: 19, fontWeight: 800, color: 'var(--color-text-on-dark)', letterSpacing: '-0.01em' }}>Updates</h2>
+              <h2 className="cl-display" style={{ fontSize: 19, fontWeight: 800, color: 'var(--color-text-on-dark)', letterSpacing: '-0.01em' }}>New Updates</h2>
             </div>
             <button
               onClick={onClose}
